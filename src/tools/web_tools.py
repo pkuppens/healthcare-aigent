@@ -1,28 +1,21 @@
 """Web tools for healthcare system."""
 
 from crewai.tools import BaseTool
-from pydantic import BaseModel, Field
 
 
 class WebSearchTool(BaseTool):
     """Tool for searching medical information on the web."""
 
-    name = "web_search"
-    description = "Searches for medical information on the web"
-
-    class InputSchema(BaseModel):
-        """Input schema for web search tool."""
-
-        query: str = Field(..., description="Search query for medical information")
+    name: str = "search_medical_info"
+    description: str = "Search for medical information on the web"
 
     async def _run(self, query: str) -> str:
-        """Search for medical information on the web.
+        """Run the web search tool.
 
         Args:
-            query: Search query for medical information
+            query: Search query
 
         Returns:
-            Search results as a string
+            Search results
         """
-        # TODO: Implement actual web search
-        return f"Search results for: {query}"
+        return f"Mock search results for: {query}"

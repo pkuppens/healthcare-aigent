@@ -1,4 +1,4 @@
-"""LLM factory for healthcare applications."""
+"""LLM factory for creating different types of language models."""
 
 from enum import Enum
 
@@ -23,47 +23,51 @@ class LLMProvider(Enum):
 
 
 class LLMFactory:
-    """Factory for creating LLMs based on healthcare use cases."""
+    """Factory for creating LLM instances."""
 
     @staticmethod
     def create_llm(llm_type: LLMType, temperature: float = 0.7) -> ChatOpenAI | ChatOllama:
-        """Create an LLM based on the specified type.
+        """Create an LLM instance based on type.
 
         Args:
             llm_type: Type of LLM to create
-            temperature: Temperature parameter for the LLM
+            temperature: Temperature setting for the model
 
         Returns:
             Configured LLM instance
         """
-        if llm_type in [LLMType.LOCAL_FAST, LLMType.LOCAL_ACCURATE]:
-            model = "llama3" if llm_type == LLMType.LOCAL_FAST else "llama3:70b"
-            return ChatOllama(model=model, base_url="http://localhost:11434", temperature=temperature)
+        if llm_type == LLMType.LOCAL_FAST:
+            return ChatOllama(model="llama3", base_url="http://localhost:11434", temperature=temperature)
 
-        if llm_type in [LLMType.CLOUD_FAST, LLMType.CLOUD_ACCURATE]:
-            model = "gpt-3.5-turbo" if llm_type == LLMType.CLOUD_FAST else "gpt-4"
-            return ChatOpenAI(model_name=model, temperature=temperature)
+        elif llm_type == LLMType.LOCAL_ACCURATE:
+            return ChatOllama(model="llama3:70b", base_url="http://localhost:11434", temperature=temperature)
 
-        raise ValueError(f"Unsupported LLM type: {llm_type}")
+        elif llm_type == LLMType.CLOUD_FAST:
+            return ChatOpenAI(model_name="gpt-3.5-turbo", temperature=temperature)
+
+        elif llm_type == LLMType.CLOUD_ACCURATE:
+            return ChatOpenAI(model_name="gpt-4", temperature=temperature)
+
+        else:
+            raise ValueError(f"Unsupported LLM type: {llm_type}")
 
     @staticmethod
-    def get_llm_for_task(task_type: str, sensitive_data: bool = False) -> ChatOpenAI | ChatOllama:
-        """Get appropriate LLM for a healthcare task.
+    def get_llm_for_task(task_type: str, temperature: float = 0.7) -> ChatOpenAI | ChatOllama:
+        """Get appropriate LLM for a specific task type.
 
         Args:
-            task_type: Type of task (e.g., 'summarization', 'extraction')
-            sensitive_data: Whether the task involves sensitive patient data
+            task_type: Type of task to perform
+            temperature: Temperature setting for the model
 
         Returns:
             Configured LLM instance
         """
-        if sensitive_data:
-            return LLMFactory.create_llm(LLMType.LOCAL_ACCURATE)
-
-        if task_type in ["summarization", "extraction"]:
-            return LLMFactory.create_llm(LLMType.CLOUD_ACCURATE)
-
-        return LLMFactory.create_llm(LLMType.CLOUD_FAST)
+        if task_type in ["sensitive_data", "diagnosis"]:
+            return LLMFactory.create_llm(LLMType.CLOUD_ACCURATE, temperature)
+        elif task_type in ["summarization", "extraction"]:
+            return LLMFactory.create_llm(LLMType.CLOUD_FAST, temperature)
+        else:
+            return LLMFactory.create_llm(LLMType.LOCAL_FAST, temperature)
 
 
 def create_llm(provider: LLMProvider, model_name: str | None = None):

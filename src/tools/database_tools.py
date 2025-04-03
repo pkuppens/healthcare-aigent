@@ -1,5 +1,7 @@
 """Database tools for healthcare system."""
 
+from typing import Any
+
 from .database_interface import HealthcareDatabase
 
 # Mock patient database
@@ -19,28 +21,28 @@ MOCK_PATIENT_DB = {
 }
 
 
-async def read_patient_data(patient_id: str, db: HealthcareDatabase) -> dict[str, object]:
+async def read_patient_data(patient_id: str, db: HealthcareDatabase) -> dict[str, Any]:
     """Read patient data from the database.
 
     Args:
-        patient_id: The ID of the patient
-        db: Database instance to use
+        patient_id: ID of the patient
+        db: Database instance
 
     Returns:
-        Dictionary containing patient data
+        Patient data dictionary
     """
-    return await db.read_patient_data(patient_id)
+    return await db.get_patient_data(patient_id)
 
 
-async def propose_database_update(patient_id: str, data: dict[str, object], db: HealthcareDatabase) -> bool:
-    """Propose an update to patient data in the database.
+async def propose_database_update(patient_id: str, data: dict[str, Any], db: HealthcareDatabase) -> bool:
+    """Propose an update to patient data.
 
     Args:
-        patient_id: The ID of the patient
-        data: Dictionary containing data to update
-        db: Database instance to use
+        patient_id: ID of the patient
+        data: Data to update
+        db: Database instance
 
     Returns:
-        True if update was successful, False otherwise
+        True if update was successful
     """
     return await db.update_patient_data(patient_id, data)
