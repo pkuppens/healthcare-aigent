@@ -1,0 +1,9 @@
+crewai>=0.30.0
+crewai-tools
+langchain>=0.1.0
+langchain-community
+langchain-openai
+langchain-ollama
+python-dotenv>=1.0.0
+ruff
+pydantic>=2.0.0 
