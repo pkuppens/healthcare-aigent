@@ -31,10 +31,5 @@ async def log_audit_event(event_type: str, patient_id: str, user_id: str, logger
     Returns:
         True if logging was successful
     """
-    event = {
-        "timestamp": datetime.now().isoformat(),
-        "event_type": event_type,
-        "patient_id": patient_id,
-        "user_id": user_id
-    }
+    event = {"timestamp": datetime.now().isoformat(), "event_type": event_type, "patient_id": patient_id, "user_id": user_id}
     return await logger.log_audit_event(event)

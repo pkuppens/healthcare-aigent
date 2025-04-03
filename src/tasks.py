@@ -33,11 +33,7 @@ class AssessPatientLanguageTask(Task):
     async def execute(self, text: str, llm) -> dict[str, Any]:
         """Execute the language assessment task."""
         await llm.ainvoke(f"Assess language proficiency in: {text}")
-        return {
-            "needs_interpreter": False,
-            "proficiency": "intermediate",
-            "language_proficiency": "B2"
-        }
+        return {"needs_interpreter": False, "proficiency": "intermediate", "language_proficiency": "B2"}
 
 
 class ExtractClinicalInfoTask(Task):
@@ -57,7 +53,7 @@ class ExtractClinicalInfoTask(Task):
             "symptoms": ["headache"],
             "conditions": ["hypertension"],
             "medications": ["metoprolol"],
-            "diagnosis": "Essential hypertension"
+            "diagnosis": "Essential hypertension",
         }
 
 
@@ -89,8 +85,4 @@ class QualityControlTask(Task):
     async def execute(self, text: str, llm, db, logger) -> dict[str, Any]:
         """Execute the quality control task."""
         await llm.ainvoke(f"Perform quality control on: {text}")
-        return {
-            "accuracy": 0.95,
-            "needs_review": False,
-            "quality_score": 95
-        }
+        return {"accuracy": 0.95, "needs_review": False, "quality_score": 95}

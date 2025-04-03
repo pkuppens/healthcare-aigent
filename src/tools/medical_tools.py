@@ -24,11 +24,7 @@ class PatientLanguageTool(BaseTool):
 
     async def _run(self, conversation: str) -> dict[str, Any]:
         """Run the language assessment tool."""
-        return {
-            "needs_interpreter": False,
-            "proficiency": "intermediate",
-            "language_proficiency": "B2"
-        }
+        return {"needs_interpreter": False, "proficiency": "intermediate", "language_proficiency": "B2"}
 
 
 class ClinicalExtractionTool(BaseTool):
@@ -43,5 +39,5 @@ class ClinicalExtractionTool(BaseTool):
             "symptoms": ["headache"],
             "conditions": ["hypertension"],
             "medications": ["metoprolol"],
-            "diagnosis": "Essential hypertension"
+            "diagnosis": "Essential hypertension",
         }
