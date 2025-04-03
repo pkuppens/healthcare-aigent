@@ -1,1 +1,1 @@
-"""Tools package for the healthcare multi-agent system."""
+"""Tools package for healthcare system."""

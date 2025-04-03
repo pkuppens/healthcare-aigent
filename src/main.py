@@ -1,65 +1,73 @@
-"""Main execution script for the healthcare multi-agent system."""
+"""Main module for healthcare multi-agent system."""
 
 from crewai import Crew, Process
 
-from .agents import (
-    clinical_extractor_agent,
-    patient_language_agent,
-    preprocessing_agent,
-    quality_control_agent,
-    summarization_agent,
-)
+from .agents import create_medical_crew
+from .llm_config import get_llm
 from .tasks import (
-    task_assess_language,
-    task_extract_info,
-    task_preprocess,
-    task_quality_check_and_propose_update,
-    task_summarize_patient,
-    task_summarize_soap,
+    AssessPatientLanguageTask,
+    ExtractClinicalInfoTask,
+    GenerateSummaryTask,
+    PreprocessMedicalTextTask,
+    QualityControlTask,
 )
 
 
-def main():
-    """Main execution function."""
-    # Example transcript with speaker labels
-    mock_transcript = """
-    Spreker A: Goedemorgen, mevrouw Jansen. Hoe gaat het met u?
-    Spreker B: Goedemorgen dokter. Het gaat wel, maar ik heb de laatste tijd veel last van hoofdpijn.
-    Spreker A: Kunt u daar wat meer over vertellen? Wanneer begon dit?
-    Spreker B: Het begon ongeveer twee weken geleden. Het is vooral 's ochtends erg.
-    Spreker A: Gebruikt u nog steeds de metoprolol voor uw bloeddruk?
-    Spreker B: Ja, elke ochtend één tablet.
-    Spreker A: Heeft u nog andere klachten?
-    Spreker B: Ik voel me soms wat duizelig, vooral als ik snel opsta.
-    """
+async def process_medical_conversation(conversation: str) -> dict:
+    """Process a medical conversation using the healthcare crew.
 
-    # Example patient ID
-    mock_patient_id = "patient_123"
+    Args:
+        conversation: The medical conversation to process
+
+    Returns:
+        Dict containing the processed results
+    """
+    # Initialize LLM
+    llm = get_llm()
+
+    # Create agents
+    agents = create_medical_crew(llm)
+
+    # Create tasks
+    tasks = [
+        PreprocessMedicalTextTask(),
+        AssessPatientLanguageTask(),
+        ExtractClinicalInfoTask(),
+        GenerateSummaryTask(),
+        QualityControlTask(),
+    ]
 
     # Create crew
-    consult_review_crew = Crew(
-        agents=[preprocessing_agent, patient_language_agent, clinical_extractor_agent, summarization_agent, quality_control_agent],
-        tasks=[
-            task_preprocess,
-            task_assess_language,
-            task_extract_info,
-            task_summarize_soap,
-            task_summarize_patient,
-            task_quality_check_and_propose_update,
-        ],
-        process=Process.sequential,
-        verbose=2,
-    )
+    crew = Crew(agents=agents, tasks=tasks, process=Process.sequential, verbose=True)
 
-    # Run crew with inputs
-    inputs = {"transcript": mock_transcript, "patient_id": mock_patient_id}
+    # Execute crew tasks
+    result = await crew.kickoff()
 
-    print("\nStarting healthcare multi-agent system...")
-    result = consult_review_crew.kickoff(inputs=inputs)
+    return {
+        "preprocessed_text": result[0],
+        "language_assessment": result[1],
+        "clinical_info": result[2],
+        "summary": result[3],
+        "quality_check": result[4],
+    }
 
-    print("\n\n## Crew Uitkomst:")
-    print(result)
+
+async def main():
+    """Main entry point."""
+    conversation = """
+    Doctor: Good morning, how are you feeling today?
+    Patient: Not so well, I've been having headaches.
+    Doctor: How long have you been experiencing these headaches?
+    Patient: About a week now. They come and go.
+    Doctor: Are you taking any medications?
+    Patient: Yes, I take metoprolol for my blood pressure.
+    """
+
+    result = await process_medical_conversation(conversation)
+    print("Processing complete:", result)
 
 
 if __name__ == "__main__":
-    main()
+    import asyncio
+
+    asyncio.run(main())

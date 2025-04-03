@@ -1,23 +1,31 @@
-"""LLM configuration and initialization."""
+"""LLM configuration for healthcare system."""
 
-from langchain.schema import BaseChatModel
-from langchain_community.chat_models import ChatOllama
+import os
+
+from langchain_community.llms import Ollama
 from langchain_openai import ChatOpenAI
 
-from .utils import load_config
 
+def get_llm(model_name: str | None = None):
+    """Get LLM based on configuration.
 
-def get_llm() -> BaseChatModel:
-    """Initialize and return the appropriate LLM based on configuration.
+    Args:
+        model_name: Optional model name to use
 
     Returns:
-        BaseChatModel: Initialized LLM instance
+        Configured LLM instance
     """
-    config = load_config()
+    provider = os.getenv("LLM_PROVIDER", "OPENAI").upper()
 
-    if config["llm_provider"].upper() == "OPENAI":
-        return ChatOpenAI(api_key=config["openai_api_key"], model_name=config["openai_model_name"], temperature=0.7)
-    elif config["llm_provider"].upper() == "OLLAMA":
-        return ChatOllama(base_url=config["ollama_base_url"], model=config["ollama_model_name"], temperature=0.7)
+    if provider == "OPENAI":
+        api_key = os.getenv("OPENAI_API_KEY")
+        model = model_name or os.getenv("OPENAI_MODEL_NAME", "gpt-3.5-turbo")
+        return ChatOpenAI(openai_api_key=api_key, model=model, temperature=0.7)
+
+    elif provider == "OLLAMA":
+        base_url = os.getenv("OLLAMA_BASE_URL", "http://localhost:11434")
+        model = model_name or os.getenv("OLLAMA_MODEL_NAME", "llama2")
+        return Ollama(base_url=base_url, model=model, temperature=0.7)
+
     else:
-        raise ValueError(f"Unsupported LLM provider: {config['llm_provider']}")
+        raise ValueError(f"Unsupported LLM provider: {provider}")

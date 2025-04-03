@@ -1,40 +1,28 @@
-"""Mocked web tools for the healthcare multi-agent system."""
+"""Web tools for healthcare system."""
 
-from crewai_tools import tool
+from crewai.tools import BaseTool
+from pydantic import BaseModel, Field
 
 
-@tool("Mocked Web Search Tool")
-def search_web_mock(query: str) -> str:
-    """Simulate web search functionality.
+class WebSearchTool(BaseTool):
+    """Tool for searching medical information on the web."""
 
-    Args:
-        query (str): Search query
+    name = "web_search"
+    description = "Searches for medical information on the web"
 
-    Returns:
-        str: Mocked search results
-    """
-    print(f"[MOCK_SEARCH] Zoeken naar: {query}")
+    class InputSchema(BaseModel):
+        """Input schema for web search tool."""
 
-    # Mock responses for common medical queries
-    mock_responses = {
-        "hypertensie": "Hypertensie (hoge bloeddruk) is een veelvoorkomende aandoening. "
-        "Meer informatie: https://www.thuisarts.nl/hoge-bloeddruk",
-        "diabetes": "Diabetes type 2 is een stofwisselingsziekte. " "Meer informatie: https://www.thuisarts.nl/diabetes",
-        "metoprolol": "Metoprolol is een bètablokker gebruikt bij hoge bloeddruk en hartritmestoornissen. "
-        "Bijwerkingen kunnen zijn: vermoeidheid, duizeligheid. "
-        "Meer informatie: https://www.apotheek.nl/medicijnen/metoprolol",
-        "metformine": "Metformine wordt gebruikt bij diabetes type 2. "
-        "Het verlaagt de bloedsuikerspiegel. "
-        "Meer informatie: https://www.apotheek.nl/medicijnen/metformine",
-    }
+        query: str = Field(..., description="Search query for medical information")
 
-    # Return specific mock response if available, otherwise generic response
-    if query.lower() in mock_responses:
-        return mock_responses[query.lower()]
+    async def _run(self, query: str) -> str:
+        """Search for medical information on the web.
 
-    return (
-        f"Mock resultaat voor '{query}':\n"
-        f"1. Algemene informatie over {query} - https://www.thuisarts.nl\n"
-        f"2. Medicatie-informatie - https://www.apotheek.nl\n"
-        f"3. Richtlijnen - https://www.nhg.org"
-    )
+        Args:
+            query: Search query for medical information
+
+        Returns:
+            Search results as a string
+        """
+        # TODO: Implement actual web search
+        return f"Search results for: {query}"

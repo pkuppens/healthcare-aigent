@@ -1,27 +1,30 @@
-"""Logging tools for the healthcare multi-agent system."""
+"""Logging tools for healthcare system."""
 
 from datetime import datetime
-from typing import Any
-
-from crewai_tools import tool
 
 
-@tool("Audit Logging Tool")
-def log_audit_event(event_description: str, agent_name: str, data: dict[str, Any] | None = None) -> str:
-    """Log important events or decisions for audit purposes.
+async def log_audit_event(
+    event_type: str,
+    patient_id: str,
+    user_id: str,
+    logger: object,
+) -> bool:
+    """Log an audit event.
 
     Args:
-        event_description (str): Description of the event
-        agent_name (str): Name of the agent performing the action
-        data (Optional[Dict[str, Any]]): Additional data to log
+        event_type: Type of event being logged
+        patient_id: ID of the patient involved
+        user_id: ID of the user performing the action
+        logger: Logger instance to use
 
     Returns:
-        str: Confirmation message
+        True if logging was successful, False otherwise
     """
-    timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    data_str = str(data) if data else "N/A"
-
-    log_entry = f"{timestamp} [AUDIT] Agent: {agent_name} - " f"Event: {event_description} - " f"Data: {data_str}"
-
-    print(log_entry)
-    return f"Event '{event_description}' gelogd."
+    event = {
+        "timestamp": datetime.now().isoformat(),
+        "event_type": event_type,
+        "patient_id": patient_id,
+        "user_id": user_id,
+    }
+    await logger.log(event)
+    return True
