@@ -1,30 +1,35 @@
 """Integration tests for agent system."""
-import pytest
+
 from unittest.mock import AsyncMock
 
-from src.agents import create_medical_crew
+import pytest
+
 from src.tasks import (
-    PreprocessMedicalTextTask,
     AssessPatientLanguageTask,
     ExtractClinicalInfoTask,
     GenerateSummaryTask,
+    PreprocessMedicalTextTask,
     QualityControlTask,
 )
+
 
 @pytest.fixture
 def mock_llm():
     """Create a mock LLM for testing."""
     return AsyncMock()
 
+
 @pytest.fixture
 def mock_db():
     """Create a mock database for testing."""
     return AsyncMock()
 
+
 @pytest.fixture
 def mock_logger():
     """Create a mock logger for testing."""
     return AsyncMock()
+
 
 @pytest.mark.asyncio
 async def test_agent_system_integration(mock_llm, mock_db, mock_logger):
