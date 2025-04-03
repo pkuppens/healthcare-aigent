@@ -1,9 +1,25 @@
 # Healthcare Multi-Agent System
 
-A proof-of-concept multi-agent LLM system to support healthcare professionals and patients. The system processes text-based medical conversations to extract information, create summaries, and assist with documentation.
+A proof-of-concept multi-agent LLM system to support healthcare professionals in communication with patients and colleagues. The system helps healthcare professionals adapt their communication style based on patient characteristics and provides real-time assistance during consultations.
 
 ## Features
 
+### Business Value
+- **Patient-Centric Communication**: Get real-time suggestions for adapting language based on:
+  - Patient's language proficiency
+  - Medical literacy level
+  - Cultural background
+  - Communication preferences
+- **Clinical Documentation Support**: Automated assistance with:
+  - SOAP note generation
+  - Medical terminology simplification
+  - Multilingual documentation
+- **Quality Improvement**: Real-time feedback on:
+  - Communication effectiveness
+  - Documentation completeness
+  - Clinical information accuracy
+
+### Technical Components
 - Multi-agent system using `crewai`
 - Support for both OpenAI and Ollama LLMs
 - Specialized agents for:
@@ -12,92 +28,119 @@ A proof-of-concept multi-agent LLM system to support healthcare professionals an
   - Clinical information extraction
   - Structured summarization (SOAP notes)
   - Quality control & database updates
-- Mocked tools for:
-  - Database operations
-  - Web search
-  - Audit logging
 
-## Setup
+### Extensibility
+- Modular architecture for easy addition of:
+  - New specialized agents
+  - Custom tools and utilities
+  - Additional LLM providers
+  - Integration with external systems
 
-1. Create and activate a virtual environment:
+### Note on Data
+This proof-of-concept uses simulated data and mocked components to demonstrate the system's capabilities. In a production environment, this would be replaced with real healthcare data and secure integrations.
+
+## Quick Start
+
+1. Clone the repository:
    ```bash
+   git clone https://github.com/pkuppens/healthcare-aigent.git
+   cd healthcare-aigent
+   ```
+
+2. Set up the environment:
+   ```bash
+   # Create and activate virtual environment
    python -m venv venv
    # On Windows:
    venv\Scripts\activate
    # On Unix/MacOS:
    source venv/bin/activate
-   ```
 
-2. Install dependencies:
-   ```bash
+   # Install dependencies
    pip install -r requirements.txt
    ```
 
-3. Configure environment variables:
-   - Copy `.env.example` to `.env`
-   - Update the following variables:
+3. Configure the system:
+   - Copy `config/crew.yaml.example` to `config/crew.yaml`
+   - Update the configuration for each agent:
+     ```yaml
+     agents:
+       preprocessor:
+         llm_provider: "OPENAI"  # or "OLLAMA"
+         model_name: "gpt-3.5-turbo"
+         api_key: "your-api-key"
+         temperature: 0.7
+       
+       language_assessor:
+         llm_provider: "OPENAI"
+         model_name: "gpt-3.5-turbo"
+         api_key: "your-api-key"
+         temperature: 0.5
+       
+       clinical_extractor:
+         llm_provider: "OLLAMA"
+         model_name: "llama2"
+         temperature: 0.3
+     
+     tools:
+       database:
+         type: "mock"  # or "production" for real database
+         connection_string: "your-connection-string"
+     
+     system:
+       log_level: "INFO"
+       max_retries: 3
+       timeout: 30
      ```
-     OPENAI_API_KEY="your-api-key"
-     OPENAI_MODEL_NAME="gpt-3.5-turbo"  # or your preferred model
-     LLM_PROVIDER="OPENAI"  # or "OLLAMA" if using local models
-     ```
 
-4. (Optional) For Ollama support:
-   - Install Ollama from [ollama.ai](https://ollama.ai)
-   - Pull your preferred model: `ollama pull llama3`
-   - Update `.env` with Ollama settings
-
-## Usage
-
-1. Run the system:
+4. Run the system:
    ```bash
+   # Start the backend service
    python src/main.py
+
+   # In a new terminal, start the frontend development server
+   cd frontend
+   npm install
+   npm run dev
    ```
 
-2. The system will process the example transcript and:
-   - Identify speakers and context
-   - Assess patient language proficiency
-   - Extract clinical information
-   - Create SOAP notes
-   - Generate patient-friendly summaries
-   - Propose database updates
+   The system will provide:
+   - Patient selection interface
+   - Patient file summary view
+   - Consultation request form
+   - Real-time communication assistance
+   - Speech-to-text input for consultations
+   - Automated documentation generation
+
+## Documentation
+
+- [System Architecture](docs/architecture.md): Detailed system design, component diagrams, and data flow
+- [CrewAI Implementation](docs/crewai.md): CrewAI framework integration, agent configuration, and best practices
+- [Testing Strategy](docs/testing.md): Comprehensive testing approach, examples, and guidelines
+- [Development Guidelines](docs/development.md): Code quality standards, testing procedures, and development workflow
 
 ## Project Structure
 
 ```
 /project_root
-|-- src/
-|   |-- __init__.py
-|   |-- agents.py        # Agent definitions
-|   |-- tasks.py         # Task definitions
-|   |-- tools/
-|   |   |-- __init__.py
-|   |   |-- database_tools.py
-|   |   |-- web_tools.py
-|   |   |-- logging_tools.py
-|   |-- llm_config.py    # LLM configuration
-|   |-- main.py          # Main execution script
-|   |-- utils.py         # Utility functions
-|-- data/                # Example data
-|-- config/              # Configuration files
-|-- .env                 # Environment variables
-|-- requirements.txt
-|-- README.md
+|-- src/                # Backend source code
+|   |-- agents/         # Agent implementations
+|   |-- tools/          # Tool implementations
+|   |-- main.py         # Backend entry point
+|-- frontend/           # Frontend application
+|   |-- src/            # React/Vue source code
+|   |-- public/         # Static assets
+|   |-- package.json    # Frontend dependencies
+|-- config/             # Configuration files
+|   |-- crew.yaml       # Agent and system configuration
+|   |-- crew.yaml.example
+|-- tests/              # Test suite
+|-- docs/               # Documentation
+|-- data/               # Example data
+|-- requirements.txt    # Python dependencies
+|-- README.md           # This file
 ```
-
-## Development
-
-- Code formatting and linting:
-  ```bash
-  ruff check .
-  ruff format .
-  ```
-
-- Type checking:
-  ```bash
-  mypy src/
-  ```
 
 ## License
 
-MIT License
+MIT License, see [LICENSE](LICENSE)
