@@ -29,53 +29,88 @@ Used for deterministic, auditable workflows:
 
 ## Code Examples
 
-### Crew Configuration
+### Agent Definition
 ```python
-from crewai import Agent, Task, Crew
+from crewai import Agent
+from crewai.tools import BaseTool
 
-# Define specialized agents
-preprocessing_agent = Agent(
-    role='Medical Preprocessor',
-    goal='Analyze and prepare medical conversations for processing',
-    backstory='Expert in medical terminology and conversation analysis',
-    tools=[medical_terminology_tool, context_analyzer_tool]
-)
+class MedicalPreprocessor(Agent):
+    def __init__(self, llm):
+        super().__init__(
+            role='Medical Preprocessor',
+            goal='Analyze and prepare medical conversations for processing',
+            backstory='Expert in medical terminology and conversation analysis',
+            llm=llm,
+            tools=[MedicalTerminologyTool(), ContextAnalyzerTool()]
+        )
+```
 
-# Create tasks
+### Tool Implementation
+```python
+from crewai.tools import BaseTool
+from pydantic import BaseModel, Field
+
+class MedicalTerminologyTool(BaseTool):
+    name: str = "medical_terminology"
+    description: str = "Tool for analyzing and simplifying medical terminology"
+    
+    class InputSchema(BaseModel):
+        text: str = Field(..., description="Medical text to analyze")
+        
+    def _run(self, text: str) -> str:
+        # Implementation here
+        return simplified_text
+```
+
+### Task Definition
+```python
+from crewai import Task
+
 preprocessing_task = Task(
     description='Process and analyze the medical conversation',
-    agent=preprocessing_agent
-)
-
-# Form crew
-medical_crew = Crew(
-    agents=[preprocessing_agent, ...],
-    tasks=[preprocessing_task, ...],
-    process=Process.sequential  # or hierarchical
+    agent=preprocessing_agent,
+    expected_output='Structured medical conversation with identified key elements'
 )
 ```
 
-### Flow Configuration
+### Crew Configuration
 ```python
-from crewai import Flow
+from crewai import Crew
 
-# Define flow steps
-data_processing_flow = Flow(
-    steps=[
-        Step(
-            name='validate_input',
-            action=validate_medical_data,
-            on_success='extract_information',
-            on_failure='log_error'
-        ),
-        Step(
-            name='extract_information',
-            action=extract_clinical_data,
-            on_success='update_database',
-            on_failure='notify_admin'
-        )
-    ]
+medical_crew = Crew(
+    agents=[preprocessing_agent, language_assessor, clinical_extractor],
+    tasks=[preprocessing_task, assessment_task, extraction_task],
+    process='sequential'  # or 'hierarchical'
 )
+```
+
+### YAML Configuration
+```yaml
+crew:
+  name: "Medical Processing Crew"
+  agents:
+    - name: "preprocessor"
+      role: "Medical Preprocessor"
+      goal: "Analyze and prepare medical conversations"
+      backstory: "Expert in medical terminology"
+      tools:
+        - "medical_terminology"
+        - "context_analyzer"
+    - name: "language_assessor"
+      role: "Language Assessment Specialist"
+      goal: "Assess patient language proficiency"
+      backstory: "Expert in language assessment"
+      tools:
+        - "language_analyzer"
+        - "literacy_assessor"
+  tasks:
+    - name: "preprocessing"
+      description: "Process medical conversation"
+      agent: "preprocessor"
+    - name: "assessment"
+      description: "Assess language proficiency"
+      agent: "language_assessor"
+  process: "sequential"
 ```
 
 ## Best Practices
@@ -85,6 +120,12 @@ data_processing_flow = Flow(
 - Provide comprehensive backstories
 - Equip with appropriate tools
 - Set proper delegation permissions
+
+### Tool Implementation
+- Inherit from `BaseTool`
+- Define clear input schemas
+- Implement proper error handling
+- Add comprehensive documentation
 
 ### Task Management
 - Break down complex tasks
@@ -106,5 +147,7 @@ data_processing_flow = Flow(
 
 ## Resources
 - [CrewAI Documentation](https://docs.crewai.com)
+- [CrewAI Quickstart](https://docs.crewai.com/quickstart)
+- [CrewAI Tools](https://docs.crewai.com/concepts/tools)
 - [CrewAI GitHub](https://github.com/crewAIInc/crewAI)
-- [CrewAI Community](https://community.crewai.com) 
+- [CrewAI Community](https://community.crewai.com)
