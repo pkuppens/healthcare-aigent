@@ -12,10 +12,12 @@ from src.llm_config import get_llm
 HTTP_OK = 200
 CUSTOM_TEMPERATURE = 0.5
 
+
 @pytest.fixture
 def mock_llm():
     """Create a mock LLM for testing."""
     return AsyncMock()
+
 
 @pytest.mark.integration
 def test_ollama_connectivity():
@@ -25,7 +27,7 @@ def test_ollama_connectivity():
         response = requests.get("http://localhost:11434/api/tags")
         if response.status_code != HTTP_OK:
             pytest.skip("Ollama server not running. Please start Ollama and try again.")
-        
+
         # Test LLM creation
         llm = get_llm(provider="OLLAMA")
         assert llm is not None
@@ -34,17 +36,19 @@ def test_ollama_connectivity():
     except requests.exceptions.ConnectionError:
         pytest.skip("Ollama server not running. Please start Ollama and try again.")
 
+
 @pytest.mark.integration
 def test_openai_connectivity():
     """Test connectivity to OpenAI API."""
     # Skip if no API key
     if not os.getenv("OPENAI_API_KEY"):
         pytest.skip("OPENAI_API_KEY not set. Please set the environment variable and try again.")
-    
+
     # Test LLM creation
     llm = get_llm(provider="OPENAI")
     assert llm is not None
     assert llm.model == "gpt-3.5-turbo"
+
 
 @pytest.mark.integration
 def test_custom_temperature():
@@ -52,6 +56,7 @@ def test_custom_temperature():
     llm = get_llm(temperature=CUSTOM_TEMPERATURE)
     assert llm is not None
     assert llm.temperature == CUSTOM_TEMPERATURE
+
 
 @pytest.mark.integration
 def test_ollama_connection_error(mock_env_vars, monkeypatch):
@@ -64,6 +69,7 @@ def test_ollama_connection_error(mock_env_vars, monkeypatch):
                 get_llm()
             except Exception:
                 pass
+
 
 @pytest.mark.integration
 def test_openai_api_error(mock_env_vars, monkeypatch):

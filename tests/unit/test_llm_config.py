@@ -13,6 +13,7 @@ from src.llm_config import get_llm
 DEFAULT_TEMPERATURE = 0.7
 CUSTOM_TEMPERATURE = 0.5
 
+
 @pytest.fixture
 def mock_env_vars():
     """Mock environment variables for testing."""
@@ -27,6 +28,7 @@ def mock_env_vars():
     ):
         yield
 
+
 def test_get_llm_openai(mock_env_vars):
     """Test getting OpenAI LLM."""
     llm = get_llm(provider="OPENAI")
@@ -34,6 +36,7 @@ def test_get_llm_openai(mock_env_vars):
     assert llm.model_name == "gpt-3.5-turbo"
     assert llm.temperature == DEFAULT_TEMPERATURE
     assert llm.api_key == "test-key"
+
 
 def test_get_llm_ollama(mock_env_vars):
     """Test getting Ollama LLM."""
@@ -43,6 +46,7 @@ def test_get_llm_ollama(mock_env_vars):
     assert llm.base_url == "http://localhost:11434"
     assert llm.temperature == DEFAULT_TEMPERATURE
 
+
 def test_get_llm_default(mock_env_vars):
     """Test getting default LLM."""
     llm = get_llm()
@@ -51,16 +55,19 @@ def test_get_llm_default(mock_env_vars):
     assert llm.temperature == DEFAULT_TEMPERATURE
     assert llm.api_key == "test-key"
 
+
 def test_get_llm_custom_temperature(mock_env_vars):
     """Test getting LLM with custom temperature."""
     llm = get_llm(temperature=CUSTOM_TEMPERATURE)
     assert isinstance(llm, ChatOpenAI)
     assert llm.temperature == CUSTOM_TEMPERATURE
 
+
 def test_get_llm_invalid_provider(mock_env_vars):
     """Test getting LLM with invalid provider."""
     with pytest.raises(ValueError, match="Unsupported LLM provider: INVALID"):
         get_llm(provider="INVALID")
+
 
 @pytest.mark.unit
 class TestLLMConfig:
