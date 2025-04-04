@@ -17,10 +17,12 @@ from src.agents import (
 NUM_TOOLS_PER_AGENT = 2
 NUM_AGENTS_IN_CREW = 5
 
+
 @pytest.fixture
 def mock_llm():
     """Create a mock LLM for testing."""
     return AsyncMock()
+
 
 @pytest.mark.asyncio
 async def test_medical_preprocessor_creation(mock_llm):
@@ -32,6 +34,7 @@ async def test_medical_preprocessor_creation(mock_llm):
     assert any(tool.name == "medical_terminology" for tool in agent.tools)
     assert any(tool.name == "web_search" for tool in agent.tools)
 
+
 @pytest.mark.asyncio
 async def test_language_assessor_creation(mock_llm):
     """Test language assessor agent creation."""
@@ -41,6 +44,7 @@ async def test_language_assessor_creation(mock_llm):
     assert len(agent.tools) == NUM_TOOLS_PER_AGENT
     assert any(tool.name == "patient_language" for tool in agent.tools)
     assert any(tool.name == "web_search" for tool in agent.tools)
+
 
 @pytest.mark.asyncio
 async def test_clinical_extractor_creation(mock_llm):
@@ -52,6 +56,7 @@ async def test_clinical_extractor_creation(mock_llm):
     assert any(tool.name == "clinical_extraction" for tool in agent.tools)
     assert any(tool.name == "web_search" for tool in agent.tools)
 
+
 @pytest.mark.asyncio
 async def test_summarization_agent_creation(mock_llm):
     """Test summarization agent creation."""
@@ -62,6 +67,7 @@ async def test_summarization_agent_creation(mock_llm):
     assert any(tool.name == "medical_terminology" for tool in agent.tools)
     assert any(tool.name == "web_search" for tool in agent.tools)
 
+
 @pytest.mark.asyncio
 async def test_quality_control_agent_creation(mock_llm):
     """Test quality control agent creation."""
@@ -71,6 +77,7 @@ async def test_quality_control_agent_creation(mock_llm):
     assert len(agent.tools) == NUM_TOOLS_PER_AGENT
     assert any(tool.name == "medical_terminology" for tool in agent.tools)
     assert any(tool.name == "web_search" for tool in agent.tools)
+
 
 @pytest.mark.asyncio
 async def test_medical_crew_creation(mock_llm):
