@@ -61,86 +61,113 @@ This proof-of-concept uses simulated data and mocked components to demonstrate t
    ```
 
 3. Configure the system:
-   - Copy `config/crew.yaml.example` to `config/crew.yaml`
-   - Update the configuration for each agent:
-     ```yaml
-     agents:
-       preprocessor:
-         llm_provider: "OPENAI"  # or "OLLAMA"
-         model_name: "gpt-3.5-turbo"
-         api_key: "your-api-key"
-         temperature: 0.7
-       
-       language_assessor:
-         llm_provider: "OPENAI"
-         model_name: "gpt-3.5-turbo"
-         api_key: "your-api-key"
-         temperature: 0.5
-       
-       clinical_extractor:
-         llm_provider: "OLLAMA"
-         model_name: "llama2"
-         temperature: 0.3
-     
-     tools:
-       database:
-         type: "mock"  # or "production" for real database
-         connection_string: "your-connection-string"
-     
-     system:
-       log_level: "INFO"
-       max_retries: 3
-       timeout: 30
+   - Copy `.env.example` to `.env` and update the configuration:
+     ```
+     # OpenAI Configuration
+     OPENAI_API_KEY="your-api-key-here"
+     OPENAI_MODEL_NAME="gpt-3.5-turbo"
+
+     # Ollama Configuration (optional)
+     OLLAMA_BASE_URL="http://localhost:11434"
+     OLLAMA_MODEL_NAME="llama3"
+
+     # LLM Provider Selection
+     LLM_PROVIDER="OPENAI"  # or "OLLAMA" 
+
+     # Logging Configuration
+     LOG_LEVEL="INFO"  # DEBUG, INFO, WARNING, ERROR, CRITICAL
+     LOG_FILE="logs/crewai_llm.log"  # Path to log file, or empty for console only
      ```
 
 4. Run the system:
    ```bash
    # Start the backend service
    python src/main.py
-
-   # In a new terminal, start the frontend development server
-   cd frontend
-   npm install
-   npm run dev
    ```
 
-   The system will provide:
-   - Patient selection interface
-   - Patient file summary view
-   - Consultation request form
-   - Real-time communication assistance
-   - Speech-to-text input for consultations
-   - Automated documentation generation
-
-## Documentation
-
-- [System Architecture](docs/architecture.md): Detailed system design, component diagrams, and data flow
-- [CrewAI Implementation](docs/crewai.md): CrewAI framework integration, agent configuration, and best practices
-- [Testing Strategy](docs/testing.md): Comprehensive testing approach, examples, and guidelines
-- [Development Guidelines](docs/development.md): Code quality standards, testing procedures, and development workflow
+5. Run the test script:
+   ```bash
+   # Run the CrewAI LLM test script
+   python notebooks/run_crewai_llm.py
+   ```
 
 ## Project Structure
 
+The project is organized as follows:
+
 ```
-/project_root
-|-- src/                # Backend source code
-|   |-- agents/         # Agent implementations
-|   |-- tools/          # Tool implementations
-|   |-- main.py         # Backend entry point
-|-- frontend/           # Frontend application
-|   |-- src/            # React/Vue source code
-|   |-- public/         # Static assets
-|   |-- package.json    # Frontend dependencies
-|-- config/             # Configuration files
-|   |-- crew.yaml       # Agent and system configuration
-|   |-- crew.yaml.example
-|-- tests/              # Test suite
-|-- docs/               # Documentation
-|-- data/               # Example data
-|-- requirements.txt    # Python dependencies
-|-- README.md           # This file
+healthcare-aigent/
+├── config/                  # Configuration files
+├── data/                    # Data files
+├── docs/                    # Documentation
+├── notebooks/               # Jupyter notebooks and test scripts
+├── src/                     # Source code
+│   ├── agents.py            # Agent definitions
+│   ├── llm_config.py        # LLM configuration
+│   ├── main.py              # Main entry point
+│   ├── tasks.py             # Task definitions
+│   ├── utils.py             # Utility functions
+│   └── tools/               # Tool implementations
+├── tests/                   # Test files
+├── .env                     # Environment variables
+├── .env.example             # Example environment variables
+├── pyproject.toml           # Project metadata and dependencies
+├── requirements.txt         # Dependencies
+└── README.md                # Project documentation
+```
+
+## Logging Configuration
+
+The system uses Python's built-in logging module with configurable settings:
+
+- **Log Level**: Set the `LOG_LEVEL` environment variable to one of:
+  - `DEBUG`: Detailed information for debugging
+  - `INFO`: General information about program execution
+  - `WARNING`: Indicate a potential problem
+  - `ERROR`: A more serious problem
+  - `CRITICAL`: A critical problem that may prevent the program from running
+
+- **Log File**: Set the `LOG_FILE` environment variable to specify where logs should be written.
+  - If not set or empty, logs will only be output to the console.
+  - If set, logs will be written to both the console and the specified file.
+
+## LLM Configuration
+
+The system supports multiple LLM providers:
+
+- **OpenAI**: Requires an API key set in the `OPENAI_API_KEY` environment variable.
+- **Ollama**: Requires Ollama to be installed and running locally.
+- **Mocked LLM**: Used as a fallback when no other LLM is available.
+
+## Development
+
+### Adding New Features
+
+1. Create a new branch for your feature:
+   ```bash
+   git checkout -b feature/your-feature-name
+   ```
+
+2. Make your changes and commit them:
+   ```bash
+   git commit -m "Add your feature"
+   ```
+
+3. Push your branch and create a pull request:
+   ```bash
+   git push origin feature/your-feature-name
+   ```
+
+### Running Tests
+
+```bash
+# Run all tests
+pytest
+
+# Run tests with coverage
+pytest --cov=src
 ```
 
 ## License
 
-MIT License, see [LICENSE](LICENSE)
+This project is licensed under the MIT License - see the LICENSE file for details.
