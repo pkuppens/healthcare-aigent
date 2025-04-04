@@ -108,5 +108,5 @@ class TestLLMConfig:
     @patch.dict(os.environ, {"LLM_PROVIDER": "OPENAI", "OPENAI_API_KEY": "test-key", "OPENAI_MODEL_NAME": "gpt-3.5-turbo"})
     def test_get_llm_custom_temperature(self):
         """Test getting LLM with custom temperature."""
-        llm = get_llm(temperature=0.5)
-        assert llm.temperature == 0.5
+        llm = get_llm(temperature=CUSTOM_TEMPERATURE)
+        assert llm.temperature == CUSTOM_TEMPERATURE

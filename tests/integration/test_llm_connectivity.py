@@ -53,57 +53,24 @@ def test_custom_temperature():
     assert llm is not None
     assert llm.temperature == CUSTOM_TEMPERATURE
 
-    def test_openai_connectivity(self, mock_env_vars, monkeypatch):
-        """Test OpenAI connectivity."""
-        monkeypatch.setenv("LLM_PROVIDER", "OPENAI")
-
-        try:
-            llm = get_llm()
-            # Try a simple completion to test connectivity
-            response = llm.invoke("Hello, this is a test.")
-            assert response is not None
-            assert isinstance(response.content, str)
-        except Exception as e:
-            pytest.skip(f"OpenAI API not accessible: {e!s}")
-
-    def test_ollama_connectivity(self, mock_env_vars, monkeypatch):
-        """Test Ollama connectivity."""
-        monkeypatch.setenv("LLM_PROVIDER", "OLLAMA")
-
-        try:
-            # First check if Ollama server is running
-            response = requests.get("http://localhost:11434/api/tags")
-            if response.status_code != 200:
-                pytest.skip("Ollama server not running. Please start Ollama and try again.")
-
-            llm = get_llm()
-            # Try a simple completion to test connectivity
-            response = llm.invoke("Hello, this is a test.")
-            assert response is not None
-            assert isinstance(response.content, str)
-        except requests.exceptions.ConnectionError:
-            pytest.skip("Could not connect to Ollama. Is it running?")
-        except Exception as e:
-            pytest.skip(f"Ollama API error: {e!s}")
-
-    @patch("requests.get")
-    def test_ollama_connection_error(self, mock_get, mock_env_vars, monkeypatch):
-        """Test Ollama connection error handling."""
+@pytest.mark.integration
+def test_ollama_connection_error(mock_env_vars, monkeypatch):
+    """Test Ollama connection error handling."""
+    monkeypatch.setenv("LLM_PROVIDER", "OLLAMA")
+    with patch("requests.get") as mock_get:
         mock_get.side_effect = requests.exceptions.ConnectionError()
-        monkeypatch.setenv("LLM_PROVIDER", "OLLAMA")
-
         with pytest.warns(UserWarning, match="Could not connect to Ollama"):
             try:
                 get_llm()
             except Exception:
                 pass
 
-    @patch("langchain_openai.ChatOpenAI.invoke")
-    def test_openai_api_error(self, mock_invoke, mock_env_vars, monkeypatch):
-        """Test OpenAI API error handling."""
+@pytest.mark.integration
+def test_openai_api_error(mock_env_vars, monkeypatch):
+    """Test OpenAI API error handling."""
+    monkeypatch.setenv("LLM_PROVIDER", "OPENAI")
+    with patch("langchain_openai.ChatOpenAI.invoke") as mock_invoke:
         mock_invoke.side_effect = Exception("API Error")
-        monkeypatch.setenv("LLM_PROVIDER", "OPENAI")
-
         with pytest.warns(UserWarning, match="OpenAI API not accessible"):
             try:
                 get_llm()
