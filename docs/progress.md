@@ -22,10 +22,21 @@ A proof-of-concept multi-agent LLM system to support healthcare professionals in
 - **LLM Providers**: Support both OpenAI and Ollama
 - **Coding Standards**: 
   - Python: Ruff-compatible code style
-  - Markdown: Line wrapping at 132 characters
+  - Markdown: Line wrapping at 100 characters
   - Type hints: Required for all function parameters and return values
 - **Testing Strategy**: Comprehensive unit, integration, and LLM-specific tests
 - **Documentation**: Maintain detailed documentation for all components
+
+## File Management
+
+This progress file is designed to be updated throughout the development process. Cursor AI is explicitly allowed and encouraged to update this file when:
+- Completing coding tasks
+- Making new technical decisions
+- Identifying additional requirements
+- Adding new tasks or subtasks
+- Marking tasks as completed
+
+The file should be kept up-to-date to reflect the current state of the project and serve as a reference for future development.
 
 ## Completed Tasks
 
