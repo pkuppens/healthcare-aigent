@@ -24,18 +24,21 @@ This project aims to develop a healthcare multi-agent system that can assist hea
 ### Technical Decisions
 
 - **Programming Languages**: Python will be used as the primary programming language for the backend, JavaScript for the frontend.
-- **Framework**: Use CrewAI for agent orchestration
+- **Framework**: Use CrewAI for agent orchestration.
 - **LLM Providers**: Support at least OpenAI and Ollama, and stay flexible to adopt Gemini, Grok, Claude with MCP, etc.
 - **Coding Standards**: 
   - Python: Ruff-compatible code style
   - Markdown: Line wrapping at 100 characters
   - Type hints: Required for all function parameters and return values
-- **Testing Strategy**: Test driven development, with comprehensive unit, integration, and LLM-specific tests
+- **Architecture**: Modular architecture with clear separation of concerns
+- **Testing Strategy**: Test driven development, with comprehensive unit, integration, and LLM-specific tests, using Pytest
 - **Documentation**: Maintain detailed documentation for all components, update the documentation during development.
 
 ## Development Strategy
 
 Our development approach follows these key principles:
+
+### Task Management Strategy
 
 1. **One Task at a Time**: Focus on completing a single task before moving to the next to maintain clarity and progress.
 2. **Task Refinement and Breakdown**: Before implementation, tasks are broken down into smaller, manageable components with clear requirements.
@@ -43,21 +46,35 @@ Our development approach follows these key principles:
 4. **Documentation-First**: Update documentation as part of the development process, not as an afterthought.
 5. **Incremental Progress**: Make small, verifiable changes that build toward the larger goal.
 
+### Coding Strategy
+
+1. Define interfaces and base classes
+2. Implement core functionality
+3. Add tests for each component
+4. Integrate components
+5. Add fallback mechanisms
+6. Document the system
+
 This strategy ensures consistent progress, maintainable code, and clear documentation throughout the development process.
 
 ## File Management
 
-This progress file is designed to be updated throughout the development process. Cursor AI is explicitly allowed and encouraged to update this file when:
-- Completing coding tasks
+This progress file is designed to be updated throughout the development process.
+
+Cursor AI is explicitly allowed to make small updates to this file when:
+
 - Making new technical decisions
 - Identifying additional requirements
 - Adding new tasks or subtasks
+- Completing coding tasks
 - Marking tasks as completed
 
 The file should be kept up-to-date to reflect the current state of the project and serve as a reference for future development.
 Additions are welcome, rewrites should be limited, to keep reviewing and version control simple.
 
 ## Completed Tasks
+
+Keep the complete list of completed tasks here, only adding newly created tasks, and grouping tasks.
 
 - [x] Project initialization and repository setup
 - [x] Basic project structure defined
@@ -67,28 +84,38 @@ Additions are welcome, rewrites should be limited, to keep reviewing and version
   - [x] CrewAI implementation details
   - [x] Development guidelines
   - [x] Testing strategy
-- [x] Set up project structure
-- [x] Create initial documentation
+- [x] Define the LLM interface (BaseLLM)
+- [x] Implement OpenAI LLM adapter
+- [x] Implement Ollama LLM adapter
+- [x] Create LLM factory with provider selection logic
+- [x] Add configuration management for API keys and model parameters
+- [x] Implement fallback mechanism for LLM providers
+- [x] Create unit tests for LLM components
 
 ## In Progress
 
-- [ ] LLM configuration and factory pattern
-  - [ ] Define LLM interface and abstract base class
-  - [ ] Implement OpenAI LLM adapter
-  - [ ] Implement Ollama LLM adapter
-  - [ ] Create LLM factory with provider selection logic, including models per provider
-  - [ ] Add configuration management for API keys and model parameters
-  - [ ] Implement fallback mechanisms for when preferred LLM is unavailable
-  - [ ] Add unit tests for LLM components
-  - [ ] Document LLM configuration and usage
-- [ ] Implement agent communication protocol
-- [ ] Develop specialized agents for different healthcare domains
-- [ ] Create data preprocessing pipeline
-- [ ] Implement recommendation engine
-- [ ] Develop user interface
+Currently, there is no task in progress. Add a new task in progress when you are ready.
+The task description follows the following recommended structure:
+
+### Functional Description
+
+What does the task bring as business value to the project?
+
+### Acceptance Criteria
+
+When is the task considered 'done'?
+Explicitly mention out-of-scope items. Be complete.
+
+### Work Breakdown Structure/Subtasks
+
+List of tasks that must be completed by the task.
+Tasks are relatively small.
+Break the task in smaller tasks when more than 5-7 subtasks are created.
+
 
 ## Planned Tasks
 
+- [ ] Investigate if MCP (https://huggingface.co/blog/Kseniase/mcp) is better suited than CrewAI
 - [ ] Core agent implementation
   - [ ] Preprocessing agent
   - [ ] Language assessment agent
@@ -98,21 +125,23 @@ Additions are welcome, rewrites should be limited, to keep reviewing and version
 - [ ] Database interface and mock implementation
 - [ ] Agent collaboration workflows
 - [ ] Tool implementations
+- [ ] Implement database interface
+- [ ] Develop agent collaboration workflows
+- [ ] Create tool implementations:
   - [ ] Medical terminology tool
   - [ ] Context analyzer tool
   - [ ] Language analyzer tool
   - [ ] Literacy assessor tool
-- [ ] Testing framework setup
-- [ ] CI/CD pipeline configuration
-- [ ] Example use cases and demonstrations
+- [ ] Set up testing framework
+- [ ] Configure CI/CD pipeline
+- [ ] Provide example use cases
 
 ## Future Enhancements
-
-- [ ] Web interface for interaction
-- [ ] Integration with external healthcare systems
-- [ ] Advanced analytics and reporting
-- [ ] Custom agent training capabilities
-- [ ] Multi-language support expansion
+- Web interface for easy interaction
+- Integration with external healthcare systems
+- Advanced analytics for healthcare data
+- Custom agent training capabilities
+- Multi-language support
 
 ## Development Notes
 

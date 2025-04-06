@@ -52,7 +52,7 @@ class MockedLLM:
     def generate(self, prompts: list[str]) -> list[str]:
         """Mock implementation of generate method."""
         logger.info(f"MockedLLM.generate called with {len(prompts)} prompts")
-        return [f"Mocked response {i+1} to: {prompt}" for i, prompt in enumerate(prompts)]
+        return [f"Mocked response {i + 1} to: {prompt}" for i, prompt in enumerate(prompts)]
 
 
 def check_ollama_service(base_url: str = "http://localhost:11434") -> bool:
