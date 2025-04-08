@@ -1,9 +1,15 @@
 # Core dependencies
-crewai>=0.28.0
+crewai==0.108.0
 langchain>=0.1.0
 langchain-community>=0.0.10
 langchain-openai>=0.0.5
 pydantic>=2.0.0
+
+# LangFlow
+langflow
+fastapi
+uvicorn
+python-multipart
 
 # LLM providers
 openai>=1.0.0

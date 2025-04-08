@@ -24,6 +24,7 @@ This project aims to develop a healthcare multi-agent system that can assist hea
 ### Technical Decisions
 
 - **Programming Languages**: Python will be used as the primary programming language for the backend, JavaScript for the frontend.
+- **Python Version**: Python 3.12 is required due to compatibility issues with numpy in Python 3.13.
 - **Framework**: Use CrewAI for agent orchestration.
 - **LLM Providers**: Support at least OpenAI and Ollama, and stay flexible to adopt Gemini, Grok, Claude with MCP, etc.
 - **Coding Standards**: 
@@ -140,10 +141,11 @@ Out of scope:
 #### Work Breakdown Structure/Subtasks
 
 1. **Environment Setup**
-   - [ ] Install LangFlow and dependencies
-   - [ ] Configure local Ollama integration
-   - [ ] Set up development environment
-   - [ ] Create basic project structure
+   - [ ] Install LangFlow and dependencies, also in requirement.txt/pyproject.toml
+   - [ ] Configure local Ollama integration, test it, e.g. by asking the models programmatically,
+   - [ ] Ensure graceful error handling if Ollama isn't running
+   - [ ] Set up development environment and descriptions, e.g. how local workflows are stored
+   - [ ] Create basic project structure to add custom Agents, Data Stores, etc.
 
 2. **Data Layer Implementation**
    - [ ] Design mock patient data structure
@@ -158,10 +160,10 @@ Out of scope:
    - [ ] Add error handling and fallbacks
 
 4. **Workflow Implementation**
-   - [ ] Design basic LangFlow workflow diagram
+   - [ ] Design basic LangFlow workflow diagram, store as mermaid diagram in this repo
    - [ ] Implement patient data loading node
-   - [ ] Create preference-based routing logic
-   - [ ] Add text generation nodes
+   - [ ] Create preference-based routing logic, e.g. to compare basic output to adapted output
+   - [ ] Add text generation nodes: patient file prep summary, peer reports, patient reports
    - [ ] Implement output formatting
 
 5. **Testing and Validation**
@@ -173,7 +175,6 @@ Out of scope:
 6. **Documentation and Analysis**
    - [ ] Document setup process
    - [ ] Create workflow diagrams
-   - [ ] Write comparison with CrewAI
    - [ ] Prepare recommendation report
 
 ## Planned Tasks
