@@ -94,24 +94,66 @@ Keep the complete list of completed tasks here, only adding newly created tasks,
 
 ## In Progress
 
-Currently, there is no task in progress. Add a new task in progress when you are ready.
-The task description follows the following recommended structure:
+### LangFlow Proof-of-Concept Investigation
 
-### Functional Description
+#### Functional Description
+Evaluate LangFlow as an alternative to CrewAI for orchestrating our healthcare multi-agent system,
+focusing on its ability to handle local LLM integration, patient preference adaptation, and
+workflow management. The proof-of-concept will demonstrate how different patient preferences can
+lead to different communication outputs for the same medical information.
 
-What does the task bring as business value to the project?
+#### Acceptance Criteria
+- Working proof-of-concept that uses LangFlow to orchestrate a simple healthcare communication workflow
+- Integration with local Ollama LLMs for text generation
+- Mock patient database with preference settings
+- Demonstration of preference-based output adaptation
+- Decision recommendation based on technical feasibility and maintainability
 
-### Acceptance Criteria
+Out of scope:
+- Production-ready implementation
+- Integration with real healthcare systems
+- Complex multi-agent interactions
+- Performance optimization
+- Security hardening
 
-When is the task considered 'done'?
-Explicitly mention out-of-scope items. Be complete.
+#### Work Breakdown Structure/Subtasks
 
-### Work Breakdown Structure/Subtasks
+1. **Environment Setup**
+   - [ ] Install LangFlow and dependencies
+   - [ ] Configure local Ollama integration
+   - [ ] Set up development environment
+   - [ ] Create basic project structure
 
-List of tasks that must be completed by the task.
-Tasks are relatively small.
-Break the task in smaller tasks when more than 5-7 subtasks are created.
+2. **Data Layer Implementation**
+   - [ ] Design mock patient data structure
+   - [ ] Create sample patient records with preferences
+   - [ ] Implement simple file-based storage
+   - [ ] Add preference management functions
 
+3. **LLM Integration**
+   - [ ] Configure Ollama connection in LangFlow
+   - [ ] Create prompt templates for different communication styles
+   - [ ] Implement basic text generation flows
+   - [ ] Add error handling and fallbacks
+
+4. **Workflow Implementation**
+   - [ ] Design basic LangFlow workflow diagram
+   - [ ] Implement patient data loading node
+   - [ ] Create preference-based routing logic
+   - [ ] Add text generation nodes
+   - [ ] Implement output formatting
+
+5. **Testing and Validation**
+   - [ ] Create test cases with different patient preferences
+   - [ ] Implement basic validation checks
+   - [ ] Document test results
+   - [ ] Compare outputs for different preferences
+
+6. **Documentation and Analysis**
+   - [ ] Document setup process
+   - [ ] Create workflow diagrams
+   - [ ] Write comparison with CrewAI
+   - [ ] Prepare recommendation report
 
 ## Planned Tasks
 
