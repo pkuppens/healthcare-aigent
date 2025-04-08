@@ -42,6 +42,27 @@ Our development approach follows these key principles:
 
 1. **One Task at a Time**: Focus on completing a single task before moving to the next to maintain clarity and progress.
 2. **Task Refinement and Breakdown**: Before implementation, tasks are broken down into smaller, manageable components with clear requirements.
+   Each task in progress should follow this template:
+   ```markdown
+   ### Task Name
+
+   #### Functional Description
+   What does the task bring as business value to the project?
+   Focus on the concrete outcomes and benefits.
+
+   #### Acceptance Criteria
+   When is the task considered 'done'?
+   - List specific, measurable criteria
+   - Include quality requirements
+   - Explicitly mention out-of-scope items
+   - Be complete and unambiguous
+
+   #### Work Breakdown Structure/Subtasks
+   Break down into 4-6 main categories, each with 3-5 specific subtasks:
+   1. **Category Name**
+      - [ ] Specific subtask
+      - [ ] Another subtask
+   ```
 3. **Test-Driven Development**: Write tests before implementing functionality to ensure code meets requirements and maintains quality.
 4. **Documentation-First**: Update documentation as part of the development process, not as an afterthought.
 5. **Incremental Progress**: Make small, verifiable changes that build toward the larger goal.
