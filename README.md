@@ -50,14 +50,14 @@ This proof-of-concept uses simulated data and mocked components to demonstrate t
 2. Set up the environment:
    ```bash
    # Create and activate virtual environment
-   python -m venv venv
+   python -m venv .venv
    # On Windows:
-   venv\Scripts\activate
+   .venv\Scripts\activate
    # On Unix/MacOS:
-   source venv/bin/activate
+   source .venv/bin/activate
 
-   # Install dependencies
-   pip install -r requirements.txt
+   # Install dependencies using uv
+   uv pip install -e ".[dev]"
    ```
 
 3. Configure the system:
@@ -77,6 +77,9 @@ This proof-of-concept uses simulated data and mocked components to demonstrate t
      # Logging Configuration
      LOG_LEVEL="INFO"  # DEBUG, INFO, WARNING, ERROR, CRITICAL
      LOG_FILE="logs/crewai_llm.log"  # Path to log file, or empty for console only
+     
+     # UV Configuration
+     UV_PYTHON=3.11  # Set your Python version
      ```
 
 4. Run the system:
@@ -166,6 +169,22 @@ pytest
 
 # Run tests with coverage
 pytest --cov=src
+```
+
+### Package Management with UV
+
+This project uses `uv` for package management. To update dependencies:
+
+```bash
+# Update all dependencies
+uv pip install -e ".[dev]" --upgrade
+
+# Install a new package
+uv pip install package-name
+
+# Add a new dependency to the project
+uv pip install package-name
+# Then update pyproject.toml with the new dependency
 ```
 
 ## License

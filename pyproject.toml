@@ -7,7 +7,7 @@ name = "healthcare-aigent"
 version = "0.1.0"
 description = "Healthcare AI Agent System"
 readme = "README.md"
-requires-python = ">=3.10,<3.13"
+requires-python = ">=3.11,<3.13"
 license = { file = "LICENSE" }
 authors = [
     { name = "Pieter Kuppens", email = "pieter.kuppens@gmail.com" }
@@ -44,7 +44,7 @@ docs = [
 
 [tool.ruff]
 line-length = 132
-target-version = "py310"
+target-version = "py311"
 
 [tool.ruff.lint]
 select = ["E", "F", "B", "I", "N", "UP", "PL", "RUF"]
@@ -53,4 +53,7 @@ ignore = ["E501", "E203"]
 [tool.ruff.format]
 quote-style = "double"
 indent-style = "space"
-line-ending = "auto" 
+line-ending = "auto"
+
+[tool.uv]
+python = "3.11" 
