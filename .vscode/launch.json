@@ -11,7 +11,8 @@
             "justMyCode": false,
             "env": {
                 "PYTHONPATH": "${workspaceFolder}"
-            }
+            },
+            "python": "${workspaceFolder}/.venv/Scripts/python.exe"
         },
         {
             "name": "Python: Debug Current Test File",
@@ -23,7 +24,8 @@
             "justMyCode": false,
             "env": {
                 "PYTHONPATH": "${workspaceFolder}"
-            }
+            },
+            "python": "${workspaceFolder}/.venv/Scripts/python.exe"
         },
         {
             "name": "Python: Debug All Tests",
@@ -40,7 +42,8 @@
             "justMyCode": false,
             "env": {
                 "PYTHONPATH": "${workspaceFolder}"
-            }
+            },
+            "python": "${workspaceFolder}/.venv/Scripts/python.exe"
         }
     ]
 } 
