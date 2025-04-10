@@ -5,6 +5,8 @@ from typing import Any
 
 from langchain.callbacks.manager import CallbackManagerForLLMRun
 from langchain_openai import ChatOpenAI
+from langchain.schema import BaseMessage
+from pydantic import SecretStr
 
 from src.llm.base import BaseLLM
 
@@ -22,15 +24,16 @@ class OpenAILLM(BaseLLM):
         temperature: float = 0.7,
         api_key: str | None = None,
         **kwargs: Any,
-    ):
+    ) -> None:
         """Initialize the OpenAI LLM.
 
         Args:
-            model_name: The name of the OpenAI model to use
-            temperature: The temperature setting for the model
-            api_key: The OpenAI API key (if not provided, will be read from environment)
+            model_name: The name of the model to use
+            temperature: The temperature to use for generation
+            api_key: The OpenAI API key. If not provided, will be read from environment
             **kwargs: Additional arguments to pass to the ChatOpenAI constructor
         """
+        super().__init__(model_name=model_name, temperature=temperature)
         self._model_name = model_name
         self._temperature = temperature
         self._api_key = api_key or os.getenv("OPENAI_API_KEY")
@@ -41,7 +44,7 @@ class OpenAILLM(BaseLLM):
         self._llm = ChatOpenAI(
             model=model_name,
             temperature=temperature,
-            openai_api_key=self._api_key,
+            api_key=SecretStr(self._api_key),
             **kwargs,
         )
 
@@ -52,18 +55,43 @@ class OpenAILLM(BaseLLM):
         run_manager: CallbackManagerForLLMRun | None = None,
         **kwargs: Any,
     ) -> str:
-        """Call the OpenAI LLM with the given prompt.
+        """Call the LLM with the given prompt.
 
         Args:
             prompt: The prompt to send to the LLM
-            stop: Optional list of strings to stop generation
-            run_manager: Optional callback manager for the run
+            stop: Optional list of stop sequences
+            run_manager: Optional callback manager
             **kwargs: Additional arguments to pass to the LLM
 
         Returns:
             The generated text from the LLM
         """
-        return self._llm.invoke(prompt).content
+        response = self._llm.invoke(prompt)
+        if isinstance(response, str):
+            return response
+        return str(response.content)
+
+    def __call__(self, prompt: str | list[BaseMessage], **kwargs: Any) -> str:
+        """Call the LLM with the given prompt.
+
+        Args:
+            prompt: The prompt to send to the LLM
+            **kwargs: Additional arguments to pass to the LLM
+
+        Returns:
+            The generated text from the LLM
+
+        Raises:
+            ValueError: If the prompt is not a string or list of BaseMessage objects
+        """
+        if isinstance(prompt, str):
+            return self._call(prompt, **kwargs)
+        elif isinstance(prompt, list) and all(isinstance(msg, BaseMessage) for msg in prompt):
+            # Convert messages to a single string, ensuring each message's content is a string
+            text = "\n".join(str(msg.content) for msg in prompt)
+            return self._call(text, **kwargs)
+        else:
+            raise ValueError("Prompt must be a string or a list of BaseMessage objects")
 
     def _llm_type(self) -> str:
         """Return type of LLM.
@@ -106,6 +134,6 @@ class OpenAILLM(BaseLLM):
         """Get the provider name for the LLM.
 
         Returns:
-            The provider name
+            The provider name (OpenAI)
         """
         return "openai"

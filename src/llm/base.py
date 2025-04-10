@@ -1,7 +1,7 @@
 """Base classes for LLM implementations."""
 
 from abc import ABC, abstractmethod
-from typing import Any
+from typing import Any, cast
 
 from langchain.callbacks.manager import CallbackManagerForLLMRun
 from langchain.schema import BaseMessage, LLMResult
@@ -14,6 +14,22 @@ class BaseLLM(ABC):
     It extends the LangChain BaseLLM class to ensure compatibility with the
     LangChain ecosystem while providing a consistent interface for our application.
     """
+
+    def __init__(
+        self,
+        model_name: str,
+        temperature: float = 0.7,
+        **kwargs: Any,
+    ):
+        """Initialize the base LLM.
+
+        Args:
+            model_name: The name of the model to use
+            temperature: The temperature setting for the model
+            **kwargs: Additional arguments to pass to the LLM constructor
+        """
+        self._model_name = model_name
+        self._temperature = temperature
 
     @abstractmethod
     def _call(
@@ -46,34 +62,31 @@ class BaseLLM(ABC):
         pass
 
     @property
-    @abstractmethod
     def temperature(self) -> float:
         """Get the temperature setting for the LLM.
 
         Returns:
             The temperature value
         """
-        pass
+        return self._temperature
 
     @temperature.setter
-    @abstractmethod
     def temperature(self, value: float) -> None:
         """Set the temperature for the LLM.
 
         Args:
             value: The temperature value to set
         """
-        pass
+        self._temperature = value
 
     @property
-    @abstractmethod
     def model_name(self) -> str:
         """Get the model name for the LLM.
 
         Returns:
             The model name
         """
-        pass
+        return self._model_name
 
     @property
     @abstractmethod
@@ -127,12 +140,15 @@ class BaseLLM(ABC):
 
         Returns:
             The generated text from the LLM
+
+        Raises:
+            ValueError: If the prompt is not a string or list of BaseMessage objects
         """
         if isinstance(prompt, str):
             return self._call(prompt, **kwargs)
         elif isinstance(prompt, list) and all(isinstance(msg, BaseMessage) for msg in prompt):
-            # Convert messages to a single string
-            text = "\n".join(msg.content for msg in prompt)
+            # Convert messages to a single string, ensuring each message's content is a string
+            text = "\n".join(str(msg.content) for msg in prompt)
             return self._call(text, **kwargs)
         else:
             raise ValueError("Prompt must be a string or a list of BaseMessage objects")

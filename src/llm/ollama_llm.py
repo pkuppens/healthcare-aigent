@@ -103,6 +103,6 @@ class OllamaLLM(BaseLLM):
         """Get the provider name for the LLM.
 
         Returns:
-            The provider name
+            The provider name (Ollama)
         """
         return "ollama"

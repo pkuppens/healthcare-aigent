@@ -2,8 +2,9 @@
 
 import logging
 import os
+from dataclasses import dataclass
 from enum import Enum
-from typing import ClassVar
+from typing import ClassVar, TypedDict
 
 from src.llm.base import BaseLLM
 from src.llm.ollama_llm import OllamaLLM
@@ -29,11 +30,19 @@ class LLMProvider(Enum):
     OLLAMA = "ollama"
 
 
+class LLMConfig(TypedDict):
+    """Configuration for an LLM type."""
+
+    provider: str
+    model: str
+    temperature: float
+
+
 class LLMFactory:
     """Factory for creating LLM instances."""
 
     # Map of LLM types to their implementations
-    _llm_type_map: ClassVar[dict[LLMType, dict[str, str | float]]] = {
+    _llm_type_map: ClassVar[dict[LLMType, LLMConfig]] = {
         LLMType.LOCAL_FAST: {"provider": "ollama", "model": "llama3", "temperature": 0.7},
         LLMType.LOCAL_ACCURATE: {"provider": "ollama", "model": "llama3:70b", "temperature": 0.5},
         LLMType.CLOUD_FAST: {"provider": "openai", "model": "gpt-3.5-turbo", "temperature": 0.7},
@@ -57,6 +66,9 @@ class LLMFactory:
 
         Returns:
             Configured LLM instance
+
+        Raises:
+            ValueError: If the LLM type is not supported
         """
         if llm_type not in cls._llm_type_map:
             raise ValueError(f"Unsupported LLM type: {llm_type}")
@@ -85,6 +97,9 @@ class LLMFactory:
 
         Returns:
             Configured LLM instance
+
+        Raises:
+            ValueError: If the provider is not supported
         """
         provider = provider.lower()
 
@@ -94,6 +109,7 @@ class LLMFactory:
         llm_class = cls._provider_map[provider]
 
         try:
+            # Both OpenAILLM and OllamaLLM expect model_name and temperature
             return llm_class(model_name=model, temperature=temperature, **kwargs)
         except Exception as e:
             logger.error(f"Error creating {provider} LLM: {e}")
