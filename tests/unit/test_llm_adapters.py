@@ -6,6 +6,7 @@ correctly initialize, configure, and interact with their respective LLM backends
 """
 
 import os
+import uuid
 from unittest.mock import MagicMock, patch
 
 import pytest
@@ -115,7 +116,8 @@ class TestOpenAILLM:
 
         llm = OpenAILLM(model_name="gpt-3.5-turbo", api_key="test-key")
         stop = ["stop"]
-        run_manager = CallbackManagerForLLMRun(run_id="test-run")
+        test_run_id = uuid.uuid4()
+        run_manager = CallbackManagerForLLMRun(run_id=test_run_id, handlers=[], inheritable_handlers=[])
         result = llm._call("Test prompt", stop=stop, run_manager=run_manager)
 
         mock_instance.invoke.assert_called_once_with("Test prompt")
@@ -223,7 +225,8 @@ class TestOllamaLLM:
 
         llm = OllamaLLM(model_name="llama3", base_url="http://localhost:11434")
         stop = ["stop"]
-        run_manager = CallbackManagerForLLMRun(run_id="test-run")
+        test_run_id = uuid.uuid4()
+        run_manager = CallbackManagerForLLMRun(run_id=test_run_id, handlers=[], inheritable_handlers=[])
         result = llm._call("Test prompt", stop=stop, run_manager=run_manager)
 
         mock_instance.invoke.assert_called_once_with("Test prompt")
