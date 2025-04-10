@@ -79,6 +79,18 @@ pytest
 pytest -m unit      # Unit tests only
 pytest -m integration  # Integration tests only
 pytest -m llm       # LLM tests only
+
+# Skip integration tests that require external services
+pytest -m "not integration"
+
+# Run tests with detailed output
+pytest -v
+
+# Run tests and stop on first failure
+pytest -x
+
+# Run tests and show extra test summary info
+pytest -ra
 ```
 
 ### Test Coverage
@@ -88,9 +100,30 @@ pytest --cov=src --cov-report=html
 
 # View coverage in terminal
 pytest --cov=src --cov-report=term-missing
+
+# Generate coverage report with branch coverage
+pytest --cov=src --cov-branch --cov-report=html
+```
+
+### Debugging Tests
+
+1. Using VSCode:
+   - Set breakpoints in your test files
+   - Use the "Python: Debug Tests" launch configuration
+   - Use the "Python: Debug Current Test File" for focused debugging
+   - Use the "Python: Debug All Tests" for full test suite debugging
+
+2. Using pytest directly:
+```bash
+# Run tests with debugger
+pytest --pdb
+
+# Run specific test with debugger
+pytest path/to/test_file.py::test_function --pdb
 ```
 
 ### Test Configuration
+
 The project uses `pytest.ini` for test configuration:
 ```ini
 [pytest]
@@ -149,15 +182,79 @@ def test_llm_connectivity():
 - Use descriptive test names
 - Group related tests in classes
 - Use fixtures for common setup
+- Follow the Arrange-Act-Assert pattern
+- Use meaningful test data
+- Document test dependencies
 
 ### Test Data
 - Use realistic test data
 - Include edge cases
 - Mock external dependencies
 - Clean up test data after tests
+- Use factories for test data generation
+- Consider using faker for realistic data
+- Maintain separate test data files
 
 ### Test Maintenance
 - Update tests when code changes
 - Remove obsolete tests
 - Keep test documentation current
-- Monitor test performance 
+- Monitor test performance
+- Regular test suite maintenance
+- Version control test data
+- Document test environment requirements
+
+### Additional Considerations
+
+#### Performance Testing
+- Response time benchmarks
+- Resource usage monitoring
+- Load testing scenarios
+- Scalability testing
+- Memory leak detection
+
+#### Security Testing
+- Input validation
+- Authentication testing
+- Authorization testing
+- Data encryption
+- Secure communication
+- API security
+
+#### Accessibility Testing
+- WCAG compliance
+- Screen reader compatibility
+- Keyboard navigation
+- Color contrast
+- Text scaling
+
+#### Local Development
+- Fast feedback loops
+- Incremental testing
+- Test isolation
+- Mock external services
+- Local service containers
+
+#### CI/CD Integration
+- Automated test runs
+- Test result reporting
+- Coverage thresholds
+- Performance benchmarks
+- Security scanning
+- Dependency updates
+
+#### Test Environment
+- Environment variables
+- Service dependencies
+- Database setup
+- Network configuration
+- Resource cleanup
+- Logging configuration
+
+#### Documentation
+- Test purpose
+- Setup instructions
+- Dependencies
+- Expected outcomes
+- Edge cases
+- Troubleshooting 

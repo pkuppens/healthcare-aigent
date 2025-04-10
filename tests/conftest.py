@@ -4,6 +4,19 @@ import os
 from unittest.mock import patch
 
 import pytest
+import requests
+
+# Constants
+HTTP_OK = 200
+
+
+def is_service_available(url: str, timeout: int = 5) -> bool:
+    """Check if a service is available."""
+    try:
+        response = requests.get(url, timeout=timeout)
+        return response.status_code == HTTP_OK
+    except (requests.RequestException, TimeoutError):
+        return False
 
 
 @pytest.fixture
@@ -48,3 +61,43 @@ def mock_patient_data():
             "last_visit": "2024-01-15",
         }
     }
+
+
+@pytest.fixture
+def ollama_available():
+    """Check if Ollama service is available."""
+    return is_service_available("http://localhost:11434")
+
+
+@pytest.fixture
+def openai_available():
+    """Check if OpenAI API is available."""
+    api_key = os.getenv("OPENAI_API_KEY", "")
+    return bool(api_key and api_key.strip())
+
+
+def pytest_configure(config):
+    """Configure pytest with custom markers."""
+    config.addinivalue_line(
+        "markers",
+        "integration: mark test as integration test requiring external services",
+    )
+    config.addinivalue_line(
+        "markers",
+        "llm: mark test as requiring LLM access",
+    )
+    config.addinivalue_line(
+        "markers",
+        "slow: mark test as slow running",
+    )
+
+
+def pytest_runtest_setup(item):
+    """Skip tests based on service availability."""
+    if "integration" in item.keywords:
+        if not (ollama_available() or openai_available()):
+            pytest.skip("No LLM service available for integration tests")
+
+    if "llm" in item.keywords:
+        if not openai_available():
+            pytest.skip("OpenAI API not available")
