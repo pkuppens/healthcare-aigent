@@ -1,4 +1,9 @@
-"""Unit tests for LLM adapters."""
+"""Unit tests for LLM adapters.
+
+This module contains tests for the LLM adapter classes that provide a unified interface
+for different LLM providers (OpenAI and Ollama). The tests verify that the adapters
+correctly initialize, configure, and interact with their respective LLM backends.
+"""
 
 import os
 from unittest.mock import MagicMock, patch
@@ -16,11 +21,22 @@ TEST_TEMPERATURE_HIGH = 0.9
 
 
 class TestOpenAILLM:
-    """Test cases for the OpenAI LLM adapter."""
+    """Test cases for the OpenAI LLM adapter.
+
+    These tests verify that the OpenAILLM adapter correctly initializes and interacts
+    with the OpenAI API through the langchain ChatOpenAI class.
+    """
 
     @patch("langchain_openai.ChatOpenAI")
     def test_initialization_with_api_key(self, mock_chat_openai):
-        """Test initialization with API key."""
+        """Test initialization with explicit API key.
+
+        Verifies that:
+        1. The adapter correctly initializes with a provided API key
+        2. The model name and temperature are set correctly
+        3. The provider is correctly identified as 'openai'
+        4. The underlying ChatOpenAI is initialized with the correct parameters
+        """
         mock_instance = MagicMock()
         mock_chat_openai.return_value = mock_instance
 
@@ -34,7 +50,14 @@ class TestOpenAILLM:
     @patch.dict(os.environ, {"OPENAI_API_KEY": "env-key"})
     @patch("langchain_openai.ChatOpenAI")
     def test_initialization_with_env_api_key(self, mock_chat_openai):
-        """Test initialization with API key from environment."""
+        """Test initialization with API key from environment variables.
+
+        Verifies that:
+        1. The adapter correctly initializes using an API key from environment variables
+        2. The model name and temperature are set correctly
+        3. The provider is correctly identified as 'openai'
+        4. The underlying ChatOpenAI is initialized with the correct parameters
+        """
         mock_instance = MagicMock()
         mock_chat_openai.return_value = mock_instance
 
@@ -48,14 +71,25 @@ class TestOpenAILLM:
         assert llm.provider == "openai"
 
     def test_initialization_without_api_key(self):
-        """Test initialization without API key."""
+        """Test initialization without API key.
+
+        Verifies that:
+        1. A ValueError is raised when no API key is provided
+        2. The error message clearly indicates that an API key is required
+        """
         with patch.dict(os.environ, {}, clear=True):
             with pytest.raises(ValueError, match="OpenAI API key not provided"):
                 OpenAILLM()
 
     @patch("langchain_openai.ChatOpenAI")
     def test_call_method(self, mock_chat_openai):
-        """Test the _call method."""
+        """Test the _call method for basic text generation.
+
+        Verifies that:
+        1. The adapter correctly forwards the prompt to the underlying LLM
+        2. The response from the LLM is correctly returned
+        3. The invoke method is called with the correct parameters
+        """
         mock_instance = MagicMock()
         mock_instance.invoke.return_value.content = "Test response"
         mock_chat_openai.return_value = mock_instance
@@ -68,7 +102,13 @@ class TestOpenAILLM:
 
     @patch("langchain_openai.ChatOpenAI")
     def test_call_method_with_stop_and_run_manager(self, mock_chat_openai):
-        """Test the _call method with stop and run_manager."""
+        """Test the _call method with stop sequences and run manager.
+
+        Verifies that:
+        1. The adapter correctly handles stop sequences
+        2. The adapter correctly handles run manager callbacks
+        3. The response from the LLM is correctly returned
+        """
         mock_instance = MagicMock()
         mock_instance.invoke.return_value.content = "Test response"
         mock_chat_openai.return_value = mock_instance
@@ -83,7 +123,12 @@ class TestOpenAILLM:
 
     @patch("langchain_openai.ChatOpenAI")
     def test_temperature_setter(self, mock_chat_openai):
-        """Test the temperature setter."""
+        """Test the temperature setter method.
+
+        Verifies that:
+        1. The temperature can be changed after initialization
+        2. The new temperature is correctly applied to both the adapter and the underlying LLM
+        """
         mock_instance = MagicMock()
         mock_chat_openai.return_value = mock_instance
 
@@ -95,11 +140,22 @@ class TestOpenAILLM:
 
 
 class TestOllamaLLM:
-    """Test cases for the Ollama LLM adapter."""
+    """Test cases for the Ollama LLM adapter.
+
+    These tests verify that the OllamaLLM adapter correctly initializes and interacts
+    with the Ollama API through the langchain ChatOllama class.
+    """
 
     @patch("langchain_community.chat_models.ChatOllama")
     def test_initialization_with_base_url(self, mock_chat_ollama):
-        """Test initialization with base URL."""
+        """Test initialization with explicit base URL.
+
+        Verifies that:
+        1. The adapter correctly initializes with a provided base URL
+        2. The model name and temperature are set correctly
+        3. The provider is correctly identified as 'ollama'
+        4. The underlying ChatOllama is initialized with the correct parameters
+        """
         mock_instance = MagicMock()
         mock_chat_ollama.return_value = mock_instance
 
@@ -113,7 +169,14 @@ class TestOllamaLLM:
     @patch.dict(os.environ, {"OLLAMA_BASE_URL": "http://env:11434"})
     @patch("langchain_community.chat_models.ChatOllama")
     def test_initialization_with_env_base_url(self, mock_chat_ollama):
-        """Test initialization with base URL from environment."""
+        """Test initialization with base URL from environment variables.
+
+        Verifies that:
+        1. The adapter correctly initializes using a base URL from environment variables
+        2. The model name and temperature are set correctly
+        3. The provider is correctly identified as 'ollama'
+        4. The underlying ChatOllama is initialized with the correct parameters
+        """
         mock_instance = MagicMock()
         mock_chat_ollama.return_value = mock_instance
 
@@ -128,7 +191,13 @@ class TestOllamaLLM:
 
     @patch("langchain_community.chat_models.ChatOllama")
     def test_call_method(self, mock_chat_ollama):
-        """Test the _call method."""
+        """Test the _call method for basic text generation.
+
+        Verifies that:
+        1. The adapter correctly forwards the prompt to the underlying LLM
+        2. The response from the LLM is correctly returned
+        3. The invoke method is called with the correct parameters
+        """
         mock_instance = MagicMock()
         mock_instance.invoke.return_value.content = "Test response"
         mock_chat_ollama.return_value = mock_instance
@@ -141,7 +210,13 @@ class TestOllamaLLM:
 
     @patch("langchain_community.chat_models.ChatOllama")
     def test_call_method_with_stop_and_run_manager(self, mock_chat_ollama):
-        """Test the _call method with stop and run_manager."""
+        """Test the _call method with stop sequences and run manager.
+
+        Verifies that:
+        1. The adapter correctly handles stop sequences
+        2. The adapter correctly handles run manager callbacks
+        3. The response from the LLM is correctly returned
+        """
         mock_instance = MagicMock()
         mock_instance.invoke.return_value.content = "Test response"
         mock_chat_ollama.return_value = mock_instance
@@ -156,7 +231,12 @@ class TestOllamaLLM:
 
     @patch("langchain_community.chat_models.ChatOllama")
     def test_temperature_setter(self, mock_chat_ollama):
-        """Test the temperature setter."""
+        """Test the temperature setter method.
+
+        Verifies that:
+        1. The temperature can be changed after initialization
+        2. The new temperature is correctly applied to both the adapter and the underlying LLM
+        """
         mock_instance = MagicMock()
         mock_chat_ollama.return_value = mock_instance
 
