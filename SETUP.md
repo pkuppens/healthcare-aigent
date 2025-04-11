@@ -141,6 +141,45 @@ This script will:
 3. Run the tests in each environment
 4. Provide a summary of the results
 
+## Using UV with VS Code
+
+To configure VS Code to use UV instead of pip:
+
+1. Install the UV package manager if you haven't already:
+   ```bash
+   pip install uv
+   ```
+
+2. Configure VS Code to use UV as the package manager:
+   - Open VS Code settings (File > Preferences > Settings)
+   - Search for "python.packageManager"
+   - Set it to "uv"
+
+3. When creating a new virtual environment, VS Code will now use UV instead of pip.
+
+4. For existing projects, you can manually install dependencies with UV:
+   ```bash
+   uv pip install -e ".[dev]"
+   ```
+
+### Troubleshooting UV with VS Code
+
+If you encounter issues with VS Code using UV:
+
+1. **VS Code doesn't recognize UV**: Make sure UV is installed and in your PATH. You can verify this by running `uv --version` in a terminal.
+
+2. **Package installation fails**: Try running the installation command manually in a terminal to see the error message.
+
+3. **VS Code still uses pip**: Check your VS Code settings to ensure `python.packageManager` is set to `uv`. You may need to restart VS Code after changing this setting.
+
+4. **Virtual environment issues**: If VS Code creates a virtual environment with pip instead of UV, you can manually create a virtual environment and then point VS Code to it:
+   ```bash
+   python -m venv .venv
+   .venv\Scripts\activate  # or source .venv/bin/activate on Unix/MacOS
+   uv pip install -e ".[dev]"
+   ```
+   Then in VS Code, select the Python interpreter from the `.venv` directory.
+
 ## Troubleshooting
 
 If you encounter any issues during setup:

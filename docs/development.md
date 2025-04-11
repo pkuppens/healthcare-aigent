@@ -32,6 +32,56 @@ repos:
 - `.ruff.toml`: Ruff linting and formatting rules
 - `mypy.ini`: Type checking configuration
 
+## Package Management with UV
+
+This project uses `uv` for package management, which is significantly faster than traditional `pip`. UV is configured in the following ways:
+
+1. **Project Configuration**: The `pyproject.toml` file includes UV configuration:
+   ```toml
+   [tool.uv]
+   required-version = ">=0.1.0"
+   resolution = "highest"
+   compile-bytecode = true
+   ```
+
+2. **Environment Variables**: The `.env` file includes:
+   ```
+   UV_PYTHON=3.11
+   ```
+
+3. **Global Configuration**: A `.uvrc` file in the project root:
+   ```
+   [uv]
+   python = "3.11"
+   ```
+
+4. **VS Code Configuration**: The `.vscode/settings.json` file includes:
+   ```json
+   "python.packageManager": "uv",
+   "python.terminal.activateEnvironment": true
+   ```
+
+### Using UV with VS Code
+
+To configure VS Code to use UV instead of pip:
+
+1. Install the UV package manager if you haven't already:
+   ```bash
+   pip install uv
+   ```
+
+2. Configure VS Code to use UV as the package manager:
+   - Open VS Code settings (File > Preferences > Settings)
+   - Search for "python.packageManager"
+   - Set it to "uv"
+
+3. When creating a new virtual environment, VS Code will now use UV instead of pip.
+
+4. For existing projects, you can manually install dependencies with UV:
+   ```bash
+   uv pip install -e ".[dev]"
+   ```
+
 ## Testing
 
 ### Running Tests
@@ -73,12 +123,11 @@ See [Testing Strategy](testing.md) for detailed information about:
 1. **Setup**
    ```bash
    # Create virtual environment
-   python -m venv venv
-   source venv/bin/activate  # or venv\Scripts\activate on Windows
+   python -m venv .venv
+   source .venv/bin/activate  # or venv\Scripts\activate on Windows
 
-   # Install dependencies
-   pip install -r requirements.txt
-   pip install -r requirements-dev.txt  # Development dependencies
+   # Install dependencies with UV
+   uv pip install -e ".[dev]"
    ```
 
 2. **Code Changes**
@@ -132,4 +181,5 @@ See [Testing Strategy](testing.md) for detailed information about:
 - [Python Style Guide](https://peps.python.org/pep-0008/)
 - [Ruff Documentation](https://beta.ruff.rs/docs/)
 - [pytest Documentation](https://docs.pytest.org/)
-- [mypy Documentation](https://mypy.readthedocs.io/) 
+- [mypy Documentation](https://mypy.readthedocs.io/)
+- [UV Documentation](https://github.com/astral-sh/uv) 

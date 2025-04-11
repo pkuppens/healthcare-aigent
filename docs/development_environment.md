@@ -9,7 +9,9 @@ This project uses `uv` for package management, which is significantly faster tha
 1. **Project Configuration**: The `pyproject.toml` file includes UV configuration:
    ```toml
    [tool.uv]
-   python = "3.11"
+   required-version = ">=0.1.0"
+   resolution = "highest"
+   compile-bytecode = true
    ```
 
 2. **Environment Variables**: The `.env` file includes:
@@ -22,6 +24,51 @@ This project uses `uv` for package management, which is significantly faster tha
    [uv]
    python = "3.11"
    ```
+
+4. **VS Code Configuration**: The `.vscode/settings.json` file includes:
+   ```json
+   "python.packageManager": "uv",
+   "python.terminal.activateEnvironment": true
+   ```
+
+### Using UV with VS Code
+
+To configure VS Code to use UV instead of pip:
+
+1. Install the UV package manager if you haven't already:
+   ```bash
+   pip install uv
+   ```
+
+2. Configure VS Code to use UV as the package manager:
+   - Open VS Code settings (File > Preferences > Settings)
+   - Search for "python.packageManager"
+   - Set it to "uv"
+
+3. When creating a new virtual environment, VS Code will now use UV instead of pip.
+
+4. For existing projects, you can manually install dependencies with UV:
+   ```bash
+   uv pip install -e ".[dev]"
+   ```
+
+### Troubleshooting UV with VS Code
+
+If you encounter issues with VS Code using UV:
+
+1. **VS Code doesn't recognize UV**: Make sure UV is installed and in your PATH. You can verify this by running `uv --version` in a terminal.
+
+2. **Package installation fails**: Try running the installation command manually in a terminal to see the error message.
+
+3. **VS Code still uses pip**: Check your VS Code settings to ensure `python.packageManager` is set to `uv`. You may need to restart VS Code after changing this setting.
+
+4. **Virtual environment issues**: If VS Code creates a virtual environment with pip instead of UV, you can manually create a virtual environment and then point VS Code to it:
+   ```bash
+   python -m venv .venv
+   .venv\Scripts\activate  # or source .venv/bin/activate on Unix/MacOS
+   uv pip install -e ".[dev]"
+   ```
+   Then in VS Code, select the Python interpreter from the `.venv` directory.
 
 ## Test Matrix
 

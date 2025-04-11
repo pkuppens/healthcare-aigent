@@ -25,5 +25,7 @@
             "path": "cmd.exe",
             "args": ["/K", ".venv\\Scripts\\activate.bat"]
         }
-    }
+    },
+    "python.packageManager": "uv",
+    "python.terminal.activateEnvironment": true
 }

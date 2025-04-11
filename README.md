@@ -173,7 +173,55 @@ pytest --cov=src
 
 ### Package Management with UV
 
-This project uses `uv` for package management. To update dependencies:
+This project uses `uv` for package management, which is significantly faster than traditional `pip`. UV is configured in the following ways:
+
+1. **Project Configuration**: The `pyproject.toml` file includes UV configuration:
+   ```toml
+   [tool.uv]
+   required-version = ">=0.1.0"
+   resolution = "highest"
+   compile-bytecode = true
+   ```
+
+2. **Environment Variables**: The `.env` file includes:
+   ```
+   UV_PYTHON=3.11
+   ```
+
+3. **Global Configuration**: A `.uvrc` file in the project root:
+   ```
+   [uv]
+   python = "3.11"
+   ```
+
+4. **VS Code Configuration**: The `.vscode/settings.json` file includes:
+   ```json
+   "python.packageManager": "uv",
+   "python.terminal.activateEnvironment": true
+   ```
+
+#### Using UV with VS Code
+
+To configure VS Code to use UV instead of pip:
+
+1. Install the UV package manager if you haven't already:
+   ```bash
+   pip install uv
+   ```
+
+2. Configure VS Code to use UV as the package manager:
+   - Open VS Code settings (File > Preferences > Settings)
+   - Search for "python.packageManager"
+   - Set it to "uv"
+
+3. When creating a new virtual environment, VS Code will now use UV instead of pip.
+
+4. For existing projects, you can manually install dependencies with UV:
+   ```bash
+   uv pip install -e ".[dev]"
+   ```
+
+#### Updating Dependencies
 
 ```bash
 # Update all dependencies
