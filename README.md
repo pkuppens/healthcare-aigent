@@ -79,7 +79,7 @@ This proof-of-concept uses simulated data and mocked components to demonstrate t
      LOG_FILE="logs/crewai_llm.log"  # Path to log file, or empty for console only
      
      # UV Configuration
-     UV_PYTHON=3.11  # Set your Python version
+     UV_PYTHON=3.11  # Recommended Python version for development
      ```
 
 4. Run the system:
@@ -234,6 +234,10 @@ uv pip install package-name
 uv pip install package-name
 # Then update pyproject.toml with the new dependency
 ```
+
+### Python Version
+
+For information about Python version requirements and recommendations, see [Development Environment](docs/development_environment.md#python-version).
 
 ## License
 

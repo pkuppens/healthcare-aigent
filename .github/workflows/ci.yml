@@ -1,0 +1,35 @@
+name: CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  install:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: "3.11"
+
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v5
+      with:
+        python-version: ${{ matrix.python-version }}
+    
+    - name: Install UV
+      run: |
+        python -m pip install --upgrade pip
+        pip install uv
+    
+    - name: Install dependencies with UV
+      run: |
+        uv pip install -e ".[dev]"
+    
+    - name: Verify installation
+      run: |
+        python -c "import crewai; import langchain; import pydantic; print('All core dependencies installed successfully')" 

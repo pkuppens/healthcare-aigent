@@ -4,7 +4,7 @@ This document describes how to set up the development environment for this proje
 
 ## Requirements
 
-- Python 3.11 or higher
+- Python 3.11 (recommended) or Python 3.10/3.12
 - Git
 - uv (Python package manager) - Install from https://github.com/astral-sh/uv
 
@@ -126,7 +126,7 @@ To test compatibility with different Python versions, you can use the included t
 
 ### Prerequisites
 
-- Multiple Python versions installed (3.10, 3.11, 3.12, 3.13)
+- Multiple Python versions installed (3.10, 3.11, 3.12)
 - UV package manager
 
 ### Running the Test Matrix
@@ -180,11 +180,15 @@ If you encounter issues with VS Code using UV:
    ```
    Then in VS Code, select the Python interpreter from the `.venv` directory.
 
+## Python Version
+
+For detailed information about Python version requirements and recommendations, see [Development Environment](docs/development_environment.md#python-version).
+
 ## Troubleshooting
 
 If you encounter any issues during setup:
 
-1. Verify that your Python version meets the requirements (3.11 or higher)
+1. Verify that your Python version meets the requirements (3.11 recommended)
 2. Ensure your virtual environment is activated
 3. Try reinstalling dependencies with `uv pip install -e ".[dev]" --upgrade`
 4. If pre-commit hooks aren't working, try `pre-commit clean` and reinstall

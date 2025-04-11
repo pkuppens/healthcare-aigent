@@ -1,6 +1,42 @@
 # Development Environment
 
-This document describes the development environment setup for the Healthcare AI Agent project, including test matrix for different Python versions and development container configuration.
+## Python Version
+
+This project requires Python 3.11 or higher. We specifically recommend Python 3.11.8 for optimal compatibility and performance.
+
+### Why Python 3.11?
+
+- **Performance Improvements**: Python 3.11 offers significant performance improvements over previous versions, with up to 10-60% faster execution times.
+- **Better Error Messages**: Enhanced error messages and tracebacks make debugging easier.
+- **Type System Enhancements**: Improved type hints and typing system support.
+- **Modern Features**: Access to modern Python features and syntax improvements.
+
+### Version Management
+
+We recommend using a version manager like `pyenv` or `conda` to manage Python versions. This ensures consistency across development environments and makes it easy to switch between different Python versions.
+
+### Checking Your Python Version
+
+You can check your Python version by running:
+
+```bash
+python --version
+```
+
+### Virtual Environment
+
+Always use a virtual environment for development. You can create one using:
+
+```bash
+# Using venv (built into Python 3.3+)
+python -m venv venv
+
+# Activate the virtual environment
+# On Windows:
+venv\Scripts\activate
+# On Unix or MacOS:
+source venv/bin/activate
+```
 
 ## Package Management with UV
 
@@ -72,7 +108,7 @@ If you encounter issues with VS Code using UV:
 
 ## Test Matrix
 
-The project includes a test matrix script that tests compatibility with different Python versions. This ensures that the project works correctly across Python 3.10, 3.11, 3.12, and 3.13.
+The project includes a test matrix script that tests compatibility with different Python versions. This ensures that the project works correctly across Python 3.10, 3.11, and 3.12.
 
 ### Running the Test Matrix
 
@@ -135,33 +171,6 @@ To customize the development container:
 1. Modify the `Dockerfile` to install additional packages or tools
 2. Update the `devcontainer.json` file to add VS Code/Cursor extensions or settings
 3. Rebuild the container using the "Remote-Containers: Rebuild Container" command
-
-### Switching Python Versions in the Development Container
-
-To use a different Python version in the development container:
-
-1. **Option 1: Modify the existing container**
-   - Edit the `.devcontainer/Dockerfile` file to use a different base image:
-     ```dockerfile
-     # Change this line
-     FROM mcr.microsoft.com/devcontainers/python:3.12
-     ```
-   - Update the `UV_PYTHON` environment variable:
-     ```dockerfile
-     ENV UV_PYTHON=3.12
-     ```
-   - Rebuild the container using the "Remote-Containers: Rebuild Container" command
-
-2. **Option 2: Create a new container configuration**
-   - Create a new directory, e.g., `.devcontainer-py312`
-   - Copy the existing `.devcontainer` files to the new directory
-   - Modify the files as described in Option 1
-   - Create a new VS Code/Cursor workspace file that uses the new container configuration
-
-3. **Option 3: Use the Python version selector**
-   - The development container includes multiple Python versions
-   - Use the Python version selector in VS Code/Cursor to switch between versions
-   - Update the `UV_PYTHON` environment variable in your `.env` file
 
 ## Best Practices
 
