@@ -4,6 +4,18 @@
 
 Test-Driven Development (TDD) with Vibe Coding, TDVC for short, is an approach that combines the structured methodology of TDD with the intuitive, flow-based development style of Vibe Coding. This document outlines the process, best practices, and examples based on our experience with the healthcare-aigent project.
 
+## Language Requirements
+
+All code, documentation, and comments in this project must be written in English. This includes:
+- Source code and comments
+- Test files and test documentation
+- Project documentation
+- Commit messages
+- Issue descriptions and comments
+- Pull request descriptions and comments
+
+This requirement ensures consistency and makes the codebase accessible to a global development community.
+
 ## Quick Commands for Agentic Chat
 
 When working with AI assistants, you can use these short commands to guide the TDVC process:
