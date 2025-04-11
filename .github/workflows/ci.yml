@@ -7,7 +7,7 @@ on:
     branches: [ main ]
 
 jobs:
-  install:
+  installation-test:
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -28,7 +28,7 @@ jobs:
     
     - name: Install dependencies with UV
       run: |
-        uv pip install -e ".[dev]"
+        uv pip install --system ".[dev]"
     
     - name: Verify installation
       run: |
