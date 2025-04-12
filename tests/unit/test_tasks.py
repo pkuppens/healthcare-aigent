@@ -6,6 +6,7 @@ assessing patient language proficiency, extracting clinical information,
 generating summaries, and performing quality control.
 """
 
+import json
 from unittest.mock import AsyncMock
 
 import pytest
@@ -18,16 +19,42 @@ from src.tasks import (
     QualityControlTask,
 )
 
+# Test constants
+QUALITY_SCORE = 95
+ACCURACY_SCORE = 0.95
+
 
 @pytest.fixture
 def mock_llm():
     """Create a mock LLM for testing.
 
     Returns:
-        An AsyncMock object that simulates an LLM with a predefined response
+        An AsyncMock object that simulates an LLM with predefined responses
     """
     llm = AsyncMock()
-    llm.ainvoke = AsyncMock(return_value="Mock response")
+
+    async def mock_ainvoke(prompt: str) -> str:
+        """Mock LLM response based on the prompt."""
+        if "Preprocess this medical text" in prompt:
+            return "Preprocessed: Patient has hypertension"
+        elif "Assess the language proficiency" in prompt:
+            return json.dumps({"proficiency": "intermediate", "needs_interpreter": False, "language_proficiency": "B2"})
+        elif "Extract clinical information" in prompt:
+            return json.dumps(
+                {
+                    "symptoms": ["headache"],
+                    "conditions": ["hypertension"],
+                    "medications": ["metoprolol"],
+                    "diagnosis": "Essential hypertension",
+                }
+            )
+        elif "Generate a concise medical summary" in prompt:
+            return "Patient presents with hypertension"
+        elif "Perform quality control" in prompt:
+            return json.dumps({"accuracy": ACCURACY_SCORE, "needs_review": False, "quality_score": QUALITY_SCORE})
+        return "Mock response"
+
+    llm.ainvoke = mock_ainvoke
     return llm
 
 
@@ -72,6 +99,7 @@ async def test_preprocess_medical_text_task(mock_llm):
     result = await task.execute("Patient has hypertension", mock_llm)
     assert isinstance(result, str)
     assert len(result) > 0
+    assert "Preprocessed" in result
 
 
 @pytest.mark.asyncio
@@ -86,9 +114,12 @@ async def test_assess_patient_language_task(mock_llm):
     task = AssessPatientLanguageTask()
     result = await task.execute("I feel tired and my blood pressure is high", mock_llm)
     assert isinstance(result, dict)
-    assert "language_proficiency" in result
     assert "proficiency" in result
     assert "needs_interpreter" in result
+    assert "language_proficiency" in result
+    assert result["proficiency"] == "intermediate"
+    assert result["needs_interpreter"] is False
+    assert result["language_proficiency"] == "B2"
 
 
 @pytest.mark.asyncio
@@ -107,6 +138,8 @@ async def test_extract_clinical_info_task(mock_llm):
     assert "diagnosis" in result
     assert "conditions" in result
     assert "medications" in result
+    assert "hypertension" in result["conditions"]
+    assert "metoprolol" in result["medications"]
 
 
 @pytest.mark.asyncio
@@ -122,6 +155,7 @@ async def test_generate_summary_task(mock_llm):
     result = await task.execute("Patient consultation notes", mock_llm)
     assert isinstance(result, str)
     assert len(result) > 0
+    assert "hypertension" in result.lower()
 
 
 @pytest.mark.asyncio
@@ -137,6 +171,13 @@ async def test_quality_control_task(mock_llm, mock_db, mock_logger):
     task = QualityControlTask()
     result = await task.execute("Patient summary", mock_llm, mock_db, mock_logger)
     assert isinstance(result, dict)
-    assert "quality_score" in result
     assert "accuracy" in result
     assert "needs_review" in result
+    assert "quality_score" in result
+    assert result["accuracy"] == ACCURACY_SCORE
+    assert result["needs_review"] is False
+    assert result["quality_score"] == QUALITY_SCORE
+
+    # Verify database and logger interactions
+    mock_db.read_patient_data.assert_called_once()
+    mock_logger.log_audit_event.assert_called_once()
