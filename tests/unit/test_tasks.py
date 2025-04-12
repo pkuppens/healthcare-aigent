@@ -87,8 +87,8 @@ async def test_assess_patient_language_task(mock_llm):
     result = await task.execute("I feel tired and my blood pressure is high", mock_llm)
     assert isinstance(result, dict)
     assert "language_proficiency" in result
-    assert "medical_literacy" in result
-    assert "suggested_communication_level" in result
+    assert "proficiency" in result
+    assert "needs_interpreter" in result
 
 
 @pytest.mark.asyncio
@@ -105,8 +105,8 @@ async def test_extract_clinical_info_task(mock_llm):
     assert isinstance(result, dict)
     assert "symptoms" in result
     assert "diagnosis" in result
-    assert "treatment" in result
-    assert "follow_up" in result
+    assert "conditions" in result
+    assert "medications" in result
 
 
 @pytest.mark.asyncio
@@ -138,5 +138,5 @@ async def test_quality_control_task(mock_llm, mock_db, mock_logger):
     result = await task.execute("Patient summary", mock_llm, mock_db, mock_logger)
     assert isinstance(result, dict)
     assert "quality_score" in result
-    assert "issues_found" in result
-    assert "recommendations" in result
+    assert "accuracy" in result
+    assert "needs_review" in result

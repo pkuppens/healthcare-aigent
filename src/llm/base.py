@@ -1,7 +1,7 @@
 """Base classes for LLM implementations."""
 
 from abc import ABC, abstractmethod
-from typing import Any, cast
+from typing import Any
 
 from langchain.callbacks.manager import CallbackManagerForLLMRun
 from langchain.schema import BaseMessage, LLMResult

@@ -3,10 +3,26 @@
 import os
 from typing import Any
 
+import requests
 from langchain.callbacks.manager import CallbackManagerForLLMRun
 from langchain_community.chat_models import ChatOllama
 
 from src.llm.base import BaseLLM
+from src.llm.circuit_breaker import HTTP_OK
+
+
+def check_ollama_availability() -> bool:
+    """Check if Ollama service is available.
+
+    Returns:
+        True if Ollama is available, False otherwise
+    """
+    base_url = os.getenv("OLLAMA_BASE_URL", "http://localhost:11434")
+    try:
+        response = requests.get(f"{base_url}/api/tags", timeout=2)
+        return response.status_code == HTTP_OK
+    except (requests.RequestException, TimeoutError):
+        return False
 
 
 class OllamaLLM(BaseLLM):
@@ -60,7 +76,10 @@ class OllamaLLM(BaseLLM):
         Returns:
             The generated text from the LLM
         """
-        return self._llm.invoke(prompt).content
+        response = self._llm.invoke(prompt)
+        if isinstance(response, str):
+            return response
+        return str(response.content)
 
     def _llm_type(self) -> str:
         """Return type of LLM.

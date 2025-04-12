@@ -302,6 +302,95 @@ Review the code and tests, and refactor as needed:
 - Check for any edge cases that might be missing
 - Refactor code to improve quality while keeping tests passing
 
+### Step 6: Commit Changes
+
+Commit your changes following these guidelines:
+
+#### Commit Message Format
+
+```
+<type>(<scope>): <subject>
+
+<body>
+
+<footer>
+
+Out-of-scope:
+- <item1>
+- <item2>
+```
+
+Where:
+- **type**: The type of change (feat, fix, docs, style, refactor, test, chore)
+- **scope**: The part of the codebase affected (optional)
+- **subject**: A concise description of the change
+- **body**: A more detailed explanation of the change (optional)
+- **footer**: References to issues or pull requests (optional)
+- **Out-of-scope**: Items that were considered but intentionally not included in this commit (optional)
+
+#### Commit Types
+
+- **feat**: A new feature
+- **fix**: A bug fix
+- **docs**: Documentation changes
+- **style**: Code style changes (formatting, etc.)
+- **refactor**: Code refactoring
+- **test**: Adding or modifying tests
+- **chore**: Maintenance tasks
+
+#### Commit Guidelines
+
+1. **Atomic Commits**: Each commit should represent a single logical change.
+2. **Descriptive Messages**: Commit messages should clearly describe what was changed and why.
+3. **Reference Issues**: When applicable, reference issue numbers in commit messages.
+4. **Keep Commits Small**: Avoid large commits that mix multiple changes.
+5. **Use TODO Comments**: For incomplete implementations in code, use `# TODO:` comments to make them easily discoverable.
+6. **Document Out-of-scope Items**: For complex changes, document what was intentionally not included.
+
+#### Example Commit Messages
+
+```
+feat(llm): add circuit breaker pattern for LLM connectivity
+
+Implement a circuit breaker pattern to prevent unnecessary timeouts and retries
+when LLM services are known to be unavailable. This improves system resilience
+and performance.
+
+- Add CircuitBreaker class with configurable thresholds
+- Implement availability checks for Ollama and OpenAI
+- Add caching to reduce redundant checks
+- Fix type errors in time difference calculations
+
+Closes #123
+
+Out-of-scope:
+- Implementing retry mechanism with exponential backoff
+- Adding metrics collection for circuit breaker state changes
+```
+
+```
+fix(circuit_breaker): fix type errors in time difference calculations
+
+Add proper null checks for _last_failure_time to prevent type errors when
+calculating time differences.
+
+Closes #124
+
+Out-of-scope:
+- Refactoring the entire time tracking mechanism
+```
+
+#### Commit Workflow
+
+1. **Stage Changes**: Use `git add` to stage specific files or changes.
+2. **Run Pre-commit Hooks**: Execute `pre-commit run --files <staged_files>` to run linting and other checks.
+3. **Fix Simple Issues**: Address any simple linting or formatting issues identified by the pre-commit hooks.
+4. **Relax Complex Checks**: For more complex linting violations that don't add business value, consider relaxing the specific checks.
+5. **Review Changes**: Use `git diff --staged` to review staged changes.
+6. **Write Commit Message**: Follow the format above to write a descriptive commit message.
+7. **Commit Changes**: Use `git commit -m` to commit with the message.
+8. **Push Changes**: Use `git push` to push changes to the remote repository.
+
 ## Conclusion
 
 TDD with Vibe Coding provides a structured yet flexible approach to software development that emphasizes quality, maintainability, and clarity. By focusing on tests first and implementing functionality only after tests are defined, we can ensure that our code meets the requirements and is robust against edge cases and errors.

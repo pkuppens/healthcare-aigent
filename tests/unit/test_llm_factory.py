@@ -11,7 +11,6 @@ from unittest.mock import MagicMock, patch
 import pytest
 
 from src.llm.base import BaseLLM
-from src.llm.fallback import FallbackLLM
 from src.llm.llm_factory import LLMFactory, LLMType
 from src.llm.ollama_llm import OllamaLLM
 from src.llm.openai_llm import OpenAILLM

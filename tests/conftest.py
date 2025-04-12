@@ -6,6 +6,8 @@ from unittest.mock import patch
 import pytest
 import requests
 
+from src.llm.circuit_breaker import is_ollama_available, is_openai_available
+
 # Constants
 HTTP_OK = 200
 
@@ -66,14 +68,13 @@ def mock_patient_data():
 @pytest.fixture
 def ollama_available():
     """Check if Ollama service is available."""
-    return is_service_available("http://localhost:11434")
+    return is_ollama_available()
 
 
 @pytest.fixture
 def openai_available():
     """Check if OpenAI API is available."""
-    api_key = os.getenv("OPENAI_API_KEY", "")
-    return bool(api_key and api_key.strip())
+    return is_openai_available()
 
 
 def pytest_configure(config):

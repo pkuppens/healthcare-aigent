@@ -3,12 +3,32 @@
 import os
 from typing import Any
 
+import requests
 from langchain.callbacks.manager import CallbackManagerForLLMRun
-from langchain_openai import ChatOpenAI
 from langchain.schema import BaseMessage
+from langchain_openai import ChatOpenAI
 from pydantic import SecretStr
 
 from src.llm.base import BaseLLM
+from src.llm.circuit_breaker import HTTP_OK
+
+
+def check_openai_availability() -> bool:
+    """Check if OpenAI API is available.
+
+    Returns:
+        True if OpenAI is available, False otherwise
+    """
+    api_key = os.getenv("OPENAI_API_KEY", "")
+    if not api_key:
+        return False
+
+    try:
+        # Simple check to see if the API key is valid
+        response = requests.get("https://api.openai.com/v1/models", headers={"Authorization": f"Bearer {api_key}"}, timeout=2)
+        return response.status_code == HTTP_OK
+    except (requests.RequestException, TimeoutError):
+        return False
 
 
 class OpenAILLM(BaseLLM):

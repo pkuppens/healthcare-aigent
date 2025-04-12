@@ -2,11 +2,11 @@
 
 import logging
 import os
-from dataclasses import dataclass
 from enum import Enum
 from typing import ClassVar, TypedDict
 
 from src.llm.base import BaseLLM
+from src.llm.circuit_breaker import is_ollama_available, is_openai_available
 from src.llm.ollama_llm import OllamaLLM
 from src.llm.openai_llm import OpenAILLM
 
@@ -136,6 +136,24 @@ class LLMFactory:
         elif task_type in ["summarization", "extraction"]:
             llm_type = LLMType.CLOUD_FAST
 
+        # Check if the preferred LLM provider is available
+        config = cls._llm_type_map[llm_type]
+        provider = config["provider"]
+
+        # If cloud model is preferred but not available, try local model
+        if provider == "openai" and not is_openai_available():
+            logger.warning("OpenAI not available, falling back to local model")
+            llm_type = LLMType.LOCAL_FAST if llm_type == LLMType.CLOUD_FAST else LLMType.LOCAL_ACCURATE
+            config = cls._llm_type_map[llm_type]
+            provider = config["provider"]
+
+        # If local model is preferred but not available, try cloud model
+        if provider == "ollama" and not is_ollama_available():
+            logger.warning("Ollama not available, falling back to cloud model")
+            llm_type = LLMType.CLOUD_FAST if llm_type == LLMType.LOCAL_FAST else LLMType.CLOUD_ACCURATE
+            config = cls._llm_type_map[llm_type]
+            provider = config["provider"]
+
         # Try to create the preferred LLM, fall back to alternatives if needed
         try:
             return cls.create_llm(llm_type, temperature)
@@ -173,11 +191,20 @@ def get_llm(provider: str | None = None, temperature: float = 0.7) -> BaseLLM:
     provider = provider or os.getenv("LLM_PROVIDER", "OPENAI")
     provider = provider.lower()
 
+    # Check if the preferred provider is available
+    if provider == "openai" and not is_openai_available():
+        logger.warning("OpenAI not available, falling back to Ollama")
+        provider = "ollama"
+
+    if provider == "ollama" and not is_ollama_available():
+        logger.warning("Ollama not available, falling back to OpenAI")
+        provider = "openai"
+
     if provider == "openai":
         model = os.getenv("OPENAI_MODEL_NAME", "gpt-3.5-turbo")
         return LLMFactory.create_llm_by_provider("openai", model, temperature)
-    elif provider == "ollama":
+
+    if provider == "ollama":
         model = os.getenv("OLLAMA_MODEL_NAME", "llama3")
         return LLMFactory.create_llm_by_provider("ollama", model, temperature)
-    else:
-        raise ValueError(f"Unsupported LLM provider: {provider}")
+    raise ValueError(f"Unsupported LLM provider: {provider}")
