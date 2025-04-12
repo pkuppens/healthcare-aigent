@@ -272,11 +272,7 @@ class QualityControlTask(Task):
                     raise ValueError("Missing required keys in quality control results")
 
                 # Log the quality control event
-                await logger.log_audit_event({
-                    "event_type": "quality_control",
-                    "text_id": hash(text),
-                    "results": qc_results
-                })
+                await logger.log_audit_event({"event_type": "quality_control", "text_id": hash(text), "results": qc_results})
 
                 return qc_results
             except json.JSONDecodeError as e:

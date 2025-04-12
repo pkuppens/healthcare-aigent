@@ -25,10 +25,10 @@ def create_language_assessor(llm) -> Agent:
     """Create a language assessment agent."""
     return Agent(
         role="Language Assessment Specialist",
-        goal="Assess patient language proficiency and medical literacy",
+        goal="Assess patient language proficiency and needs",
         backstory="Expert in language assessment and medical communication",
         llm=llm,
-        tools=[PatientLanguageTool()],
+        tools=[PatientLanguageTool(), WebSearchTool()],
     )
 
 
@@ -58,10 +58,10 @@ def create_quality_control_agent(llm) -> Agent:
     """Create a quality control agent."""
     return Agent(
         role="Quality Control Specialist",
-        goal="Verify medical information accuracy and propose updates",
+        goal="Ensure accuracy and completeness of medical information",
         backstory="Expert in medical quality assurance and data validation",
         llm=llm,
-        tools=[WebSearchTool()],
+        tools=[MedicalTerminologyTool(), WebSearchTool()],
     )
 
 

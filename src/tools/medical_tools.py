@@ -8,7 +8,7 @@ from crewai.tools import BaseTool
 class MedicalTerminologyTool(BaseTool):
     """Tool for simplifying medical terminology."""
 
-    name: str = "simplify_medical_terms"
+    name: str = "medical_terminology"
     description: str = "Simplify complex medical terminology for patients"
 
     async def _run(self, text: str) -> str:
@@ -19,7 +19,7 @@ class MedicalTerminologyTool(BaseTool):
 class PatientLanguageTool(BaseTool):
     """Tool for assessing patient language proficiency."""
 
-    name: str = "assess_patient_language"
+    name: str = "patient_language"
     description: str = "Assess patient language proficiency and needs"
 
     async def _run(self, conversation: str) -> dict[str, Any]:
@@ -30,7 +30,7 @@ class PatientLanguageTool(BaseTool):
 class ClinicalExtractionTool(BaseTool):
     """Tool for extracting clinical information."""
 
-    name: str = "extract_clinical_info"
+    name: str = "clinical_extraction"
     description: str = "Extract clinical information from patient conversations"
 
     async def _run(self, conversation: str) -> dict[str, Any]:

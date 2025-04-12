@@ -6,7 +6,7 @@ from crewai.tools import BaseTool
 class WebSearchTool(BaseTool):
     """Tool for searching medical information on the web."""
 
-    name: str = "search_medical_info"
+    name: str = "web_search"
     description: str = "Search for medical information on the web"
 
     async def _run(self, query: str) -> str:

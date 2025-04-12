@@ -11,9 +11,6 @@ from collections.abc import Callable
 from dataclasses import dataclass
 from enum import Enum
 
-from src.llm.ollama_llm import check_ollama_availability
-from src.llm.openai_llm import check_openai_availability
-
 # Configure logging
 logger = logging.getLogger(__name__)
 
@@ -159,27 +156,38 @@ class CircuitBreaker:
         return False
 
 
-# Global circuit breaker instances
-_ollama_breaker = CircuitBreaker("ollama", check_ollama_availability)
-_openai_breaker = CircuitBreaker("openai", check_openai_availability)
+# Replace with class-based singleton pattern
+class CircuitBreakerFactory:
+    """Factory for creating and managing circuit breaker instances."""
 
+    _ollama_breaker: CircuitBreaker | None = None
+    _openai_breaker: CircuitBreaker | None = None
 
-def get_ollama_breaker() -> CircuitBreaker:
-    """Get the Ollama circuit breaker instance.
+    @classmethod
+    def get_ollama_breaker(cls) -> CircuitBreaker:
+        """Get the Ollama circuit breaker instance.
 
-    Returns:
-        The Ollama circuit breaker instance
-    """
-    return _ollama_breaker
+        Returns:
+            The Ollama circuit breaker instance
+        """
+        if cls._ollama_breaker is None:
+            from src.llm.ollama_llm import check_ollama_availability
 
+            cls._ollama_breaker = CircuitBreaker("ollama", check_ollama_availability)
+        return cls._ollama_breaker
 
-def get_openai_breaker() -> CircuitBreaker:
-    """Get the OpenAI circuit breaker instance.
+    @classmethod
+    def get_openai_breaker(cls) -> CircuitBreaker:
+        """Get the OpenAI circuit breaker instance.
 
-    Returns:
-        The OpenAI circuit breaker instance
-    """
-    return _openai_breaker
+        Returns:
+            The OpenAI circuit breaker instance
+        """
+        if cls._openai_breaker is None:
+            from src.llm.openai_llm import check_openai_availability
+
+            cls._openai_breaker = CircuitBreaker("openai", check_openai_availability)
+        return cls._openai_breaker
 
 
 def is_ollama_available() -> bool:
@@ -188,7 +196,7 @@ def is_ollama_available() -> bool:
     Returns:
         True if Ollama is available, False otherwise
     """
-    return get_ollama_breaker().is_available()
+    return CircuitBreakerFactory.get_ollama_breaker().is_available()
 
 
 def is_openai_available() -> bool:
@@ -197,4 +205,4 @@ def is_openai_available() -> bool:
     Returns:
         True if OpenAI is available, False otherwise
     """
-    return get_openai_breaker().is_available()
+    return CircuitBreakerFactory.get_openai_breaker().is_available()

@@ -29,7 +29,13 @@ def mock_llm():
     Returns:
         An AsyncMock object that simulates an LLM for testing agent creation
     """
-    return AsyncMock()
+    mock = AsyncMock()
+    mock.supports_stop_words = lambda: False
+    mock.model = "gpt-4"
+    mock.temperature = 0.7
+    mock.max_tokens = 1000
+    mock.tools = []
+    return mock
 
 
 @pytest.mark.asyncio
@@ -44,6 +50,7 @@ async def test_medical_preprocessor_creation(mock_llm):
     agent = create_medical_preprocessor(mock_llm)
     assert agent.role == "Medical Preprocessor"
     assert agent.goal == "Analyze and prepare medical conversations for processing"
+    assert agent.tools is not None
     assert len(agent.tools) == NUM_TOOLS_PER_AGENT
     assert any(tool.name == "medical_terminology" for tool in agent.tools)
     assert any(tool.name == "web_search" for tool in agent.tools)
@@ -61,6 +68,7 @@ async def test_language_assessor_creation(mock_llm):
     agent = create_language_assessor(mock_llm)
     assert agent.role == "Language Assessment Specialist"
     assert agent.goal == "Assess patient language proficiency and needs"
+    assert agent.tools is not None
     assert len(agent.tools) == NUM_TOOLS_PER_AGENT
     assert any(tool.name == "patient_language" for tool in agent.tools)
     assert any(tool.name == "web_search" for tool in agent.tools)
@@ -78,6 +86,7 @@ async def test_clinical_extractor_creation(mock_llm):
     agent = create_clinical_extractor(mock_llm)
     assert agent.role == "Clinical Information Extractor"
     assert agent.goal == "Extract and structure clinical information from conversations"
+    assert agent.tools is not None
     assert len(agent.tools) == NUM_TOOLS_PER_AGENT
     assert any(tool.name == "clinical_extraction" for tool in agent.tools)
     assert any(tool.name == "web_search" for tool in agent.tools)
@@ -95,6 +104,7 @@ async def test_summarization_agent_creation(mock_llm):
     agent = create_summarization_agent(mock_llm)
     assert agent.role == "Medical Summarization Specialist"
     assert agent.goal == "Create clear and accurate medical summaries"
+    assert agent.tools is not None
     assert len(agent.tools) == NUM_TOOLS_PER_AGENT
     assert any(tool.name == "medical_terminology" for tool in agent.tools)
     assert any(tool.name == "web_search" for tool in agent.tools)
@@ -112,6 +122,7 @@ async def test_quality_control_agent_creation(mock_llm):
     agent = create_quality_control_agent(mock_llm)
     assert agent.role == "Quality Control Specialist"
     assert agent.goal == "Ensure accuracy and completeness of medical information"
+    assert agent.tools is not None
     assert len(agent.tools) == NUM_TOOLS_PER_AGENT
     assert any(tool.name == "medical_terminology" for tool in agent.tools)
     assert any(tool.name == "web_search" for tool in agent.tools)
