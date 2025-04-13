@@ -100,7 +100,7 @@ pytest --cov=src --cov-report=html
 
 ### Test Configuration
 ```ini
-# pytest.ini
+# tests/pytest.ini
 [pytest]
 markers =
     unit: Unit tests

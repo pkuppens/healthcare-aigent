@@ -115,7 +115,7 @@ The project includes a test matrix script that tests compatibility with differen
 To run the test matrix:
 
 ```bash
-python test_matrix.py
+python tests/test_matrix.py
 ```
 
 This script will:
@@ -186,7 +186,7 @@ To customize the development container:
 
 3. **Run the test matrix before releasing**:
    ```bash
-   python test_matrix.py
+   python tests/test_matrix.py
    ```
 
 4. **Use the development container for consistent development**:

@@ -132,7 +132,7 @@ To test compatibility with different Python versions, you can use the included t
 ### Running the Test Matrix
 
 ```bash
-python test_matrix.py
+python tests/test_matrix.py
 ```
 
 This script will:

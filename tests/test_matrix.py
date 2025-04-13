@@ -10,6 +10,10 @@ import platform
 import subprocess
 from pathlib import Path
 
+# Find the project root directory
+SCRIPT_DIR = Path(__file__).resolve().parent
+PROJECT_ROOT = SCRIPT_DIR.parent
+
 # Python versions to test
 PYTHON_VERSIONS = ["3.10", "3.11", "3.12", "3.13"]
 
@@ -66,7 +70,7 @@ def run_command(command, cwd=None, env=None):
 def create_venv(python_version):
     """Create a virtual environment for the specified Python version."""
     venv_name = f".venv-py{python_version}"
-    venv_path = Path(venv_name)
+    venv_path = PROJECT_ROOT / venv_name
 
     if venv_path.exists():
         print_info(f"Virtual environment {venv_name} already exists. Skipping creation.")
@@ -76,11 +80,11 @@ def create_venv(python_version):
 
     # Determine the Python executable based on the platform
     if platform.system() == "Windows":
-        python_cmd = f"py -{python_version} -m venv {venv_name}"
+        python_cmd = f"py -{python_version} -m venv {venv_path}"
     else:
-        python_cmd = f"python{python_version} -m venv {venv_name}"
+        python_cmd = f"python{python_version} -m venv {venv_path}"
 
-    success, output = run_command(python_cmd)
+    success, output = run_command(python_cmd, cwd=PROJECT_ROOT)
     if not success:
         print_error(f"Failed to create virtual environment for Python {python_version}: {output}")
         return None
@@ -105,14 +109,14 @@ def install_dependencies(venv_path):
 
     # Install uv if not already installed
     install_uv_cmd = f"{activate_cmd} && python -m pip install uv"
-    success, output = run_command(install_uv_cmd)
+    success, output = run_command(install_uv_cmd, cwd=PROJECT_ROOT)
     if not success:
         print_error(f"Failed to install uv: {output}")
         return False
 
     # Install project dependencies
     install_cmd = f"{activate_cmd} && uv pip install -e .[dev]"
-    success, output = run_command(install_cmd)
+    success, output = run_command(install_cmd, cwd=PROJECT_ROOT)
     if not success:
         print_error(f"Failed to install dependencies: {output}")
         return False
@@ -127,7 +131,7 @@ def run_tests(venv_path):
 
     # Run pytest
     test_cmd = f"{activate_cmd} && pytest"
-    success, output = run_command(test_cmd)
+    success, output = run_command(test_cmd, cwd=PROJECT_ROOT)
     if not success:
         print_error(f"Tests failed: {output}")
         return False
@@ -140,6 +144,7 @@ def main():
     """Main function to run the test matrix."""
     print_header("Healthcare AI Agent Test Matrix")
     print_info("Testing compatibility with different Python versions")
+    print_info(f"Project root: {PROJECT_ROOT}")
 
     results = {}
 

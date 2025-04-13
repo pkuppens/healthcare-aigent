@@ -124,7 +124,7 @@ pytest path/to/test_file.py::test_function --pdb
 
 ### Test Configuration
 
-The project uses `pytest.ini` for test configuration:
+The project uses `tests/pytest.ini` for test configuration:
 ```ini
 [pytest]
 markers =
