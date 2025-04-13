@@ -346,6 +346,7 @@ Where:
 4. **Keep Commits Small**: Avoid large commits that mix multiple changes.
 5. **Use TODO Comments**: For incomplete implementations in code, use `# TODO:` comments to make them easily discoverable.
 6. **Document Out-of-scope Items**: For complex changes, document what was intentionally not included.
+7. **Apply Simple Fixes**: Pre-commit will check ruff linting, ruff format and ruff check --fix may be applied.
 
 #### Example Commit Messages
 

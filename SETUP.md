@@ -8,6 +8,9 @@ This document describes how to set up the development environment for this proje
 - Git
 - uv (Python package manager) - Install from https://github.com/astral-sh/uv
 
+> **Note**: Python 3.13 is not yet fully supported due to compatibility issues with langflow and its dependencies.
+We include it in our test matrix to detect when these issues are resolved.
+
 ## Option 1: Local Setup
 
 ### Step 1: Clone the repository

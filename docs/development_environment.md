@@ -11,6 +11,13 @@ This project requires Python 3.11 or higher. We specifically recommend Python 3.
 - **Type System Enhancements**: Improved type hints and typing system support.
 - **Modern Features**: Access to modern Python features and syntax improvements.
 
+### Version Compatibility
+
+- **Python 3.10**: Use at your own risk. Not actively developed.
+- **Python 3.11**: Fully supported
+- **Python 3.12**: Fully supported
+- **Python 3.13**: Not yet fully supported due to compatibility issues with dependencies. We include it in our test matrix to detect when these issues are resolved.
+
 ### Version Management
 
 We recommend using a version manager like `pyenv` or `conda` to manage Python versions. This ensures consistency across development environments and makes it easy to switch between different Python versions.
