@@ -42,7 +42,8 @@ def mock_transcript():
     """Mock medical conversation transcript."""
     return (
         "Spreker A: Goedemorgen, hoe gaat het met u?\n"
-        "Spreker B: Goedemorgen dokter, het gaat wel. Ik heb wat last van hoofdpijn.\n"
+        "Spreker B: Goedemorgen dokter, het gaat wel. "
+        "Ik heb wat last van hoofdpijn.\n"
         "Spreker A: Hoelang heeft u hier al last van?\n"
         "Spreker B: Ongeveer een week. Het komt en gaat.\n"
         "Spreker A: Gebruikt u nog medicijnen?\n"
@@ -81,7 +82,8 @@ def pytest_configure(config):
     """Configure pytest with custom markers."""
     config.addinivalue_line(
         "markers",
-        "integration: mark test as integration test requiring external services",
+        "integration: mark test as integration test requiring "
+        "external services",
     )
     config.addinivalue_line(
         "markers",
@@ -96,9 +98,9 @@ def pytest_configure(config):
 def pytest_runtest_setup(item):
     """Skip tests based on service availability."""
     if "integration" in item.keywords:
-        if not (ollama_available() or openai_available()):
+        if not (is_ollama_available() or is_openai_available()):
             pytest.skip("No LLM service available for integration tests")
 
     if "llm" in item.keywords:
-        if not openai_available():
+        if not is_openai_available():
             pytest.skip("OpenAI API not available")

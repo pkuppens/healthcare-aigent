@@ -1,4 +1,8 @@
-"""Integration tests for the LLM factory."""
+"""Integration tests for the LLM factory.
+
+This module contains integration tests for the LLMFactory class, focusing on
+the actual creation and connectivity of LLM instances with real providers.
+"""
 
 import os
 from unittest.mock import patch
@@ -21,7 +25,13 @@ class TestLLMFactoryIntegration:
             yield
 
     def test_create_local_llm_connection(self, mock_env_vars):
-        """Test creating and connecting to a local LLM."""
+        """Test creating and connecting to a local LLM.
+        
+        Verifies that:
+        1. The factory can create a local LLM instance
+        2. The instance is of the correct type (ChatOllama)
+        3. The instance can be used to generate responses
+        """
         try:
             llm = LLMFactory.create_llm(LLMType.LOCAL_FAST)
             assert isinstance(llm, ChatOllama)
@@ -32,7 +42,13 @@ class TestLLMFactoryIntegration:
             pytest.skip(f"Local LLM not available: {e!s}")
 
     def test_create_cloud_llm_connection(self, mock_env_vars):
-        """Test creating and connecting to a cloud LLM."""
+        """Test creating and connecting to a cloud LLM.
+        
+        Verifies that:
+        1. The factory can create a cloud LLM instance
+        2. The instance is of the correct type (ChatOpenAI)
+        3. The instance can be used to generate responses
+        """
         try:
             llm = LLMFactory.create_llm(LLMType.CLOUD_FAST)
             assert isinstance(llm, ChatOpenAI)
@@ -43,7 +59,13 @@ class TestLLMFactoryIntegration:
             pytest.skip(f"Cloud LLM not available: {e!s}")
 
     def test_get_llm_for_sensitive_task(self, mock_env_vars):
-        """Test getting LLM for sensitive data task."""
+        """Test getting LLM for sensitive data task.
+        
+        Verifies that:
+        1. The factory selects the appropriate LLM type for sensitive tasks
+        2. The selected LLM is a local LLM (ChatOllama)
+        3. The selected LLM can be used to generate responses
+        """
         try:
             llm = LLMFactory.get_llm_for_task("any_task", sensitive_data=True)
             assert isinstance(llm, ChatOllama)
@@ -54,7 +76,13 @@ class TestLLMFactoryIntegration:
             pytest.skip(f"Local LLM not available: {e!s}")
 
     def test_get_llm_for_accuracy_task(self, mock_env_vars):
-        """Test getting LLM for accuracy-critical task."""
+        """Test getting LLM for accuracy-critical task.
+        
+        Verifies that:
+        1. The factory selects the appropriate LLM type for accuracy-critical tasks
+        2. The selected LLM is a cloud LLM (ChatOpenAI)
+        3. The selected LLM can be used to generate responses
+        """
         try:
             llm = LLMFactory.get_llm_for_task("summarization", sensitive_data=False)
             assert isinstance(llm, ChatOpenAI)

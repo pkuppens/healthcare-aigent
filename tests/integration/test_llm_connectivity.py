@@ -1,4 +1,8 @@
-"""Integration tests for LLM connectivity."""
+"""Integration tests for LLM connectivity.
+
+This module contains tests that verify connectivity to different LLM providers
+and ensure that the system can properly interact with these services.
+"""
 
 import os
 from unittest.mock import AsyncMock, patch
@@ -21,7 +25,13 @@ def mock_llm():
 
 @pytest.mark.integration
 def test_ollama_connectivity():
-    """Test connectivity to Ollama server."""
+    """Test connectivity to Ollama server.
+    
+    Verifies that:
+    1. The system can connect to the Ollama server
+    2. The LLM is created with the correct model and base URL
+    3. The system gracefully handles connection errors
+    """
     try:
         # First check if Ollama server is running
         response = requests.get("http://localhost:11434/api/tags")
@@ -39,7 +49,13 @@ def test_ollama_connectivity():
 
 @pytest.mark.integration
 def test_openai_connectivity():
-    """Test connectivity to OpenAI API."""
+    """Test connectivity to OpenAI API.
+    
+    Verifies that:
+    1. The system can connect to the OpenAI API
+    2. The LLM is created with the correct model
+    3. The system gracefully handles API errors
+    """
     # Skip if no API key
     if not os.getenv("OPENAI_API_KEY"):
         pytest.skip("OPENAI_API_KEY not set. Please set the environment variable and try again.")
@@ -52,7 +68,12 @@ def test_openai_connectivity():
 
 @pytest.mark.integration
 def test_custom_temperature():
-    """Test LLM creation with custom temperature."""
+    """Test LLM creation with custom temperature.
+    
+    Verifies that:
+    1. The system correctly applies custom temperature settings
+    2. The temperature value is properly set on the LLM instance
+    """
     llm = get_llm(temperature=CUSTOM_TEMPERATURE)
     assert llm is not None
     assert llm.temperature == CUSTOM_TEMPERATURE
@@ -60,7 +81,12 @@ def test_custom_temperature():
 
 @pytest.mark.integration
 def test_ollama_connection_error(mock_env_vars, monkeypatch):
-    """Test Ollama connection error handling."""
+    """Test Ollama connection error handling.
+    
+    Verifies that:
+    1. The system properly handles connection errors to Ollama
+    2. Appropriate warnings are issued when connection fails
+    """
     monkeypatch.setenv("LLM_PROVIDER", "OLLAMA")
     with patch("requests.get") as mock_get:
         mock_get.side_effect = requests.exceptions.ConnectionError()
@@ -73,7 +99,12 @@ def test_ollama_connection_error(mock_env_vars, monkeypatch):
 
 @pytest.mark.integration
 def test_openai_api_error(mock_env_vars, monkeypatch):
-    """Test OpenAI API error handling."""
+    """Test OpenAI API error handling.
+    
+    Verifies that:
+    1. The system properly handles API errors from OpenAI
+    2. Appropriate warnings are issued when API calls fail
+    """
     monkeypatch.setenv("LLM_PROVIDER", "OPENAI")
     with patch("langchain_openai.ChatOpenAI.invoke") as mock_invoke:
         mock_invoke.side_effect = Exception("API Error")
