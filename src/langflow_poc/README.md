@@ -81,10 +81,26 @@ This project uses `uv` for package management, virtual environments, and running
 4. Start LangFlow:
    ```bash
    # Run LangFlow using uv
-   uv run langflow run
+   # Set DO_NOT_TRACK=true to opt-out of anonymous data collection
+   # This is especially important for healthcare applications
+   set DO_NOT_TRACK=true && uv run langflow run
    ```
 
+   Note: The application may take 10 seconds or more to start up. This is normal, especially on first run.
+
 5. Open the LangFlow UI in your browser: http://localhost:7860
+
+## Keeping LangFlow Updated
+
+LangFlow is under active development with frequent updates (weekly or more often). To keep your installation up to date:
+
+```bash
+# Update LangFlow to the latest version
+uv pip install --upgrade langflow
+
+# After updating, restart LangFlow
+set DO_NOT_TRACK=true && uv run langflow run
+```
 
 ## My First Agent
 
