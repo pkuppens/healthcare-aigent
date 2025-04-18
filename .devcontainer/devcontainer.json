@@ -20,8 +20,6 @@
       ],
       "settings": {
         "python.defaultInterpreterPath": "/usr/local/bin/python",
-        "python.linting.enabled": true,
-        "python.linting.lintOnSave": true,
         "python.formatting.provider": "black",
         "editor.formatOnSave": true,
         "editor.codeActionsOnSave": {
