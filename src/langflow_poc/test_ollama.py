@@ -4,7 +4,7 @@ import os
 import sys
 
 import requests
-from langchain_community.llms import Ollama
+from langchain_ollama import OllamaLLM
 
 # Constants
 HTTP_OK = 200
@@ -25,7 +25,7 @@ def test_ollama_connection(model_name: str = "mistral") -> str | None:
             return None
 
         # Try to get a response from the model
-        llm = Ollama(model=model_name, base_url=base_url)
+        llm = OllamaLLM(model=model_name, base_url=base_url)
         response = llm.invoke("Say 'Hello, I am working!' in one sentence.")
         return response
 
@@ -34,7 +34,10 @@ def test_ollama_connection(model_name: str = "mistral") -> str | None:
         print("Please check if:")
         print("1. Ollama is running")
         print("2. The service is accessible at the correct URL")
-        print("3. If using Docker, ensure the containers are running and properly networked")
+        print(
+            "3. If using Docker, ensure the containers are running and properly "
+            "networked"
+        )
         return None
     except Exception as e:
         print(f"Error: An unexpected error occurred: {e!s}")
