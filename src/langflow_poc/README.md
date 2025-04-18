@@ -1,31 +1,142 @@
 # LangFlow Healthcare Communication Proof-of-Concept
 
-This proof-of-concept demonstrates how LangFlow can be used to create adaptable healthcare communication workflows based on patient preferences.
+This project is a learning experience in building a complex multi-agent AI system with LangFlow. 
+We use tools, websearch, RAG, and other techniques to create a healthcare communication system.
 
-## Setup
+## Table of Contents
 
-1. Install dependencies:
+- [What is LangFlow?](#what-is-langflow)
+  - [LangFlow vs CrewAI vs LangChain](#langflow-vs-crewai-vs-langchain)
+  - [This proof-of-concept](#this-proof-of-concept)
+- [Installation](#installation)
+- [My First Agent](#my-first-agent)
+  - [The Prompt](#the-prompt)
+  - [The LLM](#the-llm)
+  - [The Response](#the-response)
+- [Project Structure](#project-structure)
+- [Task List](#task-list)
+- [Progress](#progress)
+- [Reflection and Feedback](#reflection-and-feedback)
+
+## What is LangFlow?
+
+LangFlow is a visual tool for building AI workflows. It allows you to create complex 
+AI systems without writing much code. You can connect different components (such as LLMs, 
+tools, and databases) to create a working system.
+
+### LangFlow vs CrewAI vs LangChain
+
+| Tool | Description | Advantages | Disadvantages |
+|------|-------------|------------|--------------|
+| **LangFlow** | Visual tool for building AI workflows | Visual, easy to understand, quick to prototype | Less flexible than pure code, less suitable for very complex logic |
+| **CrewAI** | Framework for building multi-agent systems | Good for complex agent interactions, strongly typed | More code needed, steep learning curve |
+| **LangChain** | Framework for building LLM applications | Very flexible, many components | Complex, requires lots of code |
+
+### This proof-of-concept
+
+In this proof-of-concept, we use LangFlow to create a healthcare communication system. 
+The system adapts communication based on patient preferences. We learn how to:
+
+- Build multi-agent systems
+- Integrate tools
+- Use websearch
+- Implement RAG (Retrieval Augmented Generation)
+- Use feedback and reflection to improve agents
+
+## Installation
+
+This project uses `uv` for package management, virtual environments, and running the application. 
+`uv` is a fast Python package installer and resolver that can replace pip, venv, and other tools.
+
+1. Install `uv` if you don't have it already:
    ```bash
-   pip install -r requirements.txt
+   # On Windows
+   pip install uv
+
+   # On macOS/Linux
+   curl -LsSf https://astral.sh/uv/install.sh | sh
    ```
 
-2. Ensure Ollama is running locally:
+2. Create a virtual environment and install dependencies:
+   ```bash
+   # Create a virtual environment
+   uv venv
+
+   # Activate the virtual environment
+   # On Windows
+   .venv\Scripts\activate
+   # On macOS/Linux
+   source .venv/bin/activate
+
+   # Install dependencies
+   uv pip install -r requirements.txt
+   ```
+
+3. Ensure Ollama is running locally:
    ```bash
    # Test Ollama connection
-   python test_ollama.py
+   python src/langflow_poc/test_ollama.py
    ```
 
-3. Start LangFlow:
+4. Start LangFlow:
    ```bash
-   langflow run
+   # Run LangFlow using uv
+   uv run langflow run
    ```
+
+5. Open the LangFlow UI in your browser: http://localhost:7860
+
+## My First Agent
+
+### The Prompt
+
+A prompt is the instruction you give to an LLM. In LangFlow, you can create prompts with:
+
+- Textual prompts
+- Prompt templates
+- Prompt variables
+
+Example of a simple prompt:
+```
+You are a friendly healthcare assistant. 
+Answer the following question in a way that matches the patient preferences:
+Question: {question}
+Patient preferences: {preferences}
+```
+
+### The LLM
+
+An LLM (Large Language Model) is the AI model that processes the prompts. In LangFlow, you can use different LLMs:
+
+- OpenAI models (GPT-3.5, GPT-4)
+- Ollama models (local)
+- Other LLM providers
+
+For this proof-of-concept, we mainly use Ollama models that run locally.
+
+### The Response
+
+The response is the answer from the LLM. In LangFlow, you can:
+
+- Format responses
+- Process responses
+- Forward responses to other components
 
 ## Project Structure
 
-- `test_ollama.py`: Tests Ollama integration and connection
-- `patient_data.py`: Mock patient database with preferences
-- `workflows/`: Directory for storing LangFlow workflow definitions
-- `custom_components/`: Directory for custom LangFlow components
+```
+src/langflow_poc/
+├── README.md                 # This documentation
+├── requirements.txt          # Required packages
+├── test_ollama.py            # Test Ollama connection
+├── patient_data.py           # Mock patient database with preferences
+├── workflows/                # LangFlow workflow definitions
+│   ├── basic_agent.json      # First agent workflow
+│   └── healthcare_agent.json # Healthcare agent workflow
+└── custom_components/        # Custom LangFlow components
+    ├── patient_loader.py     # Loads patient data
+    └── preference_adapter.py # Adapts text based on preferences
+```
 
 ## Workflow Storage
 
@@ -33,9 +144,77 @@ Local workflows are stored in:
 - Windows: `%APPDATA%/langflow/workflows/`
 - Linux/Mac: `~/.langflow/workflows/`
 
+## Task List
+
+### Level 1: Basic LangFlow Understanding
+- [ ] What is LangFlow?
+  - [ ] Read the official documentation
+  - [ ] Understand the basic concepts
+  - [ ] Compare with other frameworks
+- [ ] Installation
+  - [ ] Install LangFlow
+  - [ ] Configure Ollama
+  - [ ] Test the installation
+- [ ] First Workflow
+  - [ ] Create a simple prompt
+  - [ ] Connect to an LLM
+  - [ ] Process the response
+
+### Level 2: Advanced Techniques
+- [ ] Multi-Agent Systems
+  - [ ] Design agent architecture
+  - [ ] Implement agent communication
+  - [ ] Test agent interactions
+- [ ] Tools Integration
+  - [ ] Research available tools
+  - [ ] Implement custom tools
+  - [ ] Test tool functionality
+- [ ] Websearch
+  - [ ] Configure websearch component
+  - [ ] Integrate search results
+  - [ ] Evaluate search results
+- [ ] RAG Implementation
+  - [ ] Design document storage
+  - [ ] Implement retrieval
+  - [ ] Test RAG workflow
+- [ ] Feedback and Reflection
+  - [ ] Design feedback mechanism
+  - [ ] Implement reflection logic
+  - [ ] Test agent improvement
+
+## Progress
+
+### Completed Tasks
+- [x] Project initialization
+- [x] Basic project structure
+- [x] Ollama integration
+
+### Tasks in Progress
+- [ ] First agent implementation
+- [ ] Patient preferences integration
+
+### Planned Tasks
+- [ ] Multi-agent system design
+- [ ] Tool integration
+- [ ] Websearch implementation
+- [ ] RAG system
+- [ ] Feedback and reflection mechanism
+
+## Reflection and Feedback
+
+An important part of this project is improving agents based on feedback and reflection. 
+We implement a feedback flow where:
+
+1. Agents evaluate their own output
+2. Users provide feedback on the output
+3. Agents learn from this feedback
+4. System messages are improved
+
+This process is documented in the `reflection_flow.md` file.
+
 ## Custom Components
 
-The project includes custom components for:
+This project includes custom components for:
 - Patient data loading
 - Preference-based text adaptation
 - Medical terminology simplification
@@ -43,12 +222,12 @@ The project includes custom components for:
 
 ## Testing
 
-1. Run Ollama connection test:
+1. Run the Ollama connection test:
    ```bash
-   python test_ollama.py
+   python src/langflow_poc/test_ollama.py
    ```
 
-2. Load the workflow in LangFlow UI (http://localhost:7860)
+2. Load the workflow in the LangFlow UI (http://localhost:7860)
 3. Test with different patient IDs (P001, P002) to see preference-based adaptations
 
 ## Notes
