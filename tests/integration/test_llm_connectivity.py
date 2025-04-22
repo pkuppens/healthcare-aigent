@@ -26,7 +26,7 @@ def mock_llm():
 @pytest.mark.integration
 def test_ollama_connectivity():
     """Test connectivity to Ollama server.
-    
+
     Verifies that:
     1. The system can connect to the Ollama server
     2. The LLM is created with the correct model and base URL
@@ -50,7 +50,7 @@ def test_ollama_connectivity():
 @pytest.mark.integration
 def test_openai_connectivity():
     """Test connectivity to OpenAI API.
-    
+
     Verifies that:
     1. The system can connect to the OpenAI API
     2. The LLM is created with the correct model
@@ -69,7 +69,7 @@ def test_openai_connectivity():
 @pytest.mark.integration
 def test_custom_temperature():
     """Test LLM creation with custom temperature.
-    
+
     Verifies that:
     1. The system correctly applies custom temperature settings
     2. The temperature value is properly set on the LLM instance
@@ -82,7 +82,7 @@ def test_custom_temperature():
 @pytest.mark.integration
 def test_ollama_connection_error(mock_env_vars, monkeypatch):
     """Test Ollama connection error handling.
-    
+
     Verifies that:
     1. The system properly handles connection errors to Ollama
     2. Appropriate warnings are issued when connection fails
@@ -100,7 +100,7 @@ def test_ollama_connection_error(mock_env_vars, monkeypatch):
 @pytest.mark.integration
 def test_openai_api_error(mock_env_vars, monkeypatch):
     """Test OpenAI API error handling.
-    
+
     Verifies that:
     1. The system properly handles API errors from OpenAI
     2. Appropriate warnings are issued when API calls fail

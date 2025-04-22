@@ -26,7 +26,7 @@ class TestLLMFactoryIntegration:
 
     def test_create_local_llm_connection(self, mock_env_vars):
         """Test creating and connecting to a local LLM.
-        
+
         Verifies that:
         1. The factory can create a local LLM instance
         2. The instance is of the correct type (ChatOllama)
@@ -43,7 +43,7 @@ class TestLLMFactoryIntegration:
 
     def test_create_cloud_llm_connection(self, mock_env_vars):
         """Test creating and connecting to a cloud LLM.
-        
+
         Verifies that:
         1. The factory can create a cloud LLM instance
         2. The instance is of the correct type (ChatOpenAI)
@@ -60,7 +60,7 @@ class TestLLMFactoryIntegration:
 
     def test_get_llm_for_sensitive_task(self, mock_env_vars):
         """Test getting LLM for sensitive data task.
-        
+
         Verifies that:
         1. The factory selects the appropriate LLM type for sensitive tasks
         2. The selected LLM is a local LLM (ChatOllama)
@@ -77,7 +77,7 @@ class TestLLMFactoryIntegration:
 
     def test_get_llm_for_accuracy_task(self, mock_env_vars):
         """Test getting LLM for accuracy-critical task.
-        
+
         Verifies that:
         1. The factory selects the appropriate LLM type for accuracy-critical tasks
         2. The selected LLM is a cloud LLM (ChatOpenAI)

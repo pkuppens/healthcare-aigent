@@ -256,8 +256,8 @@ class QualityControlTask(Task):
             - quality_score: integer (0 to 100)
 
             Text: {text}
-            Patient History: {patient_data['history']}
-            Known Allergies: {patient_data['allergies']}
+            Patient History: {patient_data["history"]}
+            Known Allergies: {patient_data["allergies"]}
 
             Return only the JSON object without any additional text."""
 

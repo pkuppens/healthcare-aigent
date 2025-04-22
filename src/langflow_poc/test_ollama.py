@@ -34,10 +34,7 @@ def test_ollama_connection(model_name: str = "mistral") -> str | None:
         print("Please check if:")
         print("1. Ollama is running")
         print("2. The service is accessible at the correct URL")
-        print(
-            "3. If using Docker, ensure the containers are running and properly "
-            "networked"
-        )
+        print("3. If using Docker, ensure the containers are running and properly networked")
         return None
     except Exception as e:
         print(f"Error: An unexpected error occurred: {e!s}")

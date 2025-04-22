@@ -82,8 +82,7 @@ def pytest_configure(config):
     """Configure pytest with custom markers."""
     config.addinivalue_line(
         "markers",
-        "integration: mark test as integration test requiring "
-        "external services",
+        "integration: mark test as integration test requiring external services",
     )
     config.addinivalue_line(
         "markers",
