@@ -159,12 +159,60 @@ src/langflow_poc/
 
 ## Workflow Storage
 
-Workflows are stored in the `src/langflow_poc/workflows/` directory. This allows for:
-- Version control of workflows
-- Easy sharing of workflows
-- Consistent workflow management across environments
+LangFlow workflows can be managed in several ways:
 
-The `LANGFLOW_CONFIG_DIR` environment variable is used to specify this location.
+### Default Storage
+By default, LangFlow stores workflows in:
+- Windows: `%LOCALAPPDATA%\langflow\langflow\Cache`
+- macOS: `/Users/<username>/Library/Caches/langflow`
+- Linux/WSL: `~/.cache/langflow`
+
+### Export/Import Workflows
+Instead of storing workflows directly in version control, we recommend:
+1. Create and test workflows in the LangFlow UI
+2. Export workflows when they are stable
+3. Store exported workflows in a secure location (not in version control)
+4. Import workflows when needed
+
+> **Important**: Exported workflows may contain:
+> - API keys and secrets
+> - Large JSON structures
+> - Sensitive configuration
+> 
+> Therefore, they should not be stored in version control.
+
+### Recommended Workflow Management
+1. **Development**:
+   - Use the LangFlow UI for development and testing
+   - Keep workflows in the default storage during development
+
+2. **Version Control**:
+   - Document workflow designs in the repository
+   - Store workflow templates (without secrets)
+   - Keep configuration separate from workflows
+
+3. **Deployment**:
+   - Export stable workflows
+   - Store them in a secure location
+   - Use environment variables for configuration/secrets.
+
+### Example Workflow Documentation
+```json
+{
+  "name": "Healthcare Agent",
+  "description": "Basic healthcare communication agent",
+  "components": [
+    {
+      "type": "LLM",
+      "model": "ollama/mistral"
+    },
+    {
+      "type": "Prompt",
+      "template": "You are a healthcare assistant..."
+    }
+  ]
+}
+```
 
 ## Task List
 
