@@ -48,6 +48,8 @@ The system adapts communication based on patient preferences. We learn how to:
 This project uses `uv` for package management, virtual environments, and running the application. 
 `uv` is a fast Python package installer and resolver that can replace pip, venv, and other tools.
 
+> **Note**: This project requires LangFlow version 1.3.4 or higher. We recommend keeping LangFlow updated to the latest version using `uv pip install -U langflow` to access new features and improvements.
+
 1. Install `uv` if you don't have it already:
    ```bash
    # On Windows

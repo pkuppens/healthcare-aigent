@@ -141,7 +141,7 @@ Out of scope:
 #### Work Breakdown Structure/Subtasks
 
 1. **Environment Setup**
-   - [ ] Install LangFlow and dependencies, also in requirement.txt/pyproject.toml
+   - [x] Install LangFlow and dependencies, also in requirement.txt/pyproject.toml
    - [ ] Configure local Ollama integration, test it, e.g. by asking the models programmatically,
    - [ ] Ensure graceful error handling if Ollama isn't running
    - [ ] Set up development environment and descriptions, e.g. how local workflows are stored
