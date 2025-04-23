@@ -50,13 +50,11 @@
             "type": "debugpy",
             "request": "launch",
             "module": "uv",
-            "args": ["run", "langflow", "run"],
+            "args": ["run", "langflow", "run", "--env-file", "${workspaceFolder}/.env"],
             "console": "integratedTerminal",
             "justMyCode": false,
             "stopOnEntry": false,
             "env": {
-                "DO_NOT_TRACK": "true",
-                "LANGFLOW_CONFIG_DIR": "${workspaceFolder}/src/langflow_poc/workflows",
                 "PYTHONPATH": "${workspaceFolder}"
             },
             "python": "${workspaceFolder}/.venv/Scripts/python.exe"
@@ -70,8 +68,6 @@
             "console": "integratedTerminal",
             "justMyCode": false,
             "env": {
-                "DO_NOT_TRACK": "true",
-                "LANGFLOW_CONFIG_DIR": "${workspaceFolder}/src/langflow_poc/workflows",
                 "PYTHONPATH": "${workspaceFolder}"
             },
             "python": "${workspaceFolder}/.venv/Scripts/python.exe"

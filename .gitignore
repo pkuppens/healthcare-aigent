@@ -173,3 +173,25 @@ cython_debug/
 # PyPI configuration file
 .pypirc
 .venv*
+
+# LangFlow specific
+src/langflow_poc/workflows/secret_key
+src/langflow_poc/workflows/profile_pictures/
+.env
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+.env/
+.venv
+env/
+venv/
+ENV/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
