@@ -85,8 +85,8 @@ This project uses `uv` for package management, virtual environments, and running
    # Run LangFlow using uv
    # Set DO_NOT_TRACK=true to opt-out of anonymous data collection
    # This is especially important for healthcare applications
-   # Set LANGFLOW_WORKSPACE_DIR to store workflows in the repository
-   set DO_NOT_TRACK=true && set LANGFLOW_WORKSPACE_DIR=src/langflow_poc/workflows && uv run langflow run
+   # Set LANGFLOW_CONFIG_DIR to store workflows in the repository
+   set DO_NOT_TRACK=true && set LANGFLOW_CONFIG_DIR=src/langflow_poc/workflows && uv run langflow run
    ```
 
    Note: The application may take 10 seconds or more to start up. This is normal, especially on first run.
@@ -102,7 +102,7 @@ LangFlow is under active development with frequent updates (weekly or more often
 uv pip install --upgrade langflow
 
 # After updating, restart LangFlow
-set DO_NOT_TRACK=true && set LANGFLOW_WORKSPACE_DIR=src/langflow_poc/workflows && uv run langflow run
+set DO_NOT_TRACK=true && set LANGFLOW_CONFIG_DIR=src/langflow_poc/workflows && uv run langflow run
 ```
 
 ## My First Agent
@@ -164,7 +164,7 @@ Workflows are stored in the `src/langflow_poc/workflows/` directory. This allows
 - Easy sharing of workflows
 - Consistent workflow management across environments
 
-The `LANGFLOW_WORKSPACE_DIR` environment variable is used to specify this location.
+The `LANGFLOW_CONFIG_DIR` environment variable is used to specify this location.
 
 ## Task List
 
