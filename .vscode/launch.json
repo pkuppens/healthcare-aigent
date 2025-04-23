@@ -44,6 +44,22 @@
                 "PYTHONPATH": "${workspaceFolder}"
             },
             "python": "${workspaceFolder}/.venv/Scripts/python.exe"
+        },
+        {
+            "name": "Run LangFlow",
+            "type": "debugpy",
+            "request": "launch",
+            "module": "uv",
+            "args": ["run", "langflow", "run"],
+            "console": "integratedTerminal",
+            "justMyCode": false,
+            "stopOnEntry": false,
+            "env": {
+                "DO_NOT_TRACK": "true",
+                "LANGFLOW_WORKSPACE_DIR": "${workspaceFolder}/src/langflow_poc/workflows",
+                "PYTHONPATH": "${workspaceFolder}"
+            },
+            "python": "${workspaceFolder}/.venv/Scripts/python.exe"
         }
     ]
 } 
