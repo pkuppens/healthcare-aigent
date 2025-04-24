@@ -1,122 +1,189 @@
-# 🛠️ Infrastructure Automation with Ansible
+# 🛠️ Infrastructure Automation with Ansible for Healthcare AI Agent
 
-## 1. 🧩 What Is Ansible?
+## 1. 🧩 Introduction to Ansible
 
-Ansible is an open-source automation tool used to:
+Ansible is an open-source automation tool that helps:
 - Provision infrastructure
 - Configure systems and services
 - Deploy applications
 - Automate updates and security
 
-It uses YAML-based "playbooks" and works agentless — connecting over SSH or WinRM to execute tasks.
+It uses YAML-based \"playbooks\" and works agentless — connecting over SSH or WinRM to execute tasks.
 
-Ansible is a good fit for the Healthcare AI Agent system, which involves many independently running services (diarization, transcription, local/remote LLMs, memory DB, etc.).
+Ansible is particularly well-suited for the Healthcare AI Agent system's distributed architecture, managing multiple independent services like diarization, transcription, LLMs, memory databases, and more.
 
-## 2. 🚀 Installation & Startup
+## 2. 🚀 System Prerequisites & Environment Setup
 
-### ⚠️ Windows Users: Important Note
-Ansible has known compatibility issues with Windows, particularly with the `os.get_blocking()` function which is not available on Windows. This results in errors like:
-```python
-AttributeError: module 'os' has no attribute 'get_blocking'
+### Installation Overview
+
+| Tool | Installation Level | Purpose |
+|------|-------------------|---------|
+| Ansible | Global | Core automation platform |
+| UV Package Manager | Global | Fast dependency management |
+| Python (3.11, 3.12, 3.13) | Global | Runtime environments |
+| Docker | Global | Container management |
+| Project Dependencies | Virtual Environment | Project-specific packages |
+
+### Platform-Specific Setup
+
+#### ⚠️ Windows Users
+
+Ansible has compatibility issues with Windows, particularly with the `os.get_blocking()` function. Choose one of these options:
+
+##### Option 1: WSL2 (Recommended)
+```bash
+# In PowerShell as Administrator:
+wsl --install
+wsl --set-default-version 2
+
+# Install Ubuntu from Microsoft Store, then in Ubuntu terminal:
+sudo apt update
+sudo apt install python3-pip
+pip3 install ansible
 ```
 
-To work around this limitation, Windows users have three options:
+Access project files with:
+```bash
+cd /mnt/c/Users/username/path/to/healthcare-aigent
+```
 
-#### Option 1: Use WSL2 (Recommended)
-1. Install WSL2:
-   ```bash
-   # Open PowerShell as Administrator and run:
-   wsl --install
-   wsl --set-default-version 2
-   ```
-2. Install Ubuntu from Microsoft Store
-3. Open Ubuntu terminal and run:
-   ```bash
-   sudo apt update
-   sudo apt install python3-pip
-   pip3 install ansible
-   ```
-4. Access your project files in WSL:
-   ```bash
-   # Navigate to your project (adjust path as needed)
-   cd /mnt/c/Users/piete/Repos/pkuppens/healthcare-aigent
-   ```
-
-#### Option 2: Use Docker
+##### Option 2: Docker
 1. Install Docker Desktop for Windows
 2. Use a Linux-based container with Ansible pre-installed
 3. Mount your project directory as a volume
 
-#### Option 3: Use a Linux VM
+##### Option 3: Linux VM
 1. Install VirtualBox or VMware
 2. Create a Linux VM (Ubuntu recommended)
 3. Install Ansible in the VM
 4. Share your project directory with the VM
 
-### Installation with UV (Linux/WSL)
+#### Linux/WSL Setup
 
+1. Install required Python versions:
 ```bash
-# Install Ansible using UV
+sudo add-apt-repository -y ppa:deadsnakes/ppa
+sudo apt update
+sudo apt install -y python3.11 python3.12 python3.13
+```
+
+2. Install UV Package Manager (Global):
+```bash
+curl -LsSf https://astral.sh/uv/install.sh | sh
+source $HOME/.local/bin/env
+```
+
+3. Install Ansible (Global):
+```bash
 uv pip install ansible
-
-# Verify installation
-uv run ansible --version
 ```
 
-⚠️ **Important Notes:**
-1. When using UV, run Ansible commands with the `uv run` prefix:
-   ```bash
-   uv run ansible --version
-   uv run ansible-playbook playbook.yml
-   ```
-
-### Verify Installation
-
-On Linux/WSL:
+4. Verify installations:
 ```bash
 uv run ansible --version
+python3.11 --version
+python3.12 --version
+python3.13 --version
 ```
 
-### Ubuntu / Unix / Cloud VM
+#### Ubuntu/Unix/Cloud VM Setup
 
 ```bash
 sudo apt update
 sudo apt install ansible -y
-```
-
-Check installation:
-
-```bash
 ansible --version
 ```
 
-## 3. 📦 Modular Services with Ansible Playbooks
+## 3. 🐍 Python Environment Management
 
-Below is an example of how to manage various services using Ansible.
+### Virtual Environment Setup
 
-### 📁 Directory Structure
+The project uses multiple Python versions and environments managed through Ansible:
+
+```bash
+# Run the environment setup playbook
+uv run ansible-playbook ansible/playbooks/setup_python_envs.yml
+```
+
+This creates three virtual environments:
+- `.venv-py3.11` - Python 3.11
+- `.venv-py3.12` - Python 3.12
+- `.venv-py3.13` - Python 3.13
+
+Each environment contains:
+- Project dependencies
+- LangFlow and related packages
+- Other service dependencies
+
+### Using Virtual Environments
+
+Activate a specific environment:
+```bash
+source .venv-py3.11/bin/activate  # For Python 3.11
+source .venv-py3.12/bin/activate  # For Python 3.12
+source .venv-py3.13/bin/activate  # For Python 3.13
+```
+
+Update all environments:
+```bash
+uv run ansible-playbook ansible/playbooks/setup_python_envs.yml
+```
+
+### Troubleshooting Virtual Environments
+
+If you encounter issues:
+1. Verify Python installations:
+   ```bash
+   python3.11 --version
+   python3.12 --version
+   python3.13 --version
+   ```
+
+2. Check UV installation:
+   ```bash
+   uv --version
+   ```
+
+3. Examine virtual environment directories:
+   ```bash
+   ls -la .venvs/
+   ```
+
+4. Manual LangFlow installation (if needed):
+   ```bash
+   source .venv-py3.11/bin/activate
+   pip install langflow
+   ```
+
+## 4. 📦 Service Management with Ansible
+
+### 📁 Project Structure
 
 ```
 ansible/
 ├── inventories/
-│   └── local_hosts
+│   └── local_hosts          # Inventory file for local deployment
 ├── playbooks/
-│   ├── setup_ollama.yml
-│   ├── setup_elasticsearch.yml
-│   ├── setup_speech.yml
-│   └── setup_langflow.yml
+│   ├── setup_ollama.yml     # Local LLM hosting
+│   ├── setup_elasticsearch.yml  # Search and storage
+│   ├── setup_speech.yml     # Diarization and transcription
+│   ├── setup_langflow.yml   # Agent hosting and workflow
+│   └── setup_python_envs.yml  # Python environment management
 ├── roles/
 │   └── <modular service roles here>
 ```
 
-### Example Inventory (inventories/local_hosts)
+### Inventory Setup
 
+Example inventory file (`inventories/local_hosts`):
 ```ini
 [healthcare_node]
 127.0.0.1 ansible_connection=local
 ```
 
-### 🧠 Deploy Ollama (Local LLM Hosting)
+### Service Deployment
+
+#### 🧠 Local LLM Hosting with Ollama
 
 ```yaml
 # playbooks/setup_ollama.yml
@@ -132,12 +199,40 @@ ansible/
         name: ollama
         image: ollama/ollama
         ports:
-          - "11434:11434"
+          - \"11434:11434\"
         volumes:
-          - "/opt/ollama:/root/.ollama"
+          - \"/opt/ollama:/root/.ollama\"
 ```
 
-### 🔈 Speaker Diarization & Transcription (e.g. Whisper + PyAnnote)
+#### 🔍 Elasticsearch Stack
+
+```yaml
+# playbooks/setup_elasticsearch.yml
+- hosts: healthcare_node
+  tasks:
+    - name: Deploy Elasticsearch
+      docker_container:
+        name: elasticsearch
+        image: docker.elastic.co/elasticsearch/elasticsearch:8.12.0
+        env:
+          discovery.type: single-node
+          xpack.security.enabled: false
+        ports:
+          - \"9200:9200\"
+
+    - name: Deploy Kibana
+      docker_container:
+        name: kibana
+        image: docker.elastic.co/kibana/kibana:8.12.0
+        ports:
+          - \"5601:5601\"
+        env:
+          ELASTICSEARCH_HOSTS: http://elasticsearch:9200
+        links:
+          - elasticsearch
+```
+
+#### 🔈 Speech Services (Whisper + PyAnnote)
 
 ```yaml
 # playbooks/setup_speech.yml
@@ -150,14 +245,14 @@ ansible/
         build:
           path: ../services/speech/
         ports:
-          - "5000:5000"
+          - \"5000:5000\"
         volumes:
-          - "./data/audio:/app/audio"
+          - \"./data/audio:/app/audio\"
 ```
 
-🧪 Tip: Split Whisper and diarization into microservices using FastAPI containers.
+🧪 Tip: Consider splitting Whisper and diarization into separate microservices using FastAPI containers.
 
-### 🧠 LangFlow + Agent Hosting
+#### 🧠 LangFlow Agent Hosting
 
 ```yaml
 # playbooks/setup_langflow.yml
@@ -173,61 +268,25 @@ ansible/
         name: langflow
         image: langflow/langflow
         ports:
-          - "7860:7860"
+          - \"7860:7860\"
         volumes:
-          - "./apps/langflow:/app/langflow"
+          - \"./apps/langflow:/app/langflow\"
 ```
 
-## 4. 🔍 Elasticsearch Stack (Open Source)
-
-Use the ELK stack (Elasticsearch + Logstash + Kibana) or lightweight alternative:
-
-### 🧰 Suggested Stack
-- Elasticsearch: Search engine backend
-- Kibana: Web UI for search and dashboards
-- Fluent Bit (lighter than Logstash): Log shipping
-
-### Elasticsearch Ansible Snippet
-
-```yaml
-# playbooks/setup_elasticsearch.yml
-- hosts: healthcare_node
-  tasks:
-    - name: Deploy Elasticsearch
-      docker_container:
-        name: elasticsearch
-        image: docker.elastic.co/elasticsearch/elasticsearch:8.12.0
-        env:
-          discovery.type: single-node
-          xpack.security.enabled: false
-        ports:
-          - "9200:9200"
-
-    - name: Deploy Kibana
-      docker_container:
-        name: kibana
-        image: docker.elastic.co/kibana/kibana:8.12.0
-        ports:
-          - "5601:5601"
-        env:
-          ELASTICSEARCH_HOSTS: http://elasticsearch:9200
-        links:
-          - elasticsearch
-```
-
-## 5. 🪢 Git Sync & Dev Inside LangFlow Container
+## 5. 🪢 Development Workflow Options
 
 ### Option 1: Mount Project Volume
+
 Mount your project code into the LangFlow container:
 
 ```yaml
 volumes:
-  - "../my_agent_repo:/app/langflow"
+  - \"../my_agent_repo:/app/langflow\"
 ```
 
-You can edit in VS Code on the host, and LangFlow will use the live version.
+This allows editing in VS Code on the host while LangFlow uses the live version.
 
-### Option 2: Git Pull via Ansible Task
+### Option 2: Git Sync via Ansible
 
 ```yaml
 - name: Pull latest code
@@ -237,19 +296,38 @@ You can edit in VS Code on the host, and LangFlow will use the live version.
     force: yes
 ```
 
-### Option 3: Use Dev Containers
-The project already has a `.devcontainer` directory with configuration for VS Code. You can extend this to include Ansible tooling.
+### Option 3: Dev Containers
 
-## ✅ Next Steps
+The project has a `.devcontainer` directory with VS Code configuration. This can be extended to include Ansible tooling.
 
-1. Modularize your services into separate playbooks or roles
-2. Use tags like `--tags llm` or `--tags transcription` to deploy selectively
-3. Version-control your `ansible/` folder with your main GitHub repo
-4. For full automation, consider a Makefile or CI pipeline to run Ansible on every update
-5. Integrate with the existing `.github` workflows for CI/CD
+## 6. ✅ Best Practices & Next Steps
+
+1. **Modularize Services**: Split services into separate playbooks or roles
+2. **Use Tags**: Deploy selectively with tags like `--tags llm` or `--tags transcription`
+3. **Version Control**: Include `ansible/` folder in your GitHub repo
+4. **CI/CD Integration**: Add a Makefile or CI pipeline to run Ansible automatically
+5. **Idempotent Playbooks**: Ensure playbooks can be run multiple times without issues
+6. **Documentation**: Keep this Ansible.md up to date with changes
+
+### Running Ansible Commands
+
+Important points for consistent operation:
+- When using UV, prefix Ansible commands with `uv run`:
+  ```bash
+  uv run ansible --version
+  uv run ansible-playbook playbooks/setup_ollama.yml
+  ```
+- Use tags for selective deployment:
+  ```bash
+  uv run ansible-playbook site.yml --tags \"llm,speech\"
+  ```
+- Validate playbooks before running:
+  ```bash
+  uv run ansible-playbook playbook.yml --check
+  ```
 
 ## 🔗 Related Documentation
 
 - [Project Setup Guide](SETUP.md)
 - [README](README.md)
-- [GitHub Workflows](../.github/workflows/) 
+- [GitHub Workflows](../.github/workflows/)
