@@ -1,0 +1,116 @@
+---
+# This playbook handles system-level setup including Python versions and UV installation
+# It should be run first, before setting up virtual environments
+
+- name: System setup for Python environments
+  hosts: localhost
+  connection: local
+  become: true  # We need sudo for system packages
+
+  vars:
+    # Get the current working directory
+    project_root: "{{ lookup('env', 'PWD') }}"
+    # Define Python versions to support
+    python_versions:
+      - "3.11"
+      - "3.12"
+      - "3.13"
+    # Detect if we're in WSL
+    is_wsl: "{{ ansible_system == 'Linux' and 'microsoft' in ansible_distribution.lower() }}"
+
+  tasks:
+    # Debug task to show current environment state
+    - name: Show current environment state
+      debug:
+        msg: |
+          Project root: {{ project_root }}
+          Current Python: {{ ansible_python_version }}
+          Current user: {{ ansible_user_id }}
+          System: {{ ansible_system }}
+          Distribution: {{ ansible_distribution }}
+          Is WSL: {{ is_wsl }}
+
+    # Install required system packages
+    - name: Install system packages
+      apt:
+        name:
+          - python3-venv
+          - python3-pip
+          - python3-dev
+          - build-essential
+          - python3-full
+          - python3-pipx
+        state: present
+        update_cache: yes
+      when: is_wsl
+      register: apt_install
+      changed_when: apt_install.changed
+
+    # Install Python versions
+    - name: Add deadsnakes PPA
+      apt_repository:
+        repo: ppa:deadsnakes/ppa
+        state: present
+        update_cache: yes
+      when: is_wsl
+      register: ppa_add
+      changed_when: ppa_add.changed
+
+    - name: Install Python versions
+      apt:
+        name: "{{ item }}"
+        state: present
+      loop:
+        - python3.11
+        - python3.11-venv
+        - python3.11-dev
+        - python3.12
+        - python3.12-venv
+        - python3.12-dev
+        - python3.13
+        - python3.13-venv
+        - python3.13-dev
+      when: is_wsl
+      register: python_install
+      changed_when: python_install.changed
+
+    # Install UV using pipx (recommended for system-wide tools)
+    - name: Install UV using pipx
+      command: pipx install uv
+      register: uv_install
+      changed_when: uv_install.rc == 0
+      ignore_errors: yes
+
+    # Fallback: Install UV in user space if pipx fails
+    - name: Install UV in user space
+      command: python3 -m pip install --user uv
+      when: uv_install is failed
+      register: uv_user_install
+      changed_when: uv_user_install.rc == 0
+
+    # Verify UV installation
+    - name: Check UV installation
+      command: uv --version
+      register: uv_check
+      changed_when: false
+      ignore_errors: yes
+
+    # Final status
+    - name: Show setup completion status
+      debug:
+        msg: |
+          System setup complete!
+          
+          Python versions installed:
+          {% for version in python_versions %}
+          - Python {{ version }}
+          {% endfor %}
+          
+          UV status: {{ uv_check.rc == 0 | ternary('Installed', 'Not installed') }}
+          
+          Next steps:
+          1. Run setup_python_envs.yml to create virtual environments
+          2. Use the created environments with:
+             source .venv-py3.11/bin/activate  # For Python 3.11
+             source .venv-py3.12/bin/activate  # For Python 3.12
+             source .venv-py3.13/bin/activate  # For Python 3.13 

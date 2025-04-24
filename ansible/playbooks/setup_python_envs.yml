@@ -2,6 +2,7 @@
 # This playbook sets up Python virtual environments for the Healthcare AI Agent project.
 # It creates separate environments for Python 3.11, 3.12, and 3.13, each with langflow installed.
 # The playbook is idempotent - it can be run multiple times safely.
+# Note: Run setup_system.yml first to ensure required Python versions and UV are installed.
 
 - name: Setup Python virtual environments
   # hosts: defines which machines to run the playbook on
@@ -53,13 +54,6 @@
           Distribution: {{ ansible_distribution }}
           Is WSL: {{ is_wsl }}
 
-    # Clean up any existing .venv directory that might cause conflicts
-    - name: Clean up existing .venv directory
-      file:
-        path: "{{ project_root }}/.venv"
-        state: absent
-      ignore_errors: yes
-
     # Create base directory for virtual environments if it doesn't exist
     - name: Create virtual environments directory
       file:
@@ -68,28 +62,6 @@
         mode: '0755'
       register: venv_dir_creation
       changed_when: venv_dir_creation.changed
-
-    # Install system-level Python packages required for virtual environments
-    - name: Install required system packages
-      apt:
-        name:
-          - python3-venv
-          - python3-pip
-          - python3-dev
-          - build-essential
-        state: present
-        update_cache: yes
-      when: is_wsl
-      register: apt_install
-      changed_when: apt_install.changed
-
-    # Install UV package manager globally
-    - name: Install UV package manager
-      pip:
-        name: uv
-        state: present
-      register: uv_install
-      changed_when: uv_install.changed
 
     # Create virtual environments for each Python version
     - name: Create virtual environments for each Python version
