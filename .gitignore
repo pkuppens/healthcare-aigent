@@ -195,3 +195,9 @@ ENV/
 .idea/
 *.swp
 *.swo
+
+# Ansible
+ansible/vault/
+ansible/*.vault
+ansible/*.vault.yml
+ansible/*.vault.yaml

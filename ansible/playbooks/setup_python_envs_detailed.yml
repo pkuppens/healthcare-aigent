@@ -1,0 +1,216 @@
+---
+# This playbook sets up Python virtual environments for the Healthcare AI Agent project.
+# It creates separate environments for Python 3.11, 3.12, and 3.13, each with langflow installed.
+# The playbook is idempotent - it can be run multiple times safely.
+#
+# Steps:
+# 1. Verify system state and requirements
+# 2. Create base directory structure
+# 3. For each Python version:
+#    a. Verify Python installation
+#    b. Verify venv package installation
+#    c. Create virtual environment
+#    d. Verify virtual environment
+#    e. Install langflow
+#    f. Create symlink
+# 4. Final verification and instructions
+
+- name: Setup Python virtual environments (Detailed)
+  hosts: localhost
+  connection: local
+  become: true  # Enable sudo
+  become_method: sudo
+  become_user: root
+  # Note: sudo password should be provided via --ask-become-pass or vault
+
+  vars:
+    # Get the current working directory
+    project_root: "{{ lookup('env', 'PWD') }}"
+    # Define Python versions to support
+    python_versions:
+      - "3.11"
+      - "3.12"
+      - "3.13"
+    # Base directory for virtual environments
+    venv_base_dir: "{{ project_root }}/.venvs"
+    # Detect if we're in WSL
+    is_wsl: "{{ ansible_system == 'Linux' and 'microsoft' in ansible_distribution.lower() }}"
+
+  tasks:
+    # Step 0: Verify sudo access
+    - name: Verify sudo access
+      command: whoami
+      register: sudo_check
+      changed_when: false
+      ignore_errors: yes
+
+    - name: Show sudo access status
+      debug:
+        msg: |
+          Sudo Access Status:
+          - User: {{ sudo_check.stdout }}
+          - Has sudo: {{ sudo_check.rc == 0 }}
+          - Error: {{ sudo_check.stderr }}
+      when: sudo_check.rc != 0
+
+    - name: Fail if no sudo access
+      fail:
+        msg: |
+          Sudo access is required but not available.
+          Please run the playbook with --ask-become-pass or provide the sudo password via vault.
+          Example: ansible-playbook playbook.yml --ask-become-pass
+      when: sudo_check.rc != 0
+
+    # Step 1: Verify system state and requirements
+    - name: Show system information
+      debug:
+        msg: |
+          System Information:
+          - Project root: {{ project_root }}
+          - Venv directory: {{ venv_base_dir }}
+          - Current Python: {{ ansible_python_version }}
+          - Current user: {{ ansible_user_id }}
+          - System: {{ ansible_system }}
+          - Distribution: {{ ansible_distribution }}
+          - Is WSL: {{ is_wsl }}
+          - Python versions to install: {{ python_versions | join(', ') }}
+          - Sudo user: {{ sudo_check.stdout }}
+
+    # Step 2: Create base directory structure
+    - name: Create virtual environments base directory
+      file:
+        path: "{{ venv_base_dir }}"
+        state: directory
+        mode: '0755'
+      register: venv_dir_creation
+      changed_when: venv_dir_creation.changed
+
+    # Step 3: Process each Python version
+    - name: Process Python version {{ item }}
+      block:
+        # Step 3a: Verify Python installation
+        - name: Verify Python {{ item }} installation
+          command: "python{{ item }} --version"
+          register: python_version_check
+          changed_when: false
+          ignore_errors: yes
+
+        - name: Show Python {{ item }} status
+          debug:
+            msg: |
+              Python {{ item }} Status:
+              - Installed: {{ python_version_check.rc == 0 }}
+              - Version: {{ python_version_check.stdout }}
+              - Error: {{ python_version_check.stderr }}
+
+        # Step 3b: Verify venv package installation
+        - name: Verify venv package for Python {{ item }}
+          command: "python{{ item }} -m venv --help"
+          register: venv_check
+          changed_when: false
+          ignore_errors: yes
+
+        - name: Show venv package status for Python {{ item }}
+          debug:
+            msg: |
+              venv Package Status for Python {{ item }}:
+              - Available: {{ venv_check.rc == 0 }}
+              - Error: {{ venv_check.stderr }}
+
+        # Step 3c: Create virtual environment
+        - name: Create virtual environment for Python {{ item }}
+          command: "python{{ item }} -m venv {{ venv_base_dir }}/py{{ item }}"
+          register: venv_creation
+          changed_when: venv_creation.rc == 0
+          when: venv_check.rc == 0
+
+        - name: Show virtual environment creation status for Python {{ item }}
+          debug:
+            msg: |
+              Virtual Environment Creation Status for Python {{ item }}:
+              - Created: {{ venv_creation.rc == 0 }}
+              - Path: {{ venv_base_dir }}/py{{ item }}
+              - Error: {{ venv_creation.stderr }}
+
+        # Step 3d: Verify virtual environment
+        - name: Verify virtual environment for Python {{ item }}
+          command: "{{ venv_base_dir }}/py{{ item }}/bin/python --version"
+          register: venv_verify
+          changed_when: false
+          when: venv_creation.rc == 0
+          ignore_errors: yes
+
+        - name: Show virtual environment verification status for Python {{ item }}
+          debug:
+            msg: |
+              Virtual Environment Verification for Python {{ item }}:
+              - Valid: {{ venv_verify.rc == 0 }}
+              - Version: {{ venv_verify.stdout }}
+              - Error: {{ venv_verify.stderr }}
+
+        # Step 3e: Install langflow
+        - name: Install langflow in virtual environment for Python {{ item }}
+          command: "{{ venv_base_dir }}/py{{ item }}/bin/pip install langflow"
+          register: langflow_install
+          changed_when: langflow_install.rc == 0
+          when: venv_verify.rc == 0
+
+        - name: Show langflow installation status for Python {{ item }}
+          debug:
+            msg: |
+              LangFlow Installation Status for Python {{ item }}:
+              - Installed: {{ langflow_install.rc == 0 }}
+              - Error: {{ langflow_install.stderr }}
+
+        # Step 3f: Create symlink
+        - name: Create symlink for Python {{ item }} environment
+          file:
+            src: "{{ venv_base_dir }}/py{{ item }}"
+            dest: "{{ project_root }}/.venv-py{{ item }}"
+            state: link
+          register: symlink_creation
+          changed_when: symlink_creation.changed
+
+        - name: Show symlink status for Python {{ item }}
+          debug:
+            msg: |
+              Symlink Status for Python {{ item }}:
+              - Created: {{ symlink_creation.changed }}
+              - Source: {{ venv_base_dir }}/py{{ item }}
+              - Target: {{ project_root }}/.venv-py{{ item }}
+
+      loop: "{{ python_versions }}"
+      rescue:
+        - name: Show error for Python {{ item }}
+          debug:
+            msg: |
+              Error processing Python {{ item }}:
+              - Python check: {{ python_version_check.rc }}
+              - venv check: {{ venv_check.rc }}
+              - venv creation: {{ venv_creation.rc }}
+              - venv verify: {{ venv_verify.rc }}
+              - langflow install: {{ langflow_install.rc }}
+              - symlink creation: {{ symlink_creation.changed }}
+
+    # Step 4: Final verification and instructions
+    - name: Show final setup status
+      debug:
+        msg: |
+          Python Virtual Environment Setup Complete!
+          
+          Available environments:
+          {% for version in python_versions %}
+          - .venv-py{{ version }}
+          {% endfor %}
+          
+          To activate an environment in WSL:
+          source .venv-py{{ python_versions[0] }}/bin/activate
+          
+          To activate an environment in Windows:
+          .venv-py{{ python_versions[0] }}\Scripts\activate
+          
+          To verify an environment:
+          1. Activate it
+          2. Run: python --version
+          3. Run: which python
+          4. Run: pip list | grep langflow 

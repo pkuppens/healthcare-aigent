@@ -86,6 +86,47 @@ python3.12 --version
 python3.13 --version
 ```
 
+### Sudo Password Handling
+
+The playbooks require sudo access for system-level operations. There are two secure ways to provide the sudo password:
+
+#### Option 1: Interactive Prompt (Recommended)
+```bash
+# Run with interactive sudo password prompt
+uv run ansible-playbook ansible/playbooks/setup_system.yml --ask-become-pass -v
+```
+
+#### Option 2: Ansible Vault (Advanced)
+1. Create a vault file outside the repository:
+```bash
+# Create a secure directory outside the repo
+mkdir -p ~/.ansible/vault
+cd ~/.ansible/vault
+
+# Create the vault file
+ansible-vault create sudo_pass.yml
+```
+
+2. Add your sudo password:
+```yaml
+ansible_become_pass: "your-sudo-password"
+```
+
+3. Run playbook with vault:
+```bash
+uv run ansible-playbook ansible/playbooks/setup_system.yml --vault-password-file ~/.ansible/vault/sudo_pass.yml -v
+```
+
+⚠️ Security Best Practices:
+- NEVER store vault files in the repository
+- Keep vault files in a secure, private location (e.g., `~/.ansible/vault/`)
+- Use a strong password for the vault file
+- Consider using environment variables for sensitive data
+- Rotate vault passwords regularly
+- Use different vault files for different environments
+- Document the vault file location in a secure place
+- Back up vault files securely
+
 #### Ubuntu/Unix/Cloud VM Setup
 
 ```bash

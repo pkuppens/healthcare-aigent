@@ -63,16 +63,23 @@
       register: venv_dir_creation
       changed_when: venv_dir_creation.changed
 
+    # Check if virtual environments already exist
+    - name: Check existing virtual environments
+      command: "test -d {{ venv_base_dir }}/py{{ item }}"
+      loop: "{{ python_versions }}"
+      register: venv_exists
+      ignore_errors: yes
+      changed_when: false
+
     # Create virtual environments for each Python version
     - name: Create virtual environments for each Python version
-      command: "python{{ item }}-venv {{ venv_base_dir }}/py{{ item }}"
+      command: "python{{ item }} -m venv {{ venv_base_dir }}/py{{ item }}"
       loop: "{{ python_versions }}"
       register: venv_creation
       changed_when: venv_creation.rc == 0
       # Skip if virtual environment already exists
-      when: not (stat is defined and stat.stat.exists)
-      vars:
-        stat: "{{ lookup('stat', venv_base_dir + '/py' + item) }}"
+      when: >
+        venv_exists.results | selectattr('item', 'equalto', item) | map(attribute='rc') | first != 0
 
     # Debug task to show virtual environment creation status
     - name: Show virtual environment status
@@ -80,8 +87,7 @@
         msg: |
           Virtual environment py{{ item }}:
           - Path: {{ venv_base_dir }}/py{{ item }}
-          - Exists: {{ lookup('stat', venv_base_dir + '/py' + item).stat.exists }}
-          - Python version: {{ lookup('pipe', venv_base_dir + '/py' + item + '/bin/python --version') }}
+          - Exists: {{ venv_exists.results | selectattr('item', 'equalto', item) | map(attribute='rc') | first == 0 }}
       loop: "{{ python_versions }}"
 
     # Install langflow in each virtual environment
@@ -91,7 +97,8 @@
       register: langflow_installation
       changed_when: langflow_installation.rc == 0
       # Skip if virtual environment doesn't exist
-      when: lookup('stat', venv_base_dir + '/py' + item).stat.exists
+      when: >
+        venv_exists.results | selectattr('item', 'equalto', item) | map(attribute='rc') | first == 0
 
     # Create symlinks for easy access to virtual environments
     - name: Create symlinks for easy access
