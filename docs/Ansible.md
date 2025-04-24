@@ -97,24 +97,65 @@ uv run ansible-playbook ansible/playbooks/setup_system.yml --ask-become-pass -v
 ```
 
 #### Option 2: Ansible Vault (Advanced)
-1. Create a vault file outside the repository:
+
+1. Create the vault directory and file:
 ```bash
-# Create a secure directory outside the repo
+# Create secure directory
 mkdir -p ~/.ansible/vault
 cd ~/.ansible/vault
 
-# Create the vault file
+# Create the vault file (you'll be prompted for a vault password)
 ansible-vault create sudo_pass.yml
 ```
 
-2. Add your sudo password:
+2. Add your sudo password to the vault file:
 ```yaml
-ansible_become_pass: "your-sudo-password"
+# Content of ~/.ansible/vault/sudo_pass.yml
+ansible_become_pass: "your-actual-sudo-password"
 ```
 
-3. Run playbook with vault:
+3. Verify the vault setup:
 ```bash
-uv run ansible-playbook ansible/playbooks/setup_system.yml --vault-password-file ~/.ansible/vault/sudo_pass.yml -v
+# Run the verification playbook with interactive prompt
+uv run ansible-playbook ansible/playbooks/verify_vault.yml --ask-vault-pass -v
+```
+
+or if you placed the vault password in a secure file:
+```bash
+# Create a secure password file
+echo 'your-vault-password' > ~/.ansible/vault/.vault_pass
+chmod 600 ~/.ansible/vault/.vault_pass
+
+# Run verification with password file
+uv run ansible-playbook ansible/playbooks/verify_vault.yml --vault-password-file ~/.ansible/vault/.vault_pass -v
+```
+
+4. Run playbook with vault (choose one method):
+
+   a. Interactive prompt (recommended for first-time setup):
+   ```bash
+   uv run ansible-playbook ansible/playbooks/setup_system.yml --ask-vault-pass -v
+   ```
+
+   b. Environment variable (more secure):
+   ```bash
+   # Set the vault password
+   export ANSIBLE_VAULT_PASSWORD='your-vault-password'
+   uv run ansible-playbook ansible/playbooks/setup_system.yml -v
+   ```
+
+   c. Password file (for automation):
+   ```bash
+   # Use the password file
+   uv run ansible-playbook ansible/playbooks/setup_system.yml --vault-password-file ~/.ansible/vault/.vault_pass -v
+   ```
+
+Example Directory Structure:
+```
+~/.ansible/
+└── vault/
+    ├── sudo_pass.yml      # Encrypted vault file with sudo password
+    └── .vault_pass        # Optional: Plaintext vault password (chmod 600)
 ```
 
 ⚠️ Security Best Practices:
@@ -126,6 +167,22 @@ uv run ansible-playbook ansible/playbooks/setup_system.yml --vault-password-file
 - Use different vault files for different environments
 - Document the vault file location in a secure place
 - Back up vault files securely
+- If using a password file, ensure it has proper permissions (chmod 600)
+- Never commit password files to version control
+
+Troubleshooting:
+1. If you get "sudo: a password is required":
+   - Verify the vault password is correct
+   - Check the sudo password in the vault file
+   - Run the verification playbook: `uv run ansible-playbook ansible/playbooks/verify_vault.yml --ask-vault-pass -v`
+
+2. If you get "Vault format unhexlify error":
+   - The vault password is incorrect
+   - Try recreating the vault file
+
+3. If you get "Permission denied":
+   - Check file permissions: `chmod 600 ~/.ansible/vault/*`
+   - Verify you own the files: `chown $USER:$USER ~/.ansible/vault/*`
 
 #### Ubuntu/Unix/Cloud VM Setup
 

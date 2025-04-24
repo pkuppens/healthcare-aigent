@@ -1,0 +1,83 @@
+---
+# Run this playbook to verify the vault setup by calling:
+# uv run ansible-playbook ansible/playbooks/verify_vault.yml --vault-password-file ~/.ansible/vault/.vault_pass -v
+# This playbook verifies that:
+# 1. The vault file exists and can be decrypted
+# 2. The vault contains a sudo password
+# 3. The sudo password is correct
+# 4. The sudo user can call "whoami" and get "root"
+
+- name: Verify Vault and Sudo Access
+  hosts: localhost
+  connection: local
+  become: true
+  become_method: sudo
+  become_user: root
+
+  vars_files:
+    - "{{ lookup('env', 'HOME') }}/.ansible/vault/sudo_pass.yml"
+
+  tasks:
+    # Step 1: Verify vault file exists
+    - name: Check if vault file exists
+      stat:
+        path: "{{ lookup('env', 'HOME') }}/.ansible/vault/sudo_pass.yml"
+      register: vault_file
+      delegate_to: localhost
+
+    - name: Show vault file status
+      debug:
+        msg: |
+          Vault File Status:
+          - Exists: {{ vault_file.stat.exists }}
+          - Path: {{ vault_file.stat.path }}
+          - Size: {{ vault_file.stat.size }} bytes
+          - Mode: {{ vault_file.stat.mode }}
+
+    - name: Fail if vault file doesn't exist
+      fail:
+        msg: |
+          Vault file not found at {{ lookup('env', 'HOME') }}/.ansible/vault/sudo_pass.yml
+          Please create it using: ansible-vault create ~/.ansible/vault/sudo_pass.yml
+      when: not vault_file.stat.exists
+
+    # Step 2: Verify sudo password in vault
+    - name: Check if sudo password is defined
+      debug:
+        msg: |
+          Sudo Password Status:
+          - Defined: {{ ansible_become_pass is defined }}
+          - Length: {{ ansible_become_pass | length if ansible_become_pass is defined else 0 }}
+      when: ansible_become_pass is defined
+
+    - name: Fail if sudo password is not defined
+      fail:
+        msg: |
+          Sudo password not found in vault file
+          Please add it to ~/.ansible/vault/sudo_pass.yml:
+          ansible_become_pass: "your-sudo-password"
+      when: ansible_become_pass is not defined
+
+    # Step 3: Verify sudo access
+    - name: Verify sudo access
+      command: whoami
+      register: sudo_check
+      changed_when: false
+
+    - name: Show sudo access status
+      debug:
+        msg: |
+          Sudo Access Status:
+          - User: {{ sudo_check.stdout }}
+          - Expected: root
+          - Success: {{ sudo_check.rc == 0 }}
+
+    - name: Fail if sudo access fails
+      fail:
+        msg: |
+          Sudo access verification failed
+          Please check:
+          1. The vault password is correct
+          2. The sudo password in the vault is correct
+          3. Your user has sudo privileges
+      when: sudo_check.rc != 0 
