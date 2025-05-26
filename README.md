@@ -24,37 +24,22 @@ This is a proof-of-concept system using simulated data and mocked components. Fo
 
 ## Quick Start
 
-1. **Clone and Setup**:
-   ```bash
-   git clone https://github.com/pkuppens/healthcare-aigent.git
-   cd healthcare-aigent
-   
-   # Create virtual environment (only once)
-   uv venv
-   # On Windows:
-   .venv\Scripts\activate
-   # On Unix/MacOS:
-   source .venv/bin/activate
-   
-   # Install dependencies
-   uv sync --dev
-   ```
+For detailed installation instructions, see [INSTALL.md](INSTALL.md).
 
-2. **Configure Environment**:
-   ```bash
-   # Copy example configuration
-   cp .env.example .env
-   # Edit .env with your API keys and preferences
-   ```
+**Quick setup:**
+```bash
+git clone https://github.com/pkuppens/healthcare-aigent.git
+cd healthcare-aigent
+uv venv && source .venv/bin/activate  # On Windows: .venv\Scripts\activate
+uv sync --dev
+cp .env.example .env  # Edit with your API keys
+python src/main.py
+```
 
-3. **Run the System**:
-   ```bash
-   # Start the backend service
-   python src/main.py
-   
-   # Run test scenarios
-   python notebooks/run_crewai_llm.py
-   ```
+**Next steps:**
+- Configure your `.env` file with API keys and preferences
+- Run test scenarios: `python notebooks/run_crewai_llm.py`
+- Read the [Technical Implementation](docs/technical_implementation.md) guide
 
 ## Architecture
 
