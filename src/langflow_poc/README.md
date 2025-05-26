@@ -71,7 +71,7 @@ This project uses `uv` for package management, virtual environments, and running
    source .venv/bin/activate
 
    # Install dependencies
-   uv pip install -r requirements.txt
+   uv sync --dev
    ```
 
 3. Ensure Ollama is running locally:
@@ -99,7 +99,7 @@ LangFlow is under active development with frequent updates (weekly or more often
 
 ```bash
 # Update LangFlow to the latest version
-uv pip install --upgrade langflow
+uv add langflow --upgrade
 
 # After updating, restart LangFlow
 set DO_NOT_TRACK=true && set LANGFLOW_CONFIG_DIR=src/langflow_poc/workflows && uv run langflow run
@@ -146,7 +146,6 @@ The response is the answer from the LLM. In LangFlow, you can:
 ```
 src/langflow_poc/
 ├── README.md                 # This documentation
-├── requirements.txt          # Required packages
 ├── test_ollama.py            # Test Ollama connection
 ├── patient_data.py           # Mock patient database with preferences
 ├── workflows/                # LangFlow workflow definitions

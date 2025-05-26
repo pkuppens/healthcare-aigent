@@ -57,10 +57,10 @@ source .venv/bin/activate
 
 ### Step 4: Install dependencies
 
-Install the project in editable mode with development dependencies:
+Install the project with development dependencies:
 
 ```bash
-uv pip install -e ".[dev]"
+uv sync --dev
 ```
 
 This will install:
@@ -162,7 +162,7 @@ To configure VS Code to use UV instead of pip:
 
 4. For existing projects, you can manually install dependencies with UV:
    ```bash
-   uv pip install -e ".[dev]"
+   uv sync --dev
    ```
 
 ### Troubleshooting UV with VS Code
@@ -179,7 +179,7 @@ If you encounter issues with VS Code using UV:
    ```bash
    python -m venv .venv
    .venv\Scripts\activate  # or source .venv/bin/activate on Unix/MacOS
-   uv pip install -e ".[dev]"
+   uv sync --dev
    ```
    Then in VS Code, select the Python interpreter from the `.venv` directory.
 
@@ -193,7 +193,7 @@ If you encounter any issues during setup:
 
 1. Verify that your Python version meets the requirements (3.11 recommended)
 2. Ensure your virtual environment is activated
-3. Try reinstalling dependencies with `uv pip install -e ".[dev]" --upgrade`
+3. Try reinstalling dependencies with `uv sync --dev --upgrade`
 4. If pre-commit hooks aren't working, try `pre-commit clean` and reinstall
 
 ## Development workflow

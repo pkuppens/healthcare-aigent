@@ -57,7 +57,7 @@ This proof-of-concept uses simulated data and mocked components to demonstrate t
    source .venv/bin/activate
 
    # Install dependencies using uv
-   uv pip install -e ".[dev]"
+   uv sync --dev
    ```
 
 3. Configure the system:
@@ -115,7 +115,6 @@ healthcare-aigent/
 ├── .env                     # Environment variables
 ├── .env.example             # Example environment variables
 ├── pyproject.toml           # Project metadata and dependencies
-├── requirements.txt         # Dependencies
 └── README.md                # Project documentation
 ```
 
@@ -218,21 +217,23 @@ To configure VS Code to use UV instead of pip:
 
 4. For existing projects, you can manually install dependencies with UV:
    ```bash
-   uv pip install -e ".[dev]"
+   uv sync --dev
    ```
 
 #### Updating Dependencies
 
 ```bash
 # Update all dependencies
-uv pip install -e ".[dev]" --upgrade
-
-# Install a new package
-uv pip install package-name
+uv sync --dev --upgrade
 
 # Add a new dependency to the project
-uv pip install package-name
-# Then update pyproject.toml with the new dependency
+uv add package-name
+
+# Add a development dependency
+uv add --dev package-name
+
+# Remove a dependency
+uv remove package-name
 ```
 
 ### Python Version
