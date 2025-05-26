@@ -1,245 +1,116 @@
-# Healthcare Multi-Agent System
+# Healthcare AI Agent System
 
-A proof-of-concept multi-agent LLM system to support healthcare professionals in communication with patients and colleagues. The system helps healthcare professionals adapt their communication style based on patient characteristics and provides real-time assistance during consultations.
+A proof-of-concept AI system designed to support healthcare professionals in patient communication and clinical documentation. The system provides intelligent assistance to adapt communication styles based on patient characteristics and automate routine documentation tasks.
 
-## Features
+## Overview
 
-### Business Value
-- **Patient-Centric Communication**: Get real-time suggestions for adapting language based on:
-  - Patient's language proficiency
-  - Medical literacy level
-  - Cultural background
-  - Communication preferences
-- **Clinical Documentation Support**: Automated assistance with:
-  - SOAP note generation
-  - Medical terminology simplification
-  - Multilingual documentation
-- **Quality Improvement**: Real-time feedback on:
-  - Communication effectiveness
-  - Documentation completeness
-  - Clinical information accuracy
+This system demonstrates how AI agents can enhance healthcare delivery by:
 
-### Technical Components
-- Multi-agent system using `crewai`
-- Support for both OpenAI and Ollama LLMs
-- Specialized agents for:
-  - Pre-processing & context determination
-  - Patient language & medical literacy assessment
-  - Clinical information extraction
-  - Structured summarization (SOAP notes)
-  - Quality control & database updates
+- **Improving Patient Communication**: Adapting language and explanations based on patient literacy, cultural background, and communication preferences
+- **Streamlining Documentation**: Automating clinical note generation and ensuring completeness
+- **Supporting Decision Making**: Providing real-time insights during patient consultations
+- **Enhancing Quality**: Continuous feedback on communication effectiveness and documentation accuracy
 
-### Extensibility
-- Modular architecture for easy addition of:
-  - New specialized agents
-  - Custom tools and utilities
-  - Additional LLM providers
-  - Integration with external systems
+### Key Benefits
 
-### Note on Data
-This proof-of-concept uses simulated data and mocked components to demonstrate the system's capabilities. In a production environment, this would be replaced with real healthcare data and secure integrations.
+- **Patient-Centric Care**: Personalized communication that improves patient understanding and engagement
+- **Efficiency Gains**: Reduced administrative burden through automated documentation
+- **Quality Assurance**: Consistent, comprehensive clinical records with built-in quality checks
+- **Scalability**: Modular architecture that can adapt to different healthcare settings
+
+### Important Note
+
+This is a proof-of-concept system using simulated data and mocked components. For production use in healthcare environments, additional security, compliance, and integration considerations would be required.
 
 ## Quick Start
 
-1. Clone the repository:
+1. **Clone and Setup**:
    ```bash
    git clone https://github.com/pkuppens/healthcare-aigent.git
    cd healthcare-aigent
-   ```
-
-2. Set up the environment:
-   ```bash
-   # Create and activate virtual environment
-   python -m venv .venv
+   
+   # Create virtual environment (only once)
+   uv venv
    # On Windows:
    .venv\Scripts\activate
    # On Unix/MacOS:
    source .venv/bin/activate
-
-   # Install dependencies using uv
+   
+   # Install dependencies
    uv sync --dev
    ```
 
-3. Configure the system:
-   - Copy `.env.example` to `.env` and update the configuration:
-     ```
-     # OpenAI Configuration
-     OPENAI_API_KEY="your-api-key-here"
-     OPENAI_MODEL_NAME="gpt-3.5-turbo"
+2. **Configure Environment**:
+   ```bash
+   # Copy example configuration
+   cp .env.example .env
+   # Edit .env with your API keys and preferences
+   ```
 
-     # Ollama Configuration (optional)
-     OLLAMA_BASE_URL="http://localhost:11434"
-     OLLAMA_MODEL_NAME="llama3"
-
-     # LLM Provider Selection
-     LLM_PROVIDER="OPENAI"  # or "OLLAMA" 
-
-     # Logging Configuration
-     LOG_LEVEL="INFO"  # DEBUG, INFO, WARNING, ERROR, CRITICAL
-     LOG_FILE="logs/crewai_llm.log"  # Path to log file, or empty for console only
-     
-     # UV Configuration
-     UV_PYTHON=3.11  # Recommended Python version for development
-     ```
-
-4. Run the system:
+3. **Run the System**:
    ```bash
    # Start the backend service
    python src/main.py
-   ```
-
-5. Run the test script:
-   ```bash
-   # Run the CrewAI LLM test script
+   
+   # Run test scenarios
    python notebooks/run_crewai_llm.py
    ```
 
-## Project Structure
+## Architecture
 
-The project is organized as follows:
+The system uses a modular, multi-agent architecture that supports various AI frameworks and LLM providers:
 
-```
-healthcare-aigent/
-├── config/                  # Configuration files
-├── data/                    # Data files
-├── docs/                    # Documentation
-├── notebooks/               # Jupyter notebooks and test scripts
-├── src/                     # Source code
-│   ├── agents.py            # Agent definitions
-│   ├── llm_config.py        # LLM configuration
-│   ├── main.py              # Main entry point
-│   ├── tasks.py             # Task definitions
-│   ├── utils.py             # Utility functions
-│   └── tools/               # Tool implementations
-├── tests/                   # Test files
-├── .env                     # Environment variables
-├── .env.example             # Example environment variables
-├── pyproject.toml           # Project metadata and dependencies
-└── README.md                # Project documentation
-```
+### Framework Options
+- **Multi-Agent Systems**: CrewAI, LangFlow, or custom implementations
+- **LLM Providers**: OpenAI, Ollama (local), or other compatible providers
+- **Deployment**: Local development, containerized, or cloud-based
 
-## Logging Configuration
+### Core Components
+- **Agent Orchestration**: Coordinates multiple specialized AI agents
+- **Communication Adaptation**: Analyzes and adjusts language for different patients
+- **Clinical Documentation**: Automated SOAP note generation and medical terminology management
+- **Quality Control**: Ensures accuracy and completeness of all outputs
 
-The system uses Python's built-in logging module with configurable settings:
+For detailed technical information, see [Technical Implementation](docs/technical_implementation.md).
 
-- **Log Level**: Set the `LOG_LEVEL` environment variable to one of:
-  - `DEBUG`: Detailed information for debugging
-  - `INFO`: General information about program execution
-  - `WARNING`: Indicate a potential problem
-  - `ERROR`: A more serious problem
-  - `CRITICAL`: A critical problem that may prevent the program from running
+## Documentation
 
-- **Log File**: Set the `LOG_FILE` environment variable to specify where logs should be written.
-  - If not set or empty, logs will only be output to the console.
-  - If set, logs will be written to both the console and the specified file.
-
-## LLM Configuration
-
-The system supports multiple LLM providers:
-
-- **OpenAI**: Requires an API key set in the `OPENAI_API_KEY` environment variable.
-- **Ollama**: Requires Ollama to be installed and running locally.
-- **Mocked LLM**: Used as a fallback when no other LLM is available.
+- **[Technical Implementation](docs/technical_implementation.md)**: Detailed architecture and implementation details
+- **[Development Environment](docs/development_environment.md)**: Setup and development guidelines
+- **[CrewAI Configuration](docs/crewai.md)**: Multi-agent system configuration
+- **[Testing Guidelines](docs/testing.md)**: Testing framework and best practices
 
 ## Development
 
-### Adding New Features
+### Prerequisites
+- Python 3.11 or higher
+- UV package manager (recommended) or pip
+- OpenAI API key (optional) or Ollama installation
 
-1. Create a new branch for your feature:
-   ```bash
-   git checkout -b feature/your-feature-name
-   ```
+### Contributing
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes with appropriate tests
+4. Submit a pull request
 
-2. Make your changes and commit them:
-   ```bash
-   git commit -m "Add your feature"
-   ```
-
-3. Push your branch and create a pull request:
-   ```bash
-   git push origin feature/your-feature-name
-   ```
-
-### Running Tests
-
+### Testing
 ```bash
 # Run all tests
 pytest
 
-# Run tests with coverage
+# Run with coverage
 pytest --cov=src
 ```
 
-### Package Management with UV
-
-This project uses `uv` for package management, which is significantly faster than traditional `pip`. UV is configured in the following ways:
-
-1. **Project Configuration**: The `pyproject.toml` file includes UV configuration:
-   ```toml
-   [tool.uv]
-   required-version = ">=0.1.0"
-   resolution = "highest"
-   compile-bytecode = true
-   ```
-
-2. **Environment Variables**: The `.env` file includes:
-   ```
-   UV_PYTHON=3.11
-   ```
-
-3. **Global Configuration**: A `.uvrc` file in the project root:
-   ```
-   [uv]
-   python = "3.11"
-   ```
-
-4. **VS Code Configuration**: The `.vscode/settings.json` file includes:
-   ```json
-   "python.packageManager": "uv",
-   "python.terminal.activateEnvironment": true
-   ```
-
-#### Using UV with VS Code
-
-To configure VS Code to use UV instead of pip:
-
-1. Install the UV package manager if you haven't already:
-   ```bash
-   pip install uv
-   ```
-
-2. Configure VS Code to use UV as the package manager:
-   - Open VS Code settings (File > Preferences > Settings)
-   - Search for "python.packageManager"
-   - Set it to "uv"
-
-3. When creating a new virtual environment, VS Code will now use UV instead of pip.
-
-4. For existing projects, you can manually install dependencies with UV:
-   ```bash
-   uv sync --dev
-   ```
-
-#### Updating Dependencies
-
-```bash
-# Update all dependencies
-uv sync --dev --upgrade
-
-# Add a new dependency to the project
-uv add package-name
-
-# Add a development dependency
-uv add --dev package-name
-
-# Remove a dependency
-uv remove package-name
-```
-
-### Python Version
-
-For information about Python version requirements and recommendations, see [Development Environment](docs/development_environment.md#python-version).
-
 ## License
 
-This project is licensed under the MIT License - see the LICENSE file for details.
+This project is licensed under the MIT License with Commercial Use Restriction. See the [LICENSE](LICENSE) file for details.
+
+**Commercial Use**: Commercial use requires explicit written permission. For licensing inquiries, contact: pieter.kuppens@gmail.com
+
+## Support
+
+For questions, issues, or contributions:
+- Create an issue on GitHub
+- Review the documentation in the `docs/` folder
+- Check existing discussions and solutions

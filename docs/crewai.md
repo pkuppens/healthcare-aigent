@@ -1,5 +1,7 @@
 # CrewAI Implementation
 
+> **Note**: This document provides specific CrewAI implementation details. For a broader overview of the system architecture and other implementation options, see [Technical Implementation](technical_implementation.md).
+
 ## What is CrewAI?
 CrewAI is a Python framework for orchestrating autonomous AI agents that work together to solve complex tasks. It provides both high-level simplicity and precise low-level control, making it ideal for creating specialized AI teams.
 
