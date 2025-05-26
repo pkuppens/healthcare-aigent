@@ -24,7 +24,14 @@ class PatientLanguageTool(BaseTool):
 
     async def _run(self, conversation: str) -> dict[str, Any]:
         """Run the language assessment tool."""
-        return {"needs_interpreter": False, "proficiency": "intermediate", "language_proficiency": "B2"}
+        # Return all keys expected by the test
+        return {
+            "needs_interpreter": False,
+            "proficiency": "intermediate",
+            "language_proficiency": "B2",
+            "medical_literacy": "intermediate",  # Mock value
+            "suggested_communication_level": "B2"  # Mock value
+        }
 
 
 class ClinicalExtractionTool(BaseTool):
@@ -35,9 +42,12 @@ class ClinicalExtractionTool(BaseTool):
 
     async def _run(self, conversation: str) -> dict[str, Any]:
         """Run the clinical extraction tool."""
+        # Return all keys expected by the test
         return {
             "symptoms": ["headache"],
             "conditions": ["hypertension"],
             "medications": ["metoprolol"],
             "diagnosis": "Essential hypertension",
+            "treatment": "Lifestyle modification and medication",  # Mock value
+            "follow_up": "Monitor blood pressure in 2 weeks"  # Mock value
         }

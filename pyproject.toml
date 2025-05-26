@@ -30,6 +30,7 @@ dependencies = [
     "requests>=2.31.0",
     "json5>=0.9.14",
     "ruff>=0.11.5",
+    "pytest>=8.3.5",
 ]
 
 [project.optional-dependencies]
@@ -102,4 +103,11 @@ dev-dependencies = [
     "ruff>=0.3.0",
     "mypy>=1.8.0",
     "pre-commit>=3.0.0",
-] 
+]
+
+# Add uv-specific test configuration
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+addopts = "-v --tb=short"
+asyncio_mode = "auto" 
