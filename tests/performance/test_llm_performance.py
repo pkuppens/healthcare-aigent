@@ -14,6 +14,7 @@ from langchain_openai import ChatOpenAI
 
 from src.llm.llm_factory import LLMFactory, LLMType
 
+
 # Performance test constants
 LOCAL_LLM_MAX_RESPONSE_TIME = 5.0  # Maximum acceptable response time for local LLM in seconds
 CLOUD_LLM_MAX_RESPONSE_TIME = 10.0  # Maximum acceptable response time for cloud LLM in seconds

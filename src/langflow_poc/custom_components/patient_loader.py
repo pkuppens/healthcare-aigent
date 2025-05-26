@@ -3,7 +3,7 @@
 from langflow import CustomComponent
 from langflow.field_typing import NestedDict
 
-from ..patient_data import MOCK_PATIENTS, PatientRecord
+from src.langflow_poc.patient_data import MOCK_PATIENTS, PatientRecord
 
 
 class PatientLoader(CustomComponent):

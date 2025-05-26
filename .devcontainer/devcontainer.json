@@ -13,14 +13,14 @@
       "extensions": [
         "ms-python.python",
         "ms-python.vscode-pylance",
-        "ms-python.black-formatter",
+        "ms-python.ruff",
         "charliermarsh.ruff",
         "ms-azuretools.vscode-docker",
         "ms-vscode-remote.remote-containers"
       ],
       "settings": {
         "python.defaultInterpreterPath": "/usr/local/bin/python",
-        "python.formatting.provider": "black",
+        "python.formatting.provider": "ruff",
         "editor.formatOnSave": true,
         "editor.codeActionsOnSave": {
           "source.fixAll": true,

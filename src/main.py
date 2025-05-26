@@ -2,9 +2,9 @@
 
 from crewai import Crew, Process
 
-from .agents import create_medical_crew
-from .llm_config import get_llm
-from .tasks import (
+from src.agents import create_medical_crew
+from src.llm_config import get_llm
+from src.tasks import (
     AssessPatientLanguageTask,
     ExtractClinicalInfoTask,
     GenerateSummaryTask,
@@ -13,7 +13,7 @@ from .tasks import (
 )
 
 
-async def process_medical_conversation(conversation: str) -> dict:
+def process_medical_conversation(conversation: str) -> dict:
     """Process a medical conversation using the healthcare crew.
 
     Args:
@@ -37,11 +37,11 @@ async def process_medical_conversation(conversation: str) -> dict:
         QualityControlTask(),
     ]
 
-    # Create crew
+    # Create crew with proper formatting
     crew = Crew(agents=agents, tasks=tasks, process=Process.sequential, verbose=True)
 
-    # Execute crew tasks
-    result = await crew.kickoff()
+    # Execute crew tasks (kickoff is synchronous)
+    result = crew.kickoff()
 
     return {
         "preprocessed_text": result[0],
@@ -52,7 +52,7 @@ async def process_medical_conversation(conversation: str) -> dict:
     }
 
 
-async def main():
+def main():
     """Main entry point."""
     conversation = """
     Doctor: Good morning, how are you feeling today?
@@ -63,11 +63,9 @@ async def main():
     Patient: Yes, I take metoprolol for my blood pressure.
     """
 
-    result = await process_medical_conversation(conversation)
+    result = process_medical_conversation(conversation)
     print("Processing complete:", result)
 
 
 if __name__ == "__main__":
-    import asyncio
-
-    asyncio.run(main())
+    main()

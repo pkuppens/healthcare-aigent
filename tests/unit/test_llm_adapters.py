@@ -21,6 +21,7 @@ from langchain.callbacks.manager import CallbackManagerForLLMRun
 from src.llm.ollama_llm import OllamaLLM
 from src.llm.openai_llm import OpenAILLM
 
+
 # Test constants
 TEST_TEMPERATURE_LOW = 0.5
 TEST_TEMPERATURE_MEDIUM = 0.7

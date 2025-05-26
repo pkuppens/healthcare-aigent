@@ -13,6 +13,7 @@ from src.llm_config import get_llm
 from src.tools.medical_tools import MedicalTerminologyTool
 from src.utils import configure_logging, load_config, setup_project_paths
 
+
 # Add the project root to the Python path
 current_dir = os.path.dirname(os.path.abspath(__file__))
 project_root = os.path.dirname(current_dir)

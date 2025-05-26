@@ -17,6 +17,7 @@ from src.agents import (
     create_summarization_agent,
 )
 
+
 # Constants
 NUM_TOOLS_PER_AGENT = 2
 NUM_AGENTS_IN_CREW = 5

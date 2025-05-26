@@ -10,6 +10,7 @@ import platform
 import subprocess
 from pathlib import Path
 
+
 # Find the project root directory
 SCRIPT_DIR = Path(__file__).resolve().parent
 PROJECT_ROOT = SCRIPT_DIR.parent

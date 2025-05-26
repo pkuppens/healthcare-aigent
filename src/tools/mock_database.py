@@ -2,7 +2,7 @@
 
 from datetime import datetime
 
-from .database_interface import HealthcareDatabase
+from src.tools.database_interface import HealthcareDatabase
 
 
 class MockHealthcareDatabase(HealthcareDatabase):

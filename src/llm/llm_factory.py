@@ -10,6 +10,7 @@ from src.llm.circuit_breaker import is_ollama_available, is_openai_available
 from src.llm.ollama_llm import OllamaLLM
 from src.llm.openai_llm import OpenAILLM
 
+
 # Configure logging
 logger = logging.getLogger(__name__)
 

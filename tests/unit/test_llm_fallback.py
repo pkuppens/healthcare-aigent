@@ -13,6 +13,7 @@ from src.llm.base import BaseLLM
 from src.llm.fallback import FallbackLLM, FallbackStrategy, RetryStrategy
 from src.llm.llm_factory import LLMType
 
+
 # Test constants
 TEST_MAX_RETRIES = 2
 TEST_INITIAL_DELAY = 0.1

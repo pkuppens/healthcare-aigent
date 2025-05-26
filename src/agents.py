@@ -2,12 +2,12 @@
 
 from crewai import Agent
 
-from .tools.medical_tools import (
+from src.tools.medical_tools import (
     ClinicalExtractionTool,
     MedicalTerminologyTool,
     PatientLanguageTool,
 )
-from .tools.web_tools import WebSearchTool
+from src.tools.web_tools import WebSearchTool
 
 
 def create_medical_preprocessor(llm) -> Agent:

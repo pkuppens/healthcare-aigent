@@ -19,6 +19,7 @@ from src.tasks import (
     QualityControlTask,
 )
 
+
 # Test constants
 QUALITY_SCORE = 95
 ACCURACY_SCORE = 0.95

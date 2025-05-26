@@ -15,6 +15,7 @@ from src.llm.llm_factory import LLMFactory, LLMType
 from src.llm.ollama_llm import OllamaLLM
 from src.llm.openai_llm import OpenAILLM
 
+
 # Test constants
 TEST_TEMPERATURE = 0.7
 TEST_API_KEY = "test-api-key"

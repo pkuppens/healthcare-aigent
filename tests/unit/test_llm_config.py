@@ -9,6 +9,7 @@ from langchain_openai import ChatOpenAI
 
 from src.llm_config import get_llm
 
+
 # Constants
 DEFAULT_TEMPERATURE = 0.7
 CUSTOM_TEMPERATURE = 0.5

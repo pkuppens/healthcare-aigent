@@ -29,6 +29,7 @@ dependencies = [
     "python-dotenv>=1.0.0",
     "requests>=2.31.0",
     "json5>=0.9.14",
+    "ruff>=0.11.5",
 ]
 
 [project.optional-dependencies]
@@ -50,18 +51,42 @@ docs = [
 [tool.hatch.build.targets.wheel]
 packages = ["src"]
 
+[project.scripts]
+healthcare-aigent = "src.main:main"
+lint = "scripts.lint:main"
+
 [tool.ruff]
 line-length = 132
 target-version = "py311"
 
 [tool.ruff.lint]
-select = ["E", "F", "B", "I", "N", "UP", "PL", "RUF"]
-ignore = ["E501", "E203"]
+# Enable basic error checking, import sorting, and simple fixes
+select = [
+    "E",    # pycodestyle errors
+    "F",    # pyflakes
+    "I",    # isort (import sorting)
+    "UP",   # pyupgrade (simple modernization)
+]
+# Ignore specific rules that are too strict
+ignore = [
+    "E501",   # line too long (handled by formatter)
+    "E203",   # whitespace before ':' (conflicts with black)
+    "E402",   # module level import not at top of file
+    "F401",   # imported but unused (can be useful for __init__.py)
+    "F841",   # local variable assigned but never used
+]
+
+[tool.ruff.lint.isort]
+# Configure import sorting
+known-first-party = ["src"]
+force-single-line = false
+lines-after-imports = 2
 
 [tool.ruff.format]
 quote-style = "double"
 indent-style = "space"
 line-ending = "auto"
+skip-magic-trailing-comma = false
 
 # UV configuration for dependency management
 [tool.uv]

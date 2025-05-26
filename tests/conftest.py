@@ -8,6 +8,7 @@ import requests
 
 from src.llm.circuit_breaker import is_ollama_available, is_openai_available
 
+
 # Constants
 HTTP_OK = 200
 

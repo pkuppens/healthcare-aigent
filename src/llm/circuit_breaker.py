@@ -11,6 +11,7 @@ from collections.abc import Callable
 from dataclasses import dataclass
 from enum import Enum
 
+
 # Configure logging
 logger = logging.getLogger(__name__)
 

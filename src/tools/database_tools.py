@@ -2,7 +2,8 @@
 
 from typing import Any
 
-from .database_interface import HealthcareDatabase
+from src.tools.database_interface import HealthcareDatabase
+
 
 # Mock patient database
 MOCK_PATIENT_DB = {

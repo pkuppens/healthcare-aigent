@@ -1,5 +1,6 @@
 import json
 
+
 # Define the notebook structure
 notebook = {
     "cells": [

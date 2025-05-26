@@ -12,6 +12,7 @@ import requests
 
 from src.llm_config import get_llm
 
+
 # Constants
 HTTP_OK = 200
 CUSTOM_TEMPERATURE = 0.5

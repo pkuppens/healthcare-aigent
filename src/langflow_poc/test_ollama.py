@@ -6,6 +6,7 @@ import sys
 import requests
 from langchain_ollama import OllamaLLM
 
+
 # Constants
 HTTP_OK = 200
 
