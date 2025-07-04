@@ -1,0 +1,13 @@
+---
+description: Document python files, classes, and functions using docstrings
+globs: *.py
+alwaysApply: false
+---
+# Docstring Style
+
+- For interfacing functions (User, API, cross-boundary), use Google Style function docstrings.
+- For customer-facing API endpoints (e.g., FastAPI), include one or more `Examples` in the docstring, compatible with FastAPI's automatic documentation.
+- For trivial internal functions, use a short, clear docstring explaining the function's purpose.
+- Every new Python file must begin with a module-level docstring explaining the file's purpose and responsibilities.
+- Every new class must have a docstring explaining its purpose, what it models or manages, and its key attributes or methods.
+- Every new public function or method must have a detailed docstring covering argument and result types, an example, and possible raised errors.

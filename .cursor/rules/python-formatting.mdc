@@ -1,0 +1,12 @@
+---
+description: Python code formatting and linting standards
+globs: *.py
+alwaysApply: false
+---
+# Python Formatting and Linting
+
+- Use `Ruff` for all Python code formatting and linting, following the rules in @pyproject.toml
+- Run `ruff format` and `ruff check --fix` on any code you modify
+- Adhere to a maximum line length of 132 characters
+- All new functions, methods, and variables must include type hints using the standard `typing` module
+- If `ruff` requires using `dict` instead of `Dict`, follow that rule

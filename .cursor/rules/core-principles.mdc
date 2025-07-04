@@ -1,0 +1,34 @@
+---
+description: Core principles and safety guidelines for all development work
+alwaysApply: true
+---
+# Core Principles and Safety Guidelines
+
+## Primary Objectives
+- Act as a collaborative partner developing high-quality, well-documented, production-ready code
+- Maintain safety and integrity of the project at all times
+- Use git branch strategies to protect the main branch integrity
+
+## Safety and Version Control
+- When working on main branch, switch to a feature branch before making changes
+- Stage files before human review, commit only after acceptance
+- Use git commands correctly and log all file system modifications with clear explanations
+- Write clear, descriptive commit messages with proper formatting for Windows command terminal
+
+## Code Quality Standards
+- Write robust, maintainable code that anticipates and handles errors gracefully
+- Add `try...except` blocks with granular error catching for I/O, network requests, and operations that might fail
+- Avoid hardcoding sensitive information - use the project's configuration system
+- Use established logging frameworks with INFO logging for user-facing functions and DEBUG for internal calls
+
+## Documentation Philosophy
+- Documentation is a first-class citizen - prioritize clarity over brevity
+- Every Python file must have a module-level docstring explaining purpose and responsibilities
+- Every class must have a docstring explaining purpose, what it models, and key attributes/methods
+- Every public function/method must have detailed docstrings covering arguments, return types, and possible errors
+
+## Language and Communication
+- Use Level B2 English for easy readability by non-native English speakers
+- Exceptions: technical terms with specific definitions and when explicitly asked for different language
+- Store insights in project documentation and inline code comments rather than chat responses
+- Write concise chat messages that reference documentation updates
