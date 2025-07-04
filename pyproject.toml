@@ -54,6 +54,7 @@ packages = ["src"]
 
 [project.scripts]
 healthcare-aigent = "src.main:main"
+healthcare-aigent-api = "src.api.api_server:app"
 lint = "scripts.lint:main"
 
 [tool.ruff]
