@@ -64,6 +64,27 @@ def my_function(param1: int, param2: str) -> bool:
     return True
 ```
 
+**Note on API Docstrings**: For customer-facing API endpoints (e.g., in FastAPI), the docstring will also include one or more `Examples` in a format compatible with FastAPI's automatic documentation generation. This makes the API self-documenting and easier to use.
+
+**Example for FastAPI:**
+```python
+@app.post("/items/")
+async def create_item(item: Item):
+    """
+    Creates a new item.
+
+    - **name**: The name of the item.
+    - **price**: The price of the item.
+
+    Example:
+        {
+            "name": "My Item",
+            "price": 10.50
+        }
+    """
+    return item
+```
+
 #### **Trivial functions**
 
 For (near) trivial functions that are only used internally, I will be more verbose:

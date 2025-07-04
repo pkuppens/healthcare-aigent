@@ -36,5 +36,37 @@ async def process_conversation_endpoint(request: ConversationRequest) -> dict:
 
     Returns:
         A dictionary with the processed results.
+
+    Example:
+        Request Body:
+        ```json
+        {
+            "text": "Doctor: Good morning. Patient: I have a bad headache."
+        }
+        ```
+
+        Response Body:
+        ```json
+        {
+            "preprocessed_text": "Patient has a bad headache.",
+            "language_assessment": {
+                "proficiency": "intermediate",
+                "needs_interpreter": false,
+                "language_proficiency_scale": "B1"
+            },
+            "clinical_info": {
+                "symptoms": ["headache"],
+                "conditions": [],
+                "medications": [],
+                "diagnosis": "Headache"
+            },
+            "summary": "The patient reports a primary symptom of a bad headache.",
+            "quality_check": {
+                "accuracy_score": 0.95,
+                "requires_human_review": false,
+                "quality_rating": 95
+            }
+        }
+        ```
     """
     return process_medical_conversation(request.text)
