@@ -73,9 +73,7 @@ class TestLLMConfig:
         1. A ValueError is raised when the API key is missing
         2. The error message clearly indicates the missing environment variable
         """
-        with pytest.raises(
-            ValueError, match="OPENAI_API_KEY environment variable not set"
-        ):
+        with pytest.raises(ValueError, match="OPENAI_API_KEY environment variable not set"):
             get_llm()
 
     @patch.dict(
@@ -124,9 +122,7 @@ class TestLLMConfig:
         1. A ValueError is raised with the correct error message
         2. The error message includes the invalid provider name
         """
-        with pytest.raises(
-            ValueError, match="Unsupported LLM provider: INVALID"
-        ):
+        with pytest.raises(ValueError, match="Unsupported LLM provider: INVALID"):
             get_llm()
 
     @patch.dict(

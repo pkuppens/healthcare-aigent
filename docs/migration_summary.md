@@ -24,7 +24,7 @@ Updated all Python files to use absolute imports instead of relative imports:
 - **Before**: `from .agents import create_medical_crew`
 - **After**: `from src.agents import create_medical_crew`
 
-#### src/agents.py
+#### src/agents/__init__.py
 - **Before**: `from .tools.medical_tools import ...`
 - **After**: `from src.tools.medical_tools import ...`
 
@@ -98,7 +98,7 @@ The project maintains a clean structure with absolute imports:
 src/
 ├── __init__.py              # Package initialization
 ├── main.py                  # Main entry point with absolute imports
-├── agents.py                # Agent definitions
+├── agents/                  # Agent definitions
 ├── tasks.py                 # Task definitions
 ├── llm_config.py           # LLM configuration
 ├── utils.py                # Utility functions

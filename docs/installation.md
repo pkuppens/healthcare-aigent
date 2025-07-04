@@ -166,8 +166,8 @@ The project uses absolute imports throughout:
 src/
 ├── __init__.py
 ├── main.py              # Main entry point
-├── agents.py            # Agent definitions
-├── tasks.py             # Task definitions
+├── agents/              # Agent definitions
+├── tasks/               # Task definitions
 ├── llm_config.py        # LLM configuration
 ├── utils.py             # Utility functions
 └── tools/               # Tool modules

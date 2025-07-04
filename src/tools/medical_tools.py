@@ -30,7 +30,7 @@ class PatientLanguageTool(BaseTool):
             "proficiency": "intermediate",
             "language_proficiency": "B2",
             "medical_literacy": "intermediate",  # Mock value
-            "suggested_communication_level": "B2"  # Mock value
+            "suggested_communication_level": "B2",  # Mock value
         }
 
 
@@ -49,5 +49,5 @@ class ClinicalExtractionTool(BaseTool):
             "medications": ["metoprolol"],
             "diagnosis": "Essential hypertension",
             "treatment": "Lifestyle modification and medication",  # Mock value
-            "follow_up": "Monitor blood pressure in 2 weeks"  # Mock value
+            "follow_up": "Monitor blood pressure in 2 weeks",  # Mock value
         }
