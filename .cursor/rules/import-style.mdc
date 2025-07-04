@@ -1,0 +1,18 @@
+---
+description: Use imports in python files
+globs: *.py
+alwaysApply: false
+---
+# Import Style
+
+- Follow the Python import order conventions
+    - Built-in modules (os, sys, json)
+    - Third-party packages (requests, numpy, pandas)
+    - Local application imports (from tools.package import module)
+    - Separate each group with a blank line
+    - Sort imports alphabetically within each group
+    - Use import module before from module import item
+    - Avoid wildcard imports (from module import *)
+- Prefer absolute imports over relative imports.
+- Example: Use `from src.tasks.summarize_task import GenerateSummaryTask` instead of `from .summarize_task import GenerateSummaryTask`.
+- This makes the code more explicit and easier to understand and maintain, especially in larger projects.

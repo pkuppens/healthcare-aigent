@@ -1,0 +1,64 @@
+---
+description: Cursor rule to create and edit other cursor rules
+globs: **.mdc
+alwaysApply: false
+---
+
+## Storage and Naming
+
+- Store all rules in the `.cursor/rules` directory
+- Rule files must have a `.mdc` extension (e.g., `my-rule.mdc`)
+- Subdirectories can include their own `.cursor/rules` directory scoped to that folder
+
+## Referencing Files
+
+To reference a file in your rule, use the format: `@filename.ext` where the path is relative to the workspace root. This includes the file content as additional context when the rule triggers.
+
+## Rule Types and Examples
+
+### Always Applied Rule
+```markdown
+---
+alwaysApply: true
+---
+# Project Structure Guide
+The main entry point is @index.js, which loads configuration from @config.js
+```
+
+### Auto Attached Rule
+```markdown
+---
+globs: *.ts,*.tsx
+---
+Always use semicolons and follow TypeScript best practices
+```
+
+### Agent Requested Rule
+```markdown
+---
+description: RPC Service boilerplate
+globs: 
+alwaysApply: false
+---
+- Use our internal RPC pattern when defining services
+- Always use snake_case for service names
+
+@service-template.ts
+```
+
+### Manual Rule
+```markdown
+---
+alwaysApply: false
+---
+Lots of information about a particular task
+```
+
+## Best Practices
+
+- Keep rules under 500 lines
+- Split large rules into multiple, composable rules
+- Provide concrete examples or referenced files
+- Avoid vague guidance - write rules like clear internal docs
+- Reuse rules when repeating prompts in chat
+- Use focused, actionable, and scoped rules
