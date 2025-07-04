@@ -9,12 +9,12 @@ from unittest.mock import AsyncMock
 import pytest
 
 from src.agents import (
-    create_clinical_extractor,
-    create_language_assessor,
+    ClinicalExtractionAgent,
+    LanguageAssessmentAgent,
+    PreprocessingAgent,
+    QualityControlAgent,
+    SummarizationAgent,
     create_medical_crew,
-    create_medical_preprocessor,
-    create_quality_control_agent,
-    create_summarization_agent,
 )
 
 
@@ -48,7 +48,7 @@ async def test_medical_preprocessor_creation(mock_llm):
     2. The agent has the expected number of tools
     3. The agent has the required medical_terminology and web_search tools
     """
-    agent = create_medical_preprocessor(mock_llm)
+    agent = PreprocessingAgent(mock_llm)
     assert agent.role == "Medical Preprocessor"
     assert agent.goal == "Analyze and prepare medical conversations for processing"
     assert agent.tools is not None
@@ -66,7 +66,7 @@ async def test_language_assessor_creation(mock_llm):
     2. The agent has the expected number of tools
     3. The agent has the required patient_language and web_search tools
     """
-    agent = create_language_assessor(mock_llm)
+    agent = LanguageAssessmentAgent(mock_llm)
     assert agent.role == "Language Assessment Specialist"
     assert agent.goal == "Assess patient language proficiency and needs"
     assert agent.tools is not None
@@ -84,7 +84,7 @@ async def test_clinical_extractor_creation(mock_llm):
     2. The agent has the expected number of tools
     3. The agent has the required clinical_extraction and web_search tools
     """
-    agent = create_clinical_extractor(mock_llm)
+    agent = ClinicalExtractionAgent(mock_llm)
     assert agent.role == "Clinical Information Extractor"
     assert agent.goal == "Extract and structure clinical information from conversations"
     assert agent.tools is not None
@@ -102,7 +102,7 @@ async def test_summarization_agent_creation(mock_llm):
     2. The agent has the expected number of tools
     3. The agent has the required medical_terminology and web_search tools
     """
-    agent = create_summarization_agent(mock_llm)
+    agent = SummarizationAgent(mock_llm)
     assert agent.role == "Medical Summarization Specialist"
     assert agent.goal == "Create clear and accurate medical summaries"
     assert agent.tools is not None
@@ -120,7 +120,7 @@ async def test_quality_control_agent_creation(mock_llm):
     2. The agent has the expected number of tools
     3. The agent has the required medical_terminology and web_search tools
     """
-    agent = create_quality_control_agent(mock_llm)
+    agent = QualityControlAgent(mock_llm)
     assert agent.role == "Quality Control Specialist"
     assert agent.goal == "Ensure accuracy and completeness of medical information"
     assert agent.tools is not None
