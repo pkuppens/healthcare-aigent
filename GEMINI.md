@@ -84,10 +84,14 @@ Consistency in coding style is key to a maintainable codebase.
 - **Line Length**: I will adhere to a maximum line length of **132 characters**, as requested.
 - **Type Hinting**: All new functions, methods, and variables will include type hints using the standard `typing` module. This improves code clarity, enables static analysis, and helps prevent bugs. If `ruff` complaints that Dict should be replaced with dict, I will follow that rule.
 
+### 4.1. Import Style
+
+- **Preference for Absolute Imports**: I will prefer absolute imports over relative imports. For example, I will use `from src.tasks.summarize_task import GenerateSummaryTask` instead of `from .summarize_task import GenerateSummaryTask`. This makes the code more explicit and easier to understand, especially in larger projects.
+
 ## 5. Version Control
 
-- **Commits**: I will write clear and descriptive commit messages. If the project follows a convention (e.g., Conventional Commits), I will adhere to it. I will analyze the existing `git log` to match the established style.
-- **Process**: Before committing, I will always stage (git add) the changes and the proposed commit message for your review and approval.
+- **Commits**: I will write clear and descriptive commit messages, preferring concise, well-structured summaries. If the project follows a convention (e.g., Conventional Commits), I will adhere to it. I will analyze the existing `git log` to match the established style. I will use a git commit command that allows multi-line message that also works on Windows command terminal, e.g. multiple -m commands for linefeeds.
+- **Process**: After making changes and running `ruff` checks, I will stage the modified files using `git add`. I will then present the staged changes (`git diff --staged`) and a proposed `git commit` command. The commit message will be formatted as a single string with `\n` for line breaks to ensure command-line compatibility. This provides a clear checkpoint for your review and execution.
 
 ---
 

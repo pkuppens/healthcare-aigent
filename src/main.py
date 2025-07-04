@@ -1,9 +1,14 @@
-"""Main module for healthcare multi-agent system."""
+"""Main module for the healthcare multi-agent system.
+
+This module serves as the primary entry point for running the healthcare AI agent crew.
+It defines the main workflow for processing a medical conversation, from initializing
+the language model and agents to executing the tasks and returning the final results.
+"""
 
 from crewai import Crew, Process
 
 from src.agents import create_medical_crew
-from src.llm_config import get_llm
+from src.llm.llm_factory import LLMFactory, LLMType
 from src.tasks import (
     AssessPatientLanguageTask,
     ExtractClinicalInfoTask,
@@ -14,16 +19,21 @@ from src.tasks import (
 
 
 def process_medical_conversation(conversation: str) -> dict:
-    """Process a medical conversation using the healthcare crew.
+    """Processes a medical conversation using the healthcare agent crew.
+
+    This function orchestrates the entire workflow. It initializes the language model
+    using the LLMFactory, creates the specialized agents, defines the sequence of tasks,
+    and runs the crew to get the processed results.
 
     Args:
-        conversation: The medical conversation to process
+        conversation: A string containing the medical conversation to be processed.
 
     Returns:
-        Dict containing the processed results
+        A dictionary containing the structured results from each task in the workflow.
     """
-    # Initialize LLM
-    llm = get_llm()
+    # Initialize the appropriate LLM using the factory
+    # We choose CLOUD_FAST as a default for general-purpose conversation processing.
+    llm = LLMFactory.create_llm(LLMType.CLOUD_FAST)
 
     # Create agents
     agents = create_medical_crew(llm)
@@ -37,10 +47,8 @@ def process_medical_conversation(conversation: str) -> dict:
         QualityControlTask(),
     ]
 
-    # Create crew with proper formatting
+    # Create and run the crew
     crew = Crew(agents=agents, tasks=tasks, process=Process.sequential, verbose=True)
-
-    # Execute crew tasks (kickoff is synchronous)
     result = crew.kickoff()
 
     return {
@@ -53,7 +61,11 @@ def process_medical_conversation(conversation: str) -> dict:
 
 
 def main():
-    """Main entry point."""
+    """Defines the main entry point for the application.
+
+    This function provides a sample conversation and calls the processing function
+    to demonstrate the system's functionality. It then prints the final results.
+    """
     conversation = """
     Doctor: Good morning, how are you feeling today?
     Patient: Not so well, I've been having headaches.

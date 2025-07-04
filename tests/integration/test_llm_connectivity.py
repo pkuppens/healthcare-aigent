@@ -1,16 +1,17 @@
 """Integration tests for LLM connectivity.
 
 This module contains tests that verify connectivity to different LLM providers
-and ensure that the system can properly interact with these services.
+and ensure that the system can properly interact with these services using the LLMFactory.
 """
 
 import os
-from unittest.mock import AsyncMock, patch
+from unittest.mock import patch
 
 import pytest
 import requests
 
-from src.llm_config import get_llm
+from src.llm.circuit_breaker import is_ollama_available, is_openai_available
+from src.llm.llm_factory import LLMFactory, LLMType
 
 
 # Constants
@@ -18,99 +19,83 @@ HTTP_OK = 200
 CUSTOM_TEMPERATURE = 0.5
 
 
-@pytest.fixture
-def mock_llm():
-    """Create a mock LLM for testing."""
-    return AsyncMock()
-
-
 @pytest.mark.integration
 def test_ollama_connectivity():
-    """Test connectivity to Ollama server.
+    """Test connectivity to the Ollama server via the LLMFactory.
 
     Verifies that:
-    1. The system can connect to the Ollama server
-    2. The LLM is created with the correct model and base URL
-    3. The system gracefully handles connection errors
+    1. The factory can create an Ollama LLM instance if the service is running.
+    2. The created LLM has the correct model and default temperature.
     """
-    try:
-        # First check if Ollama server is running
-        response = requests.get("http://localhost:11434/api/tags")
-        if response.status_code != HTTP_OK:
-            pytest.skip("Ollama server not running. Please start Ollama and try again.")
+    if not is_ollama_available():
+        pytest.skip("Ollama server not running or not available. Please start Ollama and try again.")
 
-        # Test LLM creation
-        llm = get_llm(provider="OLLAMA")
-        assert llm is not None
-        assert llm.model == "llama3"
-        assert llm.base_url == "http://localhost:11434"
-    except requests.exceptions.ConnectionError:
-        pytest.skip("Ollama server not running. Please start Ollama and try again.")
+    llm = LLMFactory.create_llm(LLMType.LOCAL_FAST)
+    assert llm is not None
+    assert llm.model_name == "llama3"
+    assert llm.temperature == 0.7  # Default for LOCAL_FAST
 
 
 @pytest.mark.integration
 def test_openai_connectivity():
-    """Test connectivity to OpenAI API.
+    """Test connectivity to the OpenAI API via the LLMFactory.
 
     Verifies that:
-    1. The system can connect to the OpenAI API
-    2. The LLM is created with the correct model
-    3. The system gracefully handles API errors
+    1. The factory can create an OpenAI LLM instance if the API key is set.
+    2. The created LLM has the correct model and default temperature.
     """
-    # Skip if no API key
-    if not os.getenv("OPENAI_API_KEY"):
-        pytest.skip("OPENAI_API_KEY not set. Please set the environment variable and try again.")
+    if not is_openai_available():
+        pytest.skip("OPENAI_API_KEY not set or service is unavailable. Please set the environment variable and try again.")
 
-    # Test LLM creation
-    llm = get_llm(provider="OPENAI")
+    llm = LLMFactory.create_llm(LLMType.CLOUD_FAST)
     assert llm is not None
-    assert llm.model == "gpt-3.5-turbo"
+    assert llm.model_name == "gpt-3.5-turbo"
+    assert llm.temperature == 0.7  # Default for CLOUD_FAST
 
 
 @pytest.mark.integration
-def test_custom_temperature():
-    """Test LLM creation with custom temperature.
+def test_custom_temperature_with_factory():
+    """Test LLM creation with a custom temperature using the factory.
 
-    Verifies that:
-    1. The system correctly applies custom temperature settings
-    2. The temperature value is properly set on the LLM instance
+    Verifies that the factory correctly applies a custom temperature override
+    to the created LLM instance.
     """
-    llm = get_llm(temperature=CUSTOM_TEMPERATURE)
+    if not is_openai_available():
+        pytest.skip("OPENAI_API_KEY not set. Cannot run this test without it.")
+
+    llm = LLMFactory.create_llm(LLMType.CLOUD_ACCURATE, temperature=CUSTOM_TEMPERATURE)
     assert llm is not None
     assert llm.temperature == CUSTOM_TEMPERATURE
 
 
 @pytest.mark.integration
-def test_ollama_connection_error(mock_env_vars, monkeypatch):
-    """Test Ollama connection error handling.
+def test_factory_fallback_from_openai_to_ollama():
+    """Test the factory's fallback mechanism from OpenAI to Ollama.
 
-    Verifies that:
-    1. The system properly handles connection errors to Ollama
-    2. Appropriate warnings are issued when connection fails
+    Verifies that if OpenAI is unavailable, the factory's `get_llm_for_task`
+    method correctly falls back to an available Ollama model.
     """
-    monkeypatch.setenv("LLM_PROVIDER", "OLLAMA")
-    with patch("requests.get") as mock_get:
-        mock_get.side_effect = requests.exceptions.ConnectionError()
-        with pytest.warns(UserWarning, match="Could not connect to Ollama"):
-            try:
-                get_llm()
-            except Exception:
-                pass
+    if not is_ollama_available():
+        pytest.skip("Ollama must be available to test the fallback mechanism.")
+
+    with patch("src.llm.circuit_breaker.is_openai_available", return_value=False):
+        llm = LLMFactory.get_llm_for_task("summarization")
+        assert llm is not None
+        assert "ollama" in llm.__class__.__module__.lower()
 
 
 @pytest.mark.integration
-def test_openai_api_error(mock_env_vars, monkeypatch):
-    """Test OpenAI API error handling.
+def test_factory_fallback_from_ollama_to_openai():
+    """Test the factory's fallback mechanism from Ollama to OpenAI.
 
-    Verifies that:
-    1. The system properly handles API errors from OpenAI
-    2. Appropriate warnings are issued when API calls fail
+    Verifies that if Ollama is unavailable, the factory's `get_llm_for_task`
+    method correctly falls back to an available OpenAI model.
     """
-    monkeypatch.setenv("LLM_PROVIDER", "OPENAI")
-    with patch("langchain_openai.ChatOpenAI.invoke") as mock_invoke:
-        mock_invoke.side_effect = Exception("API Error")
-        with pytest.warns(UserWarning, match="OpenAI API not accessible"):
-            try:
-                get_llm()
-            except Exception:
-                pass
+    if not is_openai_available():
+        pytest.skip("OpenAI must be available to test the fallback mechanism.")
+
+    with patch("src.llm.circuit_breaker.is_ollama_available", return_value=False):
+        # We need to select a type that defaults to local
+        llm = LLMFactory.create_llm(LLMType.LOCAL_FAST)
+        assert llm is not None
+        assert "openai" in llm.__class__.__module__.lower()
