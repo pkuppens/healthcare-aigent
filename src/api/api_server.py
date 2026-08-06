@@ -4,10 +4,13 @@ This module creates a FastAPI application that exposes an endpoint for
 processing medical conversations. It serves as the API gateway for the system.
 """
 
-from fastapi import FastAPI
+import tempfile
+from pathlib import Path
+
+from fastapi import FastAPI, UploadFile
 from pydantic import BaseModel
 
-from src.main import process_medical_conversation_async
+from src.main import process_audio_conversation_async, process_medical_conversation_async
 
 
 app = FastAPI(
@@ -70,3 +73,35 @@ async def process_conversation_endpoint(request: ConversationRequest) -> dict:
         ```
     """
     return await process_medical_conversation_async(request.text)
+
+
+@app.post("/transcribe_and_process/", summary="Transcribe a recorded consultation and process it")
+async def transcribe_and_process_endpoint(audio: UploadFile, language: str = "nl") -> dict:
+    """Transcribes an uploaded consultation recording and runs it through the pipeline.
+
+    This is the entry point that matches the real GGZ workflow: a recorded
+    consult in, a structured concept report out — still gated by
+    `quality_check.requires_human_review` before it can be used.
+
+    Note: this is a showcase implementation. Audio is written to a local temp
+    file and sent to OpenAI's Whisper API; it is not routed through any
+    signed subverwerkersovereenkomst and must not be used with real patient
+    data. See docs/agents/domain.md for the compliance context.
+
+    Args:
+        audio: The uploaded audio file (recorded consultation).
+        language: ISO 639-1 language hint for the transcriber (default "nl").
+
+    Returns:
+        A dictionary with the transcript plus the same structured results as
+        `/process_conversation/`.
+    """
+    suffix = Path(audio.filename or "").suffix or ".wav"
+    with tempfile.NamedTemporaryFile(suffix=suffix, delete=False) as tmp:
+        tmp.write(await audio.read())
+        tmp_path = tmp.name
+
+    try:
+        return await process_audio_conversation_async(tmp_path, language=language)
+    finally:
+        Path(tmp_path).unlink(missing_ok=True)

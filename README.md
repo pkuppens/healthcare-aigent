@@ -64,6 +64,7 @@ For detailed technical information, see [Technical Implementation](docs/technica
 - **[Development Environment](docs/development_environment.md)**: Setup and development guidelines
 - **[CrewAI Configuration](docs/crewai.md)**: Multi-agent system configuration
 - **[Testing Guidelines](docs/testing.md)**: Testing framework and best practices
+- **[Transcription Stage](docs/transcription.md)**: Turning a recorded consultation into text ahead of the pipeline
 
 ## Development
 

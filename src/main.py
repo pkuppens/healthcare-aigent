@@ -18,6 +18,7 @@ from src.tasks import (
 )
 from src.tools.logging_tools import Logger
 from src.tools.mock_database import MockHealthcareDatabase
+from src.transcription.base import TranscriptionService
 
 
 class _QualityControlDataSource:
@@ -74,6 +75,39 @@ async def process_medical_conversation_async(conversation: str, patient_id: str 
         "summary": summary,
         "quality_check": quality_check,
     }
+
+
+async def process_audio_conversation_async(
+    audio_path: str,
+    transcription_service: TranscriptionService | None = None,
+    patient_id: str = "demo-patient",
+    language: str | None = "nl",
+) -> dict:
+    """Transcribes a recorded consultation, then runs it through the task pipeline.
+
+    This is the entry point closest to the real GGZ use case: a recorded
+    consult goes in, a structured concept report (still requiring human
+    review — see `quality_check.requires_human_review`) comes out.
+
+    Args:
+        audio_path: Path to the recorded consultation audio file.
+        transcription_service: The provider to transcribe with. Defaults to
+            `OpenAIWhisperTranscription` (requires OPENAI_API_KEY).
+        patient_id: The patient to verify the summary against.
+        language: Optional ISO 639-1 language hint passed to the transcriber.
+
+    Returns:
+        A dictionary with the transcript plus the same structured results as
+        `process_medical_conversation_async`.
+    """
+    if transcription_service is None:
+        from src.transcription.openai_whisper import OpenAIWhisperTranscription
+
+        transcription_service = OpenAIWhisperTranscription()
+
+    transcript = await transcription_service.transcribe(audio_path, language=language)
+    result = await process_medical_conversation_async(transcript, patient_id)
+    return {"transcript": transcript, **result}
 
 
 def process_medical_conversation(conversation: str, patient_id: str = "demo-patient") -> dict:
