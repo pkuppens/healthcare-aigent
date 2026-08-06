@@ -16,6 +16,10 @@ class OpenAIWhisperTranscription(TranscriptionService):
     somewhere covered by a signed subverwerkersovereenkomst (or be replaced
     entirely by a self-hosted/AWS Transcribe pipeline) — this implementation
     is a showcase stub, not a compliant path for real patient data.
+
+    No speaker diarization: `whisper-1` returns a single undifferentiated
+    text block, not "Spreker A / Spreker B" turns. See docs/transcription.md
+    for why that's a real gap for this use case and the concrete next steps.
     """
 
     def __init__(self, api_key: str | None = None, model: str = "whisper-1"):

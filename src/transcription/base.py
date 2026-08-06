@@ -12,6 +12,12 @@ class TranscriptionService(ABC):
     AWS Transcribe in eu-central-1 for a multi-tenant EU setup. This
     abstraction exists so that swap is a new implementation of this
     interface, not a change to the pipeline that consumes it.
+
+    The `str` return type below is deliberately the simplest thing that
+    works today: it does not carry speaker turns or timestamps. See
+    docs/transcription.md ("Next step: speaker diarization") for why that's
+    a real gap for consult recordings and how the interface would need to
+    change (e.g. a `Transcript` with per-turn speaker labels) to close it.
     """
 
     @abstractmethod

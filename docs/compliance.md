@@ -58,3 +58,7 @@ relevant frameworks, not a claim that those frameworks are satisfied today.
   in use here — do not run real patient data through this code as-is.
 - No formal risk assessment or ISMS documentation (NEN 7510 is an
   organizational standard as much as a technical one).
+- No speaker diarization in the transcription stage — the transcript can't
+  yet distinguish behandelaar from patiënt, which the human reviewer would
+  need in order to actually verify a concept report against what was said.
+  See [transcription.md](transcription.md#next-step-speaker-diarization).
