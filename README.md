@@ -65,6 +65,7 @@ For detailed technical information, see [Technical Implementation](docs/technica
 - **[CrewAI Configuration](docs/crewai.md)**: Multi-agent system configuration
 - **[Testing Guidelines](docs/testing.md)**: Testing framework and best practices
 - **[Transcription Stage](docs/transcription.md)**: Turning a recorded consultation into text ahead of the pipeline
+- **[Compliance Considerations](docs/compliance.md)**: AVG / NEN 7510-7512-7513 / human-review context for a GGZ-style deployment
 
 ## Development
 
