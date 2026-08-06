@@ -11,7 +11,7 @@ import pytest
 import requests
 
 from src.llm.circuit_breaker import is_ollama_available, is_openai_available
-from src.llm.llm_factory import LLMFactory, LLMType
+from src.llm.llm_factory import LLMFactory, LLMType, get_llm
 
 
 # Constants
@@ -78,7 +78,7 @@ def test_factory_fallback_from_openai_to_ollama():
     if not is_ollama_available():
         pytest.skip("Ollama must be available to test the fallback mechanism.")
 
-    with patch("src.llm.circuit_breaker.is_openai_available", return_value=False):
+    with patch("src.llm.llm_factory.is_openai_available", return_value=False):
         llm = LLMFactory.get_llm_for_task("summarization")
         assert llm is not None
         assert "ollama" in llm.__class__.__module__.lower()
@@ -86,16 +86,18 @@ def test_factory_fallback_from_openai_to_ollama():
 
 @pytest.mark.integration
 def test_factory_fallback_from_ollama_to_openai():
-    """Test the factory's fallback mechanism from Ollama to OpenAI.
+    """Test the fallback mechanism from Ollama to OpenAI.
 
-    Verifies that if Ollama is unavailable, the factory's `get_llm_for_task`
-    method correctly falls back to an available OpenAI model.
+    Verifies that if Ollama is unavailable, `get_llm(provider="ollama")`
+    correctly falls back to an available OpenAI model. (`get_llm_for_task`
+    always starts from a cloud/OpenAI default, so it can't exercise this
+    branch — `get_llm` is the entry point that lets a caller request Ollama
+    directly.)
     """
     if not is_openai_available():
         pytest.skip("OpenAI must be available to test the fallback mechanism.")
 
-    with patch("src.llm.circuit_breaker.is_ollama_available", return_value=False):
-        # We need to select a type that defaults to local
-        llm = LLMFactory.create_llm(LLMType.LOCAL_FAST)
+    with patch("src.llm.llm_factory.is_ollama_available", return_value=False):
+        llm = get_llm(provider="ollama")
         assert llm is not None
         assert "openai" in llm.__class__.__module__.lower()

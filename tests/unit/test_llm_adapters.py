@@ -17,6 +17,7 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 from langchain.callbacks.manager import CallbackManagerForLLMRun
+from pydantic import SecretStr
 
 from src.llm.ollama_llm import OllamaLLM
 from src.llm.openai_llm import OpenAILLM
@@ -40,7 +41,7 @@ class TestOpenAILLM:
     4. Temperature setting and retrieval
     """
 
-    @patch("langchain_openai.ChatOpenAI")
+    @patch("src.llm.openai_llm.ChatOpenAI")
     def test_initialization_with_api_key(self, mock_chat_openai):
         """Test initialization with explicit API key.
 
@@ -58,13 +59,13 @@ class TestOpenAILLM:
         llm = OpenAILLM(model_name="gpt-4", temperature=TEST_TEMPERATURE_LOW, api_key="test-key")
 
         # Assert
-        mock_chat_openai.assert_called_once_with(model="gpt-4", temperature=TEST_TEMPERATURE_LOW, openai_api_key="test-key")
+        mock_chat_openai.assert_called_once_with(model="gpt-4", temperature=TEST_TEMPERATURE_LOW, api_key=SecretStr("test-key"))
         assert llm.model_name == "gpt-4"
         assert llm.temperature == TEST_TEMPERATURE_LOW
         assert llm.provider == "openai"
 
     @patch.dict(os.environ, {"OPENAI_API_KEY": "env-key"})
-    @patch("langchain_openai.ChatOpenAI")
+    @patch("src.llm.openai_llm.ChatOpenAI")
     def test_initialization_with_env_api_key(self, mock_chat_openai):
         """Test initialization with API key from environment variables.
 
@@ -83,7 +84,7 @@ class TestOpenAILLM:
 
         # Assert
         mock_chat_openai.assert_called_once_with(
-            model="gpt-3.5-turbo", temperature=TEST_TEMPERATURE_MEDIUM, openai_api_key="env-key"
+            model="gpt-3.5-turbo", temperature=TEST_TEMPERATURE_MEDIUM, api_key=SecretStr("env-key")
         )
         assert llm.model_name == "gpt-3.5-turbo"
         assert llm.temperature == TEST_TEMPERATURE_MEDIUM
@@ -102,7 +103,7 @@ class TestOpenAILLM:
             with pytest.raises(ValueError, match="OpenAI API key not provided"):
                 OpenAILLM()
 
-    @patch("langchain_openai.ChatOpenAI")
+    @patch("src.llm.openai_llm.ChatOpenAI")
     def test_call_method(self, mock_chat_openai):
         """Test the _call method for basic text generation.
 
@@ -124,7 +125,7 @@ class TestOpenAILLM:
         mock_instance.invoke.assert_called_once_with("Test prompt")
         assert result == "Test response"
 
-    @patch("langchain_openai.ChatOpenAI")
+    @patch("src.llm.openai_llm.ChatOpenAI")
     def test_call_method_with_stop_and_run_manager(self, mock_chat_openai):
         """Test the _call method with stop sequences and run manager.
 
@@ -149,7 +150,7 @@ class TestOpenAILLM:
         mock_instance.invoke.assert_called_once_with("Test prompt")
         assert result == "Test response"
 
-    @patch("langchain_openai.ChatOpenAI")
+    @patch("src.llm.openai_llm.ChatOpenAI")
     def test_temperature_setter(self, mock_chat_openai):
         """Test the temperature setter method.
 
@@ -182,7 +183,7 @@ class TestOllamaLLM:
     4. Temperature setting and retrieval
     """
 
-    @patch("langchain_community.chat_models.ChatOllama")
+    @patch("src.llm.ollama_llm.ChatOllama")
     def test_initialization_with_base_url(self, mock_chat_ollama):
         """Test initialization with explicit base URL.
 
@@ -206,7 +207,7 @@ class TestOllamaLLM:
         assert llm.provider == "ollama"
 
     @patch.dict(os.environ, {"OLLAMA_BASE_URL": "http://env:11434"})
-    @patch("langchain_community.chat_models.ChatOllama")
+    @patch("src.llm.ollama_llm.ChatOllama")
     def test_initialization_with_env_base_url(self, mock_chat_ollama):
         """Test initialization with base URL from environment variables.
 
@@ -231,7 +232,7 @@ class TestOllamaLLM:
         assert llm.temperature == TEST_TEMPERATURE_MEDIUM
         assert llm.provider == "ollama"
 
-    @patch("langchain_community.chat_models.ChatOllama")
+    @patch("src.llm.ollama_llm.ChatOllama")
     def test_call_method(self, mock_chat_ollama):
         """Test the _call method for basic text generation.
 
@@ -253,7 +254,7 @@ class TestOllamaLLM:
         mock_instance.invoke.assert_called_once_with("Test prompt")
         assert result == "Test response"
 
-    @patch("langchain_community.chat_models.ChatOllama")
+    @patch("src.llm.ollama_llm.ChatOllama")
     def test_call_method_with_stop_and_run_manager(self, mock_chat_ollama):
         """Test the _call method with stop sequences and run manager.
 
@@ -278,7 +279,7 @@ class TestOllamaLLM:
         mock_instance.invoke.assert_called_once_with("Test prompt")
         assert result == "Test response"
 
-    @patch("langchain_community.chat_models.ChatOllama")
+    @patch("src.llm.ollama_llm.ChatOllama")
     def test_temperature_setter(self, mock_chat_ollama):
         """Test the temperature setter method.
 

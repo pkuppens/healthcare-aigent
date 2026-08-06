@@ -87,6 +87,18 @@ pytest
 pytest --cov=src
 ```
 
+Tests are split into unit tests (always run, no external services) and
+integration tests marked `@pytest.mark.integration` / `@pytest.mark.llm`,
+which auto-skip when no Ollama server or OpenAI API key is available (see
+`tests/conftest.py`). To exercise the live-LLM tests, either run
+`ollama serve && ollama pull llama3`, or set `OPENAI_API_KEY`.
+
+**Windows note**: a dependency (`litellm`, pulled in via `crewai`) reads a
+data file without specifying UTF-8 encoding, which fails under Windows'
+default `cp1252` codec. Run tests with `PYTHONUTF8=1` set, e.g.
+`PYTHONUTF8=1 uv run pytest` (Git Bash) or `$env:PYTHONUTF8=1; uv run pytest`
+(PowerShell).
+
 ## License
 
 This project is licensed under the MIT License with Commercial Use Restriction. See the [LICENSE](LICENSE) file for details.
