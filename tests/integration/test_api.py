@@ -4,6 +4,7 @@ This module contains tests that verify the functionality of the API endpoints,
 ensuring they process requests correctly and return the expected responses.
 """
 
+import pytest
 from fastapi.testclient import TestClient
 
 from src.api.api_server import app
@@ -12,8 +13,13 @@ from src.api.api_server import app
 client = TestClient(app)
 
 
+@pytest.mark.llm
 def test_process_conversation_endpoint():
     """Tests the /process_conversation/ endpoint.
+
+    This exercises the full crew pipeline via LLMType.CLOUD_FAST, which
+    requires a working OpenAI API key. Skipped automatically (see conftest.py)
+    when OPENAI_API_KEY isn't set or the API isn't reachable.
 
     Verifies that:
     1. The endpoint returns a successful response (status code 200).

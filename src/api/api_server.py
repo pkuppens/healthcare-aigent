@@ -7,7 +7,7 @@ processing medical conversations. It serves as the API gateway for the system.
 from fastapi import FastAPI
 from pydantic import BaseModel
 
-from src.main import process_medical_conversation
+from src.main import process_medical_conversation_async
 
 
 app = FastAPI(
@@ -69,4 +69,4 @@ async def process_conversation_endpoint(request: ConversationRequest) -> dict:
         }
         ```
     """
-    return process_medical_conversation(request.text)
+    return await process_medical_conversation_async(request.text)
