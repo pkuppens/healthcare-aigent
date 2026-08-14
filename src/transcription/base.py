@@ -21,11 +21,18 @@ class TranscriptionService(ABC):
     """
 
     @abstractmethod
-    async def transcribe(self, audio_path: str | Path, language: str | None = None) -> str:
-        """Transcribe an audio file to text.
+    async def transcribe(self, audio: bytes, *, filename: str = "audio.wav", language: str | None = None) -> str:
+        """Transcribe raw audio bytes to text.
+
+        Implementations work on in-memory audio, not a filesystem path: the
+        source may just as well be an API upload or a microphone capture as
+        a file on disk, and a file is only one of several ways to get bytes
+        in front of a transcriber.
 
         Args:
-            audio_path: Path to the audio file (e.g. a recorded consultation).
+            audio: The raw audio bytes.
+            filename: Original filename, used by providers (e.g. OpenAI's
+                Whisper API) that infer the audio format from its extension.
             language: Optional ISO 639-1 language hint (e.g. "nl"). Providers
                 that support auto-detection may ignore this.
 
@@ -35,3 +42,26 @@ class TranscriptionService(ABC):
         Raises:
             RuntimeError: If transcription fails.
         """
+
+    async def transcribe_file(self, audio_path: str | Path, language: str | None = None) -> str:
+        """Convenience wrapper for callers that only have a file path (e.g.
+        CLI/script use, or `scripts/fetch_sample_audio.py` output).
+
+        Reads the file into memory and delegates to `transcribe`, so
+        individual providers never need to implement file-reading
+        themselves.
+
+        Args:
+            audio_path: Path to the audio file (e.g. a recorded consultation).
+            language: Optional ISO 639-1 language hint (e.g. "nl").
+
+        Returns:
+            The transcribed text.
+
+        Raises:
+            RuntimeError: If the file doesn't exist or transcription fails.
+        """
+        path = Path(audio_path)
+        if not path.is_file():
+            raise RuntimeError(f"Audio file not found: {path}")
+        return await self.transcribe(path.read_bytes(), filename=path.name, language=language)

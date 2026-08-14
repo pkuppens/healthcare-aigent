@@ -1,26 +1,42 @@
 # Transcription Stage
 
-`src/transcription/` turns a recorded consultation into text, as the first
-stage ahead of the existing agent/task pipeline (preprocess → assess
-language → extract clinical info → summarize → quality control).
+`src/transcription/` is the entry point that lets this system take a
+recorded consultation, instead of only pre-transcribed text, as input: it
+turns the audio into a transcript, then hands that transcript to the
+existing agent/task pipeline unchanged (preprocess → assess language →
+extract clinical info → summarize → quality control). It exists so a real
+GGZ workflow — "record the consult, get a concept report" — can be
+demonstrated end to end, not just the text-only half of it.
+
+**Not implemented yet: speaker diarization** (who said what). See
+["Next step: speaker diarization"](#next-step-speaker-diarization) below —
+the transcript today is one undifferentiated block of text.
 
 ## Interface
 
-`TranscriptionService` (`src/transcription/base.py`) is a one-method
-interface — `async def transcribe(audio_path, language=None) -> str` —
-mirroring the `BaseLLM` provider abstraction in `src/llm/`. The only
-implementation today is `OpenAIWhisperTranscription`
-(`src/transcription/openai_whisper.py`), which calls OpenAI's hosted
-`whisper-1` model.
+`TranscriptionService` (`src/transcription/base.py`) is a small interface —
+`async def transcribe(audio, *, filename, language=None) -> str`, working on
+in-memory audio bytes rather than a filesystem path, plus a
+`transcribe_file(audio_path, language=None)` convenience wrapper for
+callers that only have a file on disk — mirroring the `BaseLLM` provider
+abstraction in `src/llm/`. The only implementation today is
+`OpenAIWhisperTranscription` (`src/transcription/openai_whisper.py`), which
+calls OpenAI's hosted `whisper-1` model.
 
 This is a showcase stub, not a production transcription pipeline. See
-[compliance.md](compliance.md) for why sending real patient audio through it
-as-is would be a problem.
+[compliance.md, "What's genuinely missing"](compliance.md#whats-genuinely-missing)
+for why sending real patient audio through it as-is would be a problem: no
+signed data processing agreement is in place with OpenAI.
 
-**Swapping providers**: a real deployment would likely replace this with a
-provider that fits the eu-central-1 / multi-tenant AWS setup — e.g. AWS
-Transcribe, or a self-hosted Whisper deployment. That's a new
-`TranscriptionService` implementation; nothing else in the pipeline changes.
+**Swapping providers**: `src/transcription/factory.py`'s
+`TranscriptionFactory` selects the implementation via the
+`TRANSCRIPTION_PROVIDER` env var (defaults to `openai`). A real deployment
+would likely add a provider that fits the eu-central-1 / multi-tenant AWS
+setup — e.g. AWS Transcribe, or a self-hosted Whisper deployment — as a new
+`TranscriptionService` implementation registered in that factory; nothing
+else in the pipeline changes. See
+[transcription_research.md](transcription_research.md) for the tradeoffs
+between candidate providers.
 
 ## Entry points
 
@@ -43,7 +59,10 @@ uv run python scripts/fetch_sample_audio.py
 ```
 
 This writes a few `.wav` clips to `data/samples/` (git-ignored — not
-committed). Then, with `OPENAI_API_KEY` set:
+committed). Then, with the configured provider's credentials set (the
+default `openai` provider needs `OPENAI_API_KEY`; see "Swapping providers"
+above and [transcription_research.md](transcription_research.md) for the
+other providers this is meant to support):
 
 ```python
 import asyncio
@@ -70,7 +89,9 @@ distinguish behandelaar from patiënt, and `tests/conftest.py`'s
 `mock_transcript` fixture already models the target shape
 (`Spreker A: ... / Spreker B: ...`) that nothing upstream currently produces.
 
-### Option 1 — AWS Transcribe (most relevant for this job's architecture)
+### Option 1 — Cloud solutions
+
+#### 1.1 AWS Transcribe (most relevant for this job's architecture)
 
 Since the target deployment is AWS eu-central-1, AWS Transcribe is the
 natural production choice over a self-managed OSS pipeline: it does
@@ -81,6 +102,17 @@ already in scope, and its data handling is covered by AWS's standard data
 processing terms rather than a separate third-party agreement. This would
 likely be the right implementation to add as a second `TranscriptionService`
 alongside (or instead of) the OpenAI one, returning speaker-labeled segments.
+
+#### 1.2 Azure Speech-to-Text — not yet researched
+
+#### 1.3 Google Cloud Speech-to-Text — not yet researched
+
+Both 1.2 and 1.3 do speaker diarization and have EU-hosting options in
+principle; neither has been evaluated here for Dutch-language quality,
+cost, or their data processing agreement terms. See
+[transcription_research.md](transcription_research.md), which is where that
+evaluation (including a full comparison matrix against AWS Transcribe and
+the open-source options below) belongs once it's done.
 
 ### Option 2 — Open-source, for a self-hosted / non-AWS path
 

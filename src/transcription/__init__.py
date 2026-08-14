@@ -7,7 +7,8 @@ produced the transcript.
 """
 
 from src.transcription.base import TranscriptionService
+from src.transcription.factory import TranscriptionFactory
 from src.transcription.openai_whisper import OpenAIWhisperTranscription
 
 
-__all__ = ["TranscriptionService", "OpenAIWhisperTranscription"]
+__all__ = ["TranscriptionFactory", "TranscriptionService", "OpenAIWhisperTranscription"]

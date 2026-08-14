@@ -30,10 +30,10 @@ async def test_process_audio_conversation_async_transcribes_then_processes(mock_
     monkeypatch.setattr("src.main.LLMFactory.get_llm_for_task", lambda *a, **kw: mock_task_llm)
 
     mock_transcriber = AsyncMock()
-    mock_transcriber.transcribe.return_value = "Patient has hypertension."
+    mock_transcriber.transcribe_file.return_value = "Patient has hypertension."
 
     result = await process_audio_conversation_async("fake/path.wav", transcription_service=mock_transcriber)
 
-    mock_transcriber.transcribe.assert_called_once_with("fake/path.wav", language="nl")
+    mock_transcriber.transcribe_file.assert_called_once_with("fake/path.wav", language="nl")
     assert result["transcript"] == "Patient has hypertension."
     assert "summary" in result

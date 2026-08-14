@@ -1,7 +1,6 @@
 """OpenAI Whisper API transcription provider."""
 
 import os
-from pathlib import Path
 
 from openai import AsyncOpenAI
 
@@ -38,29 +37,29 @@ class OpenAIWhisperTranscription(TranscriptionService):
         self._model = model
         self._client = AsyncOpenAI(api_key=self._api_key)
 
-    async def transcribe(self, audio_path: str | Path, language: str | None = None) -> str:
-        """Transcribe an audio file using the Whisper API.
+    async def transcribe(self, audio: bytes, *, filename: str = "audio.wav", language: str | None = None) -> str:
+        """Transcribe raw audio bytes using the Whisper API.
+
+        The API takes the audio content directly — it never touches a
+        filesystem path — and infers the format from `filename`'s extension.
 
         Args:
-            audio_path: Path to the audio file.
+            audio: The raw audio bytes.
+            filename: Original filename; only its extension is used, to tell
+                the API what audio format it's receiving.
             language: Optional ISO 639-1 language hint (e.g. "nl").
 
         Returns:
             The transcribed text.
 
         Raises:
-            RuntimeError: If the file doesn't exist or the API call fails.
+            RuntimeError: If the API call fails.
         """
-        path = Path(audio_path)
-        if not path.is_file():
-            raise RuntimeError(f"Audio file not found: {path}")
-
         try:
-            with path.open("rb") as audio_file:
-                kwargs = {"model": self._model, "file": audio_file}
-                if language:
-                    kwargs["language"] = language
-                response = await self._client.audio.transcriptions.create(**kwargs)
+            kwargs = {"model": self._model, "file": (filename, audio)}
+            if language:
+                kwargs["language"] = language
+            response = await self._client.audio.transcriptions.create(**kwargs)
             return response.text
         except Exception as e:
-            raise RuntimeError(f"Failed to transcribe {path.name}: {e}") from e
+            raise RuntimeError(f"Failed to transcribe {filename}: {e}") from e

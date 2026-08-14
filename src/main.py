@@ -92,7 +92,8 @@ async def process_audio_conversation_async(
     Args:
         audio_path: Path to the recorded consultation audio file.
         transcription_service: The provider to transcribe with. Defaults to
-            `OpenAIWhisperTranscription` (requires OPENAI_API_KEY).
+            `TranscriptionFactory.create()`, i.e. whatever `TRANSCRIPTION_PROVIDER`
+            selects (OpenAI Whisper, requiring OPENAI_API_KEY, by default).
         patient_id: The patient to verify the summary against.
         language: Optional ISO 639-1 language hint passed to the transcriber.
 
@@ -101,11 +102,11 @@ async def process_audio_conversation_async(
         `process_medical_conversation_async`.
     """
     if transcription_service is None:
-        from src.transcription.openai_whisper import OpenAIWhisperTranscription
+        from src.transcription.factory import TranscriptionFactory
 
-        transcription_service = OpenAIWhisperTranscription()
+        transcription_service = TranscriptionFactory.create()
 
-    transcript = await transcription_service.transcribe(audio_path, language=language)
+    transcript = await transcription_service.transcribe_file(audio_path, language=language)
     result = await process_medical_conversation_async(transcript, patient_id)
     return {"transcript": transcript, **result}
 

@@ -84,9 +84,13 @@ async def transcribe_and_process_endpoint(audio: UploadFile, language: str = "nl
     `quality_check.requires_human_review` before it can be used.
 
     Note: this is a showcase implementation. Audio is written to a local temp
-    file and sent to OpenAI's Whisper API; it is not routed through any
-    signed subverwerkersovereenkomst and must not be used with real patient
-    data. See docs/agents/domain.md for the compliance context.
+    file and sent to whichever transcription provider is configured (OpenAI's
+    Whisper API by default — see `TRANSCRIPTION_PROVIDER` in
+    `src/transcription/factory.py` for how to change it); none of the
+    supported providers today are routed through a signed
+    subverwerkersovereenkomst, so this must not be used with real patient
+    data regardless of provider. See docs/agents/domain.md for the
+    compliance context.
 
     Args:
         audio: The uploaded audio file (recorded consultation).
