@@ -27,14 +27,32 @@ NUM_AGENTS_IN_CREW = 5
 def mock_llm():
     """Create a mock LLM for testing.
 
+    `crewai.Agent` doesn't accept an arbitrary object as `llm` as-is: its
+    pydantic validator runs it through `create_llm()`
+    (`crewai/utilities/llm_utils.py`), which reads specific attributes
+    (`model_name`, not `model`) to build a real `crewai.LLM`. Any attribute
+    it reads that's left unset on an AsyncMock auto-vivifies into another
+    mock rather than `None`, which breaks `create_llm`'s string handling
+    (e.g. `model_name.lower()` on a mock) and makes it silently fall back to
+    `self.llm = None` — surfacing later as a confusing
+    `AttributeError: 'NoneType' object has no attribute 'supports_stop_words'`
+    instead of a clear failure here. So every attribute `create_llm` reads
+    must be set explicitly, matching its real names.
+
     Returns:
         An AsyncMock object that simulates an LLM for testing agent creation
     """
     mock = AsyncMock()
     mock.supports_stop_words = lambda: False
-    mock.model = "gpt-4"
+    mock.model_name = "gpt-4"
+    mock.deployment_name = None
     mock.temperature = 0.7
     mock.max_tokens = 1000
+    mock.logprobs = None
+    mock.timeout = None
+    mock.api_key = None
+    mock.base_url = None
+    mock.api_base = None
     mock.tools = []
     return mock
 
