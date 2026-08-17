@@ -14,7 +14,7 @@ class EdgeAdapter(ModelAdapter):
     to call a real local runtime (ggml/gguf binary, Ollama, onnxruntime quantized, etc.).
     """
 
-    def __init__(self, artifact_path: str = None):
+    def __init__(self, artifact_path: str | None = None):
         self.artifact_path = artifact_path
         self.client = None
 

@@ -22,9 +22,9 @@ class GPUAdapter(ModelAdapter):
     def __init__(self, model_id: str, torch_dtype: str | None = "float16"):
         self.model_id = model_id
         self.torch_dtype = torch_dtype
-        self.tokenizer = None
-        self.model = None
-        self.device = None
+        self.tokenizer: Any = None
+        self.model: Any = None
+        self.device: torch.device | None = None
 
     def load(self, **kwargs) -> None:
         # Allow tests / CI to skip heavy model downloads
