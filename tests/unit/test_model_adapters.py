@@ -14,6 +14,13 @@ def test_edge_adapter_infer():
     assert isinstance(resp["text"], str)
 
 
+def test_edge_adapter_health_check_reflects_load():
+    a = EdgeAdapter(artifact_path="/tmp/fake")
+    assert a.health_check() is False
+    a.load()
+    assert a.health_check() is True
+
+
 def test_gpu_adapter_rejects_unknown_dtype():
     with pytest.raises(ValueError):
         GPUAdapter(model_id="some/model", torch_dtype="int8")
