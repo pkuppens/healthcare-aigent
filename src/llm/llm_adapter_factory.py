@@ -1,8 +1,9 @@
 from typing import Any
 
 from .adapter_registry import get_adapter, register_adapter, select_adapter_from_env
-from .gpu_adapter import GPUAdapter
 from .edge_adapter import EdgeAdapter
+from .gpu_adapter import GPUAdapter
+
 
 # Register known adapters
 register_adapter("gpu", GPUAdapter)

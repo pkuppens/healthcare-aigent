@@ -1,10 +1,11 @@
 import logging
 import os
-from typing import Dict, Any, Optional
+from typing import Any
 
 import torch
 
 from .model_adapter import ModelAdapter
+
 
 logger = logging.getLogger(__name__)
 
@@ -18,7 +19,7 @@ class GPUAdapter(ModelAdapter):
     - In CI/tests we recommend setting LLM_SKIP_REAL_LOAD=1 to avoid heavy downloads.
     """
 
-    def __init__(self, model_id: str, torch_dtype: Optional[str] = "float16"):
+    def __init__(self, model_id: str, torch_dtype: str | None = "float16"):
         self.model_id = model_id
         self.torch_dtype = torch_dtype
         self.tokenizer = None
@@ -48,7 +49,7 @@ class GPUAdapter(ModelAdapter):
         # pick device of first parameter
         self.device = next(self.model.parameters()).device
 
-    def infer(self, prompt: str, max_tokens: int = 128, **options) -> Dict[str, Any]:
+    def infer(self, prompt: str, max_tokens: int = 128, **options) -> dict[str, Any]:
         if self.model is None:
             self.load()
         # If model is a stub (from LLM_SKIP_REAL_LOAD), return a predictable stub response
@@ -67,5 +68,5 @@ class GPUAdapter(ModelAdapter):
         except Exception:
             return False
 
-    def metadata(self) -> Dict[str, Any]:
+    def metadata(self) -> dict[str, Any]:
         return {"model_id": self.model_id, "profile": "gpu"}

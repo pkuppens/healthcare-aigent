@@ -2,8 +2,8 @@ import os
 
 import pytest
 
-from src.llm.gpu_adapter import GPUAdapter
 from src.llm.edge_adapter import EdgeAdapter
+from src.llm.gpu_adapter import GPUAdapter
 
 
 def test_edge_adapter_infer():

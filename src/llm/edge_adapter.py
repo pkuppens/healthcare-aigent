@@ -1,7 +1,8 @@
 import logging
-from typing import Dict, Any
+from typing import Any
 
 from .model_adapter import ModelAdapter
+
 
 logger = logging.getLogger(__name__)
 
@@ -21,7 +22,7 @@ class EdgeAdapter(ModelAdapter):
         # Example: If using a subprocess runner (ggml) or local server, init client here.
         logger.info("EdgeAdapter load called; artifact_path=%s", self.artifact_path)
 
-    def infer(self, prompt: str, max_tokens: int = 128, **options) -> Dict[str, Any]:
+    def infer(self, prompt: str, max_tokens: int = 128, **options) -> dict[str, Any]:
         # Placeholder inference: in production, call the local runtime (e.g., ggml binary, Ollama API).
         # Return a stub for tests and quick verification; implement real runtime later.
         return {"text": f"[edge-simulated] {prompt[:200]}"}
@@ -30,5 +31,5 @@ class EdgeAdapter(ModelAdapter):
         # If a runtime client exists, call its health. Here return True as placeholder.
         return True
 
-    def metadata(self) -> Dict[str, Any]:
+    def metadata(self) -> dict[str, Any]:
         return {"artifact_path": self.artifact_path, "profile": "edge"}
