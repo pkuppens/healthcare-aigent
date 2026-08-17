@@ -1,8 +1,8 @@
-from typing import Any
-
-from .adapter_registry import get_adapter, register_adapter, select_adapter_from_env
+from .adapter_registry import get_adapter, register_adapter
 from .edge_adapter import EdgeAdapter
 from .gpu_adapter import GPUAdapter
+from .model_adapter import ModelAdapter
+from .profile_config import get_default_profile, get_profile_kwargs
 
 
 # Register known adapters
@@ -10,15 +10,21 @@ register_adapter("gpu", GPUAdapter)
 register_adapter("edge", EdgeAdapter)
 
 
-def create_adapter_instance(profile: str = None, **kwargs):
-    """Create an adapter instance for the given profile or the profile selected via env.
+def create_adapter_instance(profile: str | None = None, **kwargs) -> ModelAdapter:
+    """Create an adapter instance for the given profile.
+
+    profile defaults to config/llm_profiles.yml's `default_profile` when not
+    given explicitly. If no kwargs are passed, the profile's kwargs are read
+    from that same config file; explicit **kwargs override the config file
+    entirely rather than merging with it.
 
     Example usage:
-        factory = create_adapter_instance()  # uses LLM_PROFILE env or defaults to 'gpu'
-        adapter = factory(model_id="Juvoly/J1-Llama-8B-exp")
+        adapter = create_adapter_instance()  # default_profile from config file
+        adapter = create_adapter_instance("gpu", model_id="Juvoly/J1-Llama-8B-exp")
     """
     if profile is None:
-        adapter_cls = select_adapter_from_env()
-    else:
-        adapter_cls = get_adapter(profile)
+        profile = get_default_profile()
+    adapter_cls = get_adapter(profile)
+    if not kwargs:
+        kwargs = get_profile_kwargs(profile)
     return adapter_cls(**kwargs)

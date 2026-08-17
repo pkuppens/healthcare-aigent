@@ -1,3 +1,5 @@
+default_profile: edge
+
 profiles:
   gpu:
     model_id: "Juvoly/J1-Llama-8B-exp"
