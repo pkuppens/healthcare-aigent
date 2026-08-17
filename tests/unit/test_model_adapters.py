@@ -1,9 +1,9 @@
-import os
-
 import pytest
+import torch
 
 from src.llm.edge_adapter import EdgeAdapter
 from src.llm.gpu_adapter import GPUAdapter
+from src.llm.mock_adapter import MockAdapter
 
 
 def test_edge_adapter_infer():
@@ -14,14 +14,48 @@ def test_edge_adapter_infer():
     assert isinstance(resp["text"], str)
 
 
-def test_gpu_adapter_metadata_and_lazy_load(monkeypatch):
-    # Ensure we don't try to download models during tests
-    monkeypatch.setenv("LLM_SKIP_REAL_LOAD", "1")
+def test_gpu_adapter_rejects_unknown_dtype():
+    with pytest.raises(ValueError):
+        GPUAdapter(model_id="some/model", torch_dtype="int8")
+
+
+def test_gpu_adapter_load_and_infer(monkeypatch):
+    # GPUAdapter always performs a real load (no test/CI escape hatch), so we
+    # stand in for the transformers backend rather than skipping the load.
+    import transformers
+
+    class FakeTokenizer:
+        def __call__(self, prompt, return_tensors="pt"):
+            return {"input_ids": torch.tensor([[1, 2, 3]])}
+
+        def decode(self, ids, skip_special_tokens=True):
+            return "fake output"
+
+    class FakeModel:
+        def parameters(self):
+            return iter([torch.nn.Parameter(torch.zeros(1))])
+
+        def generate(self, **kwargs):
+            return torch.tensor([[1, 2, 3, 4]])
+
+    monkeypatch.setattr(transformers.AutoTokenizer, "from_pretrained", lambda *a, **k: FakeTokenizer())
+    monkeypatch.setattr(transformers.AutoModelForCausalLM, "from_pretrained", lambda *a, **k: FakeModel())
+
     a = GPUAdapter(model_id="some/model")
-    # Do not call load; ensure metadata works and lazy load returns stub
     meta = a.metadata()
     assert meta["profile"] == "gpu"
-    # Call infer which will trigger the skip-real-load path and return a stub
+    assert a.health_check() is False
+
     resp = a.infer("Test prompt for GPU")
-    assert "text" in resp
-    assert resp["text"].startswith("[gpu-stub]")
+    assert resp["text"] == "fake output"
+    assert a.health_check() is True
+
+
+def test_mock_adapter_infer_and_health_check():
+    a = MockAdapter()
+    assert a.metadata()["profile"] == "mock"
+    assert a.health_check() is False
+
+    resp = a.infer("hello")
+    assert resp["text"] == "[mock] hello"
+    assert a.health_check() is True

@@ -6,3 +6,4 @@ profiles:
     torch_dtype: "float16"
   edge:
     artifact_path: "/opt/models/j1-gguf.jl"
+  mock: {}

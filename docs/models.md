@@ -7,6 +7,8 @@ Profiles:
 - gpu: full model using Hugging Face transformers with GPU support (fp16/bf16/float32);
   requires the `healthcare-aigent[gpu]` extra (torch + transformers)
 - edge: quantized / ggml / local runtime
+- mock: test double with no real backend; use this in tests instead of
+  skipping GPUAdapter/EdgeAdapter's real load
 
 Select profile:
 
@@ -33,8 +35,8 @@ profiles:
 ```
 
 Notes:
-- The GPUAdapter implementation will attempt to load models via the Hugging Face
-  transformers library. Set `LLM_SKIP_REAL_LOAD=1` in CI or unit tests to avoid
-  downloading large model artifacts during automated runs.
+- The GPUAdapter implementation always performs a real load via the Hugging Face
+  transformers library; it has no test/CI escape hatch. Use MockAdapter in tests
+  instead of skipping the real load.
 - The EdgeAdapter is a lightweight placeholder that should be extended to call a
   local runtime (ggml/gguf binary, Ollama, or an onnxruntime quantized model).

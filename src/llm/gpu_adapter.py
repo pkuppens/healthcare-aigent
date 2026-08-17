@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import logging
-import os
 from typing import TYPE_CHECKING, Any
 
 from .model_adapter import ModelAdapter
@@ -16,16 +15,17 @@ _SUPPORTED_DTYPES = {"float16", "float32", "bfloat16"}
 
 
 class GPUAdapter(ModelAdapter):
-    """GPU-backed adapter using Hugging Face transformers (lazy-load).
+    """GPU-backed adapter using Hugging Face transformers.
 
     Notes:
     - This adapter lazily imports torch and transformers so that importing this
       module (and llm_adapter_factory/adapter_registry, which import it eagerly)
       does not require the GPU stack to be installed. Constructing or calling
       load()/infer() on a GPUAdapter does require the `healthcare-aigent[gpu]`
-      extra (torch + transformers) and will attempt to download model artifacts
-      unless the environment variable LLM_SKIP_REAL_LOAD=1 is set.
-    - In CI/tests we recommend setting LLM_SKIP_REAL_LOAD=1 to avoid heavy downloads.
+      extra (torch + transformers) and will attempt to download model artifacts.
+    - This adapter always performs a real load; it has no test/CI escape hatch.
+      Use MockAdapter (src/llm/mock_adapter.py) in tests instead of skipping
+      the real load from inside this class.
     """
 
     def __init__(self, model_id: str, torch_dtype: str = "float16"):
@@ -39,15 +39,6 @@ class GPUAdapter(ModelAdapter):
 
     def load(self, **kwargs) -> None:
         import torch
-
-        # Allow tests / CI to skip heavy model downloads
-        if os.environ.get("LLM_SKIP_REAL_LOAD") == "1":
-            logger.info("LLM_SKIP_REAL_LOAD=1: skipping real model load for %s", self.model_id)
-            self.model = object()
-            self.device = torch.device("cpu")
-            return
-
-        # Import inside function so tests can run without transformers installed
         from transformers import AutoModelForCausalLM, AutoTokenizer
 
         logger.info("Loading model %s on GPU (device_map=auto)", self.model_id)
@@ -65,10 +56,6 @@ class GPUAdapter(ModelAdapter):
     def infer(self, prompt: str, max_tokens: int = 128, **options) -> dict[str, Any]:
         if self.model is None:
             self.load()
-        # If model is a stub (from LLM_SKIP_REAL_LOAD), return a predictable stub response
-        if not hasattr(self.model, "parameters"):
-            return {"text": f"[gpu-stub] {prompt[:200]}"}
-
         inputs = self.tokenizer(prompt, return_tensors="pt")
         inputs = {k: v.to(self.device) for k, v in inputs.items()}
         outputs = self.model.generate(**inputs, max_new_tokens=max_tokens, **options)

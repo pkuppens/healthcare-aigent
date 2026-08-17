@@ -1,6 +1,7 @@
 from .adapter_registry import get_adapter, register_adapter
 from .edge_adapter import EdgeAdapter
 from .gpu_adapter import GPUAdapter
+from .mock_adapter import MockAdapter
 from .model_adapter import ModelAdapter
 from .profile_config import get_default_profile, get_profile_kwargs
 
@@ -8,6 +9,7 @@ from .profile_config import get_default_profile, get_profile_kwargs
 # Register known adapters
 register_adapter("gpu", GPUAdapter)
 register_adapter("edge", EdgeAdapter)
+register_adapter("mock", MockAdapter)
 
 
 def create_adapter_instance(profile: str | None = None, **kwargs) -> ModelAdapter:
