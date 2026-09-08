@@ -64,6 +64,8 @@ For detailed technical information, see [Technical Implementation](docs/technica
 - **[Development Environment](docs/development_environment.md)**: Setup and development guidelines
 - **[CrewAI Configuration](docs/crewai.md)**: Multi-agent system configuration
 - **[Testing Guidelines](docs/testing.md)**: Testing framework and best practices
+- **[Transcription Stage](docs/transcription.md)**: Turning a recorded consultation into text ahead of the pipeline
+- **[Compliance Considerations](docs/compliance.md)**: AVG / NEN 7510-7512-7513 / human-review context for a GGZ-style deployment
 
 ## Development
 
@@ -86,6 +88,18 @@ pytest
 # Run with coverage
 pytest --cov=src
 ```
+
+Tests are split into unit tests (always run, no external services) and
+integration tests marked `@pytest.mark.integration` / `@pytest.mark.llm`,
+which auto-skip when no Ollama server or OpenAI API key is available (see
+`tests/conftest.py`). To exercise the live-LLM tests, either run
+`ollama serve && ollama pull llama3`, or set `OPENAI_API_KEY`.
+
+**Windows note**: a dependency (`litellm`, pulled in via `crewai`) reads a
+data file without specifying UTF-8 encoding, which fails under Windows'
+default `cp1252` codec. Run tests with `PYTHONUTF8=1` set, e.g.
+`PYTHONUTF8=1 uv run pytest` (Git Bash) or `$env:PYTHONUTF8=1; uv run pytest`
+(PowerShell).
 
 ## License
 

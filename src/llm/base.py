@@ -98,6 +98,23 @@ class BaseLLM(ABC):
         """
         pass
 
+    async def ainvoke(self, prompt: str, **kwargs: Any) -> str:
+        """Invoke the LLM asynchronously with the given prompt.
+
+        The underlying provider clients (ChatOpenAI/ChatOllama) are called
+        synchronously via `_call`; this just gives callers (e.g. the task
+        pipeline in `src/tasks`, which is written against an async LLM
+        interface) a consistent `ainvoke` regardless of provider.
+
+        Args:
+            prompt: The prompt to send to the LLM
+            **kwargs: Additional arguments to pass to the LLM
+
+        Returns:
+            The generated text from the LLM
+        """
+        return self._call(prompt, **kwargs)
+
     def invoke(self, prompt: str, **kwargs: Any) -> str:
         """Invoke the LLM with the given prompt.
 

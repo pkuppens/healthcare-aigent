@@ -201,3 +201,6 @@ ansible/vault/
 ansible/*.vault
 ansible/*.vault.yml
 ansible/*.vault.yaml
+
+# Downloaded reference audio samples (see scripts/fetch_sample_audio.py)
+data/samples/

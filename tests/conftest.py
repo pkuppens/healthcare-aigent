@@ -1,7 +1,8 @@
 """Common test fixtures for healthcare multi-agent system."""
 
+import json
 import os
-from unittest.mock import patch
+from unittest.mock import AsyncMock, patch
 
 import pytest
 import requests
@@ -11,6 +12,8 @@ from src.llm.circuit_breaker import is_ollama_available, is_openai_available
 
 # Constants
 HTTP_OK = 200
+QUALITY_SCORE = 95
+ACCURACY_SCORE = 0.95
 
 
 def is_service_available(url: str, timeout: int = 5) -> bool:
@@ -65,6 +68,58 @@ def mock_patient_data():
             "last_visit": "2024-01-15",
         }
     }
+
+
+@pytest.fixture
+def mock_task_llm():
+    """Create a mock LLM whose responses match the JSON contract each task expects.
+
+    Shared by unit task tests and the agent-system integration test so the mock
+    payloads only need to be kept in sync with `src/tasks/*` in one place.
+    """
+    llm = AsyncMock()
+
+    async def mock_ainvoke(prompt: str) -> str:
+        if "Preprocess this medical text" in prompt:
+            return "Preprocessed: Patient has hypertension"
+        elif "Assess the language proficiency" in prompt:
+            return json.dumps({"proficiency": "intermediate", "needs_interpreter": False, "language_proficiency_scale": "B2"})
+        elif "Extract clinical information" in prompt:
+            return json.dumps(
+                {
+                    "symptoms": ["headache"],
+                    "conditions": ["hypertension"],
+                    "medications": ["metoprolol"],
+                    "diagnosis": "Essential hypertension",
+                }
+            )
+        elif "Generate a concise medical summary" in prompt:
+            return "Patient presents with hypertension"
+        elif "Perform quality control" in prompt:
+            return json.dumps({"accuracy_score": ACCURACY_SCORE, "requires_human_review": False, "quality_rating": QUALITY_SCORE})
+        return "Mock response"
+
+    llm.ainvoke = mock_ainvoke
+    return llm
+
+
+@pytest.fixture
+def mock_task_db():
+    """Create a mock database returning fixed patient data for task tests."""
+    db = AsyncMock()
+    db.read_patient_data = AsyncMock(
+        return_value={"patient_id": "123", "name": "John Doe", "history": "Hypertension", "allergies": ["Penicillin"]}
+    )
+    db.propose_database_update = AsyncMock(return_value=True)
+    return db
+
+
+@pytest.fixture
+def mock_task_logger():
+    """Create a mock audit logger for task tests."""
+    logger = AsyncMock()
+    logger.log_audit_event = AsyncMock(return_value=True)
+    return logger
 
 
 @pytest.fixture
