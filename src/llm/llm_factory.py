@@ -5,10 +5,13 @@ import os
 from enum import Enum
 from typing import ClassVar, TypedDict
 
+from src.llm.adapter_backed_llm import AdapterBackedLLM
 from src.llm.base import BaseLLM
 from src.llm.circuit_breaker import is_ollama_available, is_openai_available
+from src.llm.llm_adapter_factory import create_adapter_instance
 from src.llm.ollama_llm import OllamaLLM
 from src.llm.openai_llm import OpenAILLM
+from src.llm.profile_config import get_default_profile
 
 
 # Configure logging
@@ -174,6 +177,32 @@ class LLMFactory:
             except Exception as e:
                 logger.error(f"All LLM creation attempts failed: {e}")
                 raise
+
+
+    @classmethod
+    def create_from_adapter_profile(cls, profile: str | None = None, temperature: float = 0.7, **adapter_kwargs) -> BaseLLM:
+        """Create a BaseLLM backed by the ModelAdapter stack (GPU/Edge/Mock).
+
+        This is the wiring point between LLMFactory and the swappable adapter
+        stack in src/llm/model_adapter.py (see issue #8): profile defaults to
+        config/llm_profiles.yml's `default_profile`, and adapter construction
+        kwargs come from that same config unless overridden here.
+
+        Args:
+            profile: Adapter profile name ("gpu", "edge", "mock"). Defaults to
+                config/llm_profiles.yml's default_profile.
+            temperature: Temperature to record on the returned BaseLLM. Adapters
+                are prompt-in/text-out and don't take temperature themselves.
+            **adapter_kwargs: Overrides for the adapter's constructor kwargs.
+
+        Returns:
+            An AdapterBackedLLM wrapping the constructed ModelAdapter.
+        """
+        adapter = create_adapter_instance(profile, **adapter_kwargs)
+        resolved_profile = profile or get_default_profile()
+        metadata = adapter.metadata()
+        model_name = metadata.get("model_id") or metadata.get("artifact_path") or resolved_profile
+        return AdapterBackedLLM(adapter, model_name=model_name, temperature=temperature)
 
 
 def get_llm(provider: str | None = None, temperature: float = 0.7) -> BaseLLM:
