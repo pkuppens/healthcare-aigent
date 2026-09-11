@@ -1,5 +1,4 @@
 import pytest
-import torch
 
 from src.llm.edge_adapter import EdgeAdapter
 from src.llm.gpu_adapter import GPUAdapter
@@ -29,7 +28,10 @@ def test_gpu_adapter_rejects_unknown_dtype():
 def test_gpu_adapter_load_and_infer(monkeypatch):
     # GPUAdapter always performs a real load (no test/CI escape hatch), so we
     # stand in for the transformers backend rather than skipping the load.
-    import transformers
+    # torch/transformers are the optional `gpu` extra, not installed by
+    # default - skip rather than fail collection when they're absent.
+    torch = pytest.importorskip("torch")
+    transformers = pytest.importorskip("transformers")
 
     class FakeTokenizer:
         def __call__(self, prompt, return_tensors="pt"):
