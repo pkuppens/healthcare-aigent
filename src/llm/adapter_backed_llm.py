@@ -7,7 +7,7 @@ can ever construct or call one (see issue #8).
 
 from typing import Any
 
-from langchain.callbacks.manager import CallbackManagerForLLMRun
+from langchain_core.callbacks import CallbackManagerForLLMRun
 
 from src.llm.base import BaseLLM
 from src.llm.model_adapter import ModelAdapter

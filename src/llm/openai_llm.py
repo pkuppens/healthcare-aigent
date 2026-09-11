@@ -4,8 +4,8 @@ import os
 from typing import Any
 
 import requests
-from langchain.callbacks.manager import CallbackManagerForLLMRun
-from langchain.schema import BaseMessage
+from langchain_core.callbacks import CallbackManagerForLLMRun
+from langchain_core.messages import BaseMessage
 from langchain_openai import ChatOpenAI
 from pydantic import SecretStr
 

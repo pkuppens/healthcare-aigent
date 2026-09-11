@@ -4,8 +4,8 @@ import os
 from typing import Any
 
 import requests
-from langchain.callbacks.manager import CallbackManagerForLLMRun
 from langchain_community.chat_models import ChatOllama
+from langchain_core.callbacks import CallbackManagerForLLMRun
 
 from src.llm.base import BaseLLM
 from src.llm.circuit_breaker import HTTP_OK
