@@ -5,14 +5,14 @@ to parse medical conversations and extract key clinical entities like
 symptoms, conditions, and medications.
 """
 
-import json
-import logging
 from typing import Any
 
 from crewai import Task
 
+from src.tasks._llm_task import require_text, run_llm_json
 
-logger = logging.getLogger(__name__)
+
+REQUIRED_KEYS = {"symptoms", "conditions", "medications", "diagnosis"}
 
 
 class ExtractClinicalInfoTask(Task):
@@ -37,10 +37,6 @@ class ExtractClinicalInfoTask(Task):
     async def execute(self, text: str, llm: any) -> dict[str, Any]:
         """Executes the clinical information extraction task.
 
-        This method uses a language model to parse the text and extract
-        pre-defined clinical fields. It ensures the output is a valid JSON
-        object with all the required keys.
-
         Args:
             text: The medical text to extract information from.
             llm: The language model instance to be used for extraction.
@@ -52,34 +48,17 @@ class ExtractClinicalInfoTask(Task):
             ValueError: If the input text is empty or not a string.
             RuntimeError: If the LLM response is invalid, cannot be parsed, or is missing required keys.
         """
-        if not text or not isinstance(text, str):
-            raise ValueError("Input text must be a non-empty string.")
+        require_text(text)
 
-        try:
-            prompt = f'''Extract clinical information from this text.
-            Return a JSON object with these fields:
-            - "symptoms": list of strings
-            - "conditions": list of strings
-            - "medications": list of strings
-            - "diagnosis": string
+        prompt = f'''Extract clinical information from this text.
+        Return a JSON object with these fields:
+        - "symptoms": list of strings
+        - "conditions": list of strings
+        - "medications": list of strings
+        - "diagnosis": string
 
-            Text: """{text}"""
+        Text: """{text}"""
 
-            Return only the JSON object without any additional text or explanations.'''
+        Return only the JSON object without any additional text or explanations.'''
 
-            result = await llm.ainvoke(prompt)
-            if not result or not isinstance(result, str):
-                raise RuntimeError("LLM returned an invalid or empty response.")
-
-            try:
-                info = json.loads(result)
-                required_keys = {"symptoms", "conditions", "medications", "diagnosis"}
-                if not all(key in info for key in required_keys):
-                    raise ValueError(f"LLM response is missing required keys: {required_keys - set(info.keys())}")
-                return info
-            except json.JSONDecodeError as e:
-                raise RuntimeError(f"Failed to parse LLM response as JSON: {result}") from e
-
-        except Exception as e:
-            logger.error(f"Failed to extract clinical information: {e}")
-            raise RuntimeError(f"An error occurred during clinical information extraction: {e}") from e
+        return await run_llm_json(llm, prompt, REQUIRED_KEYS, action="clinical information extraction")
