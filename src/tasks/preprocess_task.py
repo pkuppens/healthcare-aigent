@@ -5,12 +5,9 @@ for taking raw medical conversation text and preparing it for further analysis
 by standardizing terminology and structure.
 """
 
-import logging
-
 from crewai import Task
 
-
-logger = logging.getLogger(__name__)
+from src.tasks._llm_task import require_text, run_llm_text
 
 
 class PreprocessMedicalTextTask(Task):
@@ -35,9 +32,6 @@ class PreprocessMedicalTextTask(Task):
     async def execute(self, text: str, llm: any) -> str:
         """Executes the preprocessing task.
 
-        This method provides a prompt to the language model to preprocess the given
-        medical text. It handles potential errors during the process.
-
         Args:
             text: The raw medical text to be preprocessed.
             llm: The language model instance to be used for the task.
@@ -49,23 +43,14 @@ class PreprocessMedicalTextTask(Task):
             ValueError: If the input text is empty or not a string.
             RuntimeError: If the language model fails to process the text or returns an invalid response.
         """
-        if not text or not isinstance(text, str):
-            raise ValueError("Input text must be a non-empty string.")
+        require_text(text)
 
-        try:
-            prompt = f'''Preprocess this medical text for further analysis.
-            Remove any irrelevant information, standardize medical terms,
-            and ensure the text is well-structured.
+        prompt = f'''Preprocess this medical text for further analysis.
+        Remove any irrelevant information, standardize medical terms,
+        and ensure the text is well-structured.
 
-            Text: """{text}"""
+        Text: """{text}"""
 
-            Return only the preprocessed text without any additional comments or explanations.'''
+        Return only the preprocessed text without any additional comments or explanations.'''
 
-            result = await llm.ainvoke(prompt)
-            if not result or not isinstance(result, str):
-                raise RuntimeError("LLM returned an invalid or empty response.")
-
-            return result.strip()
-        except Exception as e:
-            logger.error(f"Failed to preprocess medical text: {e}")
-            raise RuntimeError(f"An error occurred during medical text preprocessing: {e}") from e
+        return await run_llm_text(llm, prompt, action="medical text preprocessing")

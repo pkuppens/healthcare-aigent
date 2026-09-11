@@ -37,4 +37,10 @@ jobs:
     # Verify core dependencies are properly installed
     - name: Verify installation
       run: |
-        python -c "import crewai; import langchain; import pydantic; print('All core dependencies installed successfully')" 
+        python -c "import crewai; import langchain; import pydantic; print('All core dependencies installed successfully')"
+
+    # Unit tests only: fast, no external API/network dependency. Integration
+    # tests need live OpenAI/Ollama access and are not run in CI.
+    - name: Run unit tests
+      run: |
+        uv run pytest tests/unit -q

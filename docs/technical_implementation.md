@@ -109,13 +109,12 @@ Logs can be output to console only or to both console and file, depending on con
 
 ## Development Workflow
 
-### Adding New Agents
+### Adding a New Pipeline Stage
 
-1. Define the agent in `src/agents.py`
-2. Create corresponding tasks in `src/tasks.py`
-3. Add any required tools in `src/tools/`
-4. Update the main workflow in `src/main.py`
-5. Add tests in `tests/`
+1. Define the task in `src/tasks/` (see the existing task files for the shared shape: validate input, build a prompt, call the LLM, validate and return the result)
+2. Add any required tools in `src/tools/`
+3. Wire the task into the pipeline in `src/main.py`
+4. Add tests in `tests/`
 
 ### Testing Framework
 

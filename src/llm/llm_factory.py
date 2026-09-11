@@ -5,10 +5,13 @@ import os
 from enum import Enum
 from typing import ClassVar, TypedDict
 
+from src.llm.adapter_backed_llm import AdapterBackedLLM
 from src.llm.base import BaseLLM
 from src.llm.circuit_breaker import is_ollama_available, is_openai_available
+from src.llm.llm_adapter_factory import create_adapter_instance
 from src.llm.ollama_llm import OllamaLLM
 from src.llm.openai_llm import OpenAILLM
+from src.llm.profile_config import get_default_profile
 
 
 # Configure logging
@@ -137,6 +140,8 @@ class LLMFactory:
         elif task_type in ["summarization", "extraction"]:
             llm_type = LLMType.CLOUD_FAST
 
+        from src.llm.fallback import FallbackStrategy
+
         # Check if the preferred LLM provider is available
         config = cls._llm_type_map[llm_type]
         provider = config["provider"]
@@ -144,14 +149,14 @@ class LLMFactory:
         # If cloud model is preferred but not available, try local model
         if provider == "openai" and not is_openai_available():
             logger.warning("OpenAI not available, falling back to local model")
-            llm_type = LLMType.LOCAL_FAST if llm_type == LLMType.CLOUD_FAST else LLMType.LOCAL_ACCURATE
+            llm_type = FallbackStrategy.get_fallback_llm_type(llm_type)
             config = cls._llm_type_map[llm_type]
             provider = config["provider"]
 
         # If local model is preferred but not available, try cloud model
         if provider == "ollama" and not is_ollama_available():
             logger.warning("Ollama not available, falling back to cloud model")
-            llm_type = LLMType.CLOUD_FAST if llm_type == LLMType.LOCAL_FAST else LLMType.CLOUD_ACCURATE
+            llm_type = FallbackStrategy.get_fallback_llm_type(llm_type)
             config = cls._llm_type_map[llm_type]
             provider = config["provider"]
 
@@ -163,7 +168,7 @@ class LLMFactory:
 
             # Fall back to local models if cloud models fail
             if llm_type in [LLMType.CLOUD_FAST, LLMType.CLOUD_ACCURATE]:
-                fallback_type = LLMType.LOCAL_FAST if llm_type == LLMType.CLOUD_FAST else LLMType.LOCAL_ACCURATE
+                fallback_type = FallbackStrategy.get_fallback_llm_type(llm_type)
                 logger.info(f"Falling back to {fallback_type.value}")
                 return cls.create_llm(fallback_type, temperature)
 
@@ -174,6 +179,31 @@ class LLMFactory:
             except Exception as e:
                 logger.error(f"All LLM creation attempts failed: {e}")
                 raise
+
+    @classmethod
+    def create_from_adapter_profile(cls, profile: str | None = None, temperature: float = 0.7, **adapter_kwargs) -> BaseLLM:
+        """Create a BaseLLM backed by the ModelAdapter stack (GPU/Edge/Mock).
+
+        This is the wiring point between LLMFactory and the swappable adapter
+        stack in src/llm/model_adapter.py (see issue #8): profile defaults to
+        config/llm_profiles.yml's `default_profile`, and adapter construction
+        kwargs come from that same config unless overridden here.
+
+        Args:
+            profile: Adapter profile name ("gpu", "edge", "mock"). Defaults to
+                config/llm_profiles.yml's default_profile.
+            temperature: Temperature to record on the returned BaseLLM. Adapters
+                are prompt-in/text-out and don't take temperature themselves.
+            **adapter_kwargs: Overrides for the adapter's constructor kwargs.
+
+        Returns:
+            An AdapterBackedLLM wrapping the constructed ModelAdapter.
+        """
+        adapter = create_adapter_instance(profile, **adapter_kwargs)
+        resolved_profile = profile or get_default_profile()
+        metadata = adapter.metadata()
+        model_name = metadata.get("model_id") or metadata.get("artifact_path") or resolved_profile
+        return AdapterBackedLLM(adapter, model_name=model_name, temperature=temperature)
 
 
 def get_llm(provider: str | None = None, temperature: float = 0.7) -> BaseLLM:
@@ -189,17 +219,19 @@ def get_llm(provider: str | None = None, temperature: float = 0.7) -> BaseLLM:
     Returns:
         An instance of BaseLLM
     """
+    from src.llm.fallback import FallbackStrategy
+
     provider = provider or os.getenv("LLM_PROVIDER", "OPENAI")
     provider = provider.lower()
 
     # Check if the preferred provider is available
     if provider == "openai" and not is_openai_available():
-        logger.warning("OpenAI not available, falling back to Ollama")
-        provider = "ollama"
+        logger.warning("OpenAI not available, falling back to %s", FallbackStrategy.get_fallback_provider(provider))
+        provider = FallbackStrategy.get_fallback_provider(provider)
 
     if provider == "ollama" and not is_ollama_available():
-        logger.warning("Ollama not available, falling back to OpenAI")
-        provider = "openai"
+        logger.warning("Ollama not available, falling back to %s", FallbackStrategy.get_fallback_provider(provider))
+        provider = FallbackStrategy.get_fallback_provider(provider)
 
     if provider == "openai":
         model = os.getenv("OPENAI_MODEL_NAME", "gpt-3.5-turbo")

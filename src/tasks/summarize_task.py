@@ -4,12 +4,9 @@ This module contains the GenerateSummaryTask class, which is responsible for
 creating a concise and accurate summary of a medical conversation.
 """
 
-import logging
-
 from crewai import Task
 
-
-logger = logging.getLogger(__name__)
+from src.tasks._llm_task import require_text, run_llm_text
 
 
 class GenerateSummaryTask(Task):
@@ -34,9 +31,6 @@ class GenerateSummaryTask(Task):
     async def execute(self, text: str, llm: any) -> str:
         """Executes the summarization task.
 
-        This method prompts a language model to generate a summary of the provided
-        text, focusing on clinical relevance and clarity.
-
         Args:
             text: The medical text to be summarized.
             llm: The language model instance to be used for summarization.
@@ -48,23 +42,14 @@ class GenerateSummaryTask(Task):
             ValueError: If the input text is empty or not a string.
             RuntimeError: If the language model fails to generate a summary or returns an invalid response.
         """
-        if not text or not isinstance(text, str):
-            raise ValueError("Input text must be a non-empty string.")
+        require_text(text)
 
-        try:
-            prompt = f'''Generate a concise medical summary of this text.
-            Focus on key clinical findings, diagnoses, and recommendations.
-            Use clear and professional medical language.
+        prompt = f'''Generate a concise medical summary of this text.
+        Focus on key clinical findings, diagnoses, and recommendations.
+        Use clear and professional medical language.
 
-            Text: """{text}"""
+        Text: """{text}"""
 
-            Return only the summary without any additional text or explanations.'''
+        Return only the summary without any additional text or explanations.'''
 
-            result = await llm.ainvoke(prompt)
-            if not result or not isinstance(result, str):
-                raise RuntimeError("LLM returned an invalid or empty response.")
-
-            return result.strip()
-        except Exception as e:
-            logger.error(f"Failed to generate summary: {e}")
-            raise RuntimeError(f"An error occurred during summary generation: {e}") from e
+        return await run_llm_text(llm, prompt, action="summary generation")
