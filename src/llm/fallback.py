@@ -1,4 +1,13 @@
-"""Fallback mechanisms for LLM providers."""
+"""Fallback mechanisms for LLM providers.
+
+FallbackStrategy is wired into LLMFactory (llm_factory.py's
+get_llm_for_task/get_llm) as the single place that maps a provider/LLMType
+to its fallback. FallbackLLM and RetryStrategy are call-time primitives -
+wrap an existing BaseLLM to get retry-then-fallback on *inference* failures,
+not just construction failures - and are deliberately standalone until a
+caller needs that: LLMFactory currently only falls back at construction
+time, before any inference call is made.
+"""
 
 import logging
 import time
