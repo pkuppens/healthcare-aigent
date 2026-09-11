@@ -199,31 +199,47 @@ This will skip all pre-commit hooks. Only use this in exceptional cases where yo
 ### Testing
 
 ```bash
-# Run unit tests (fast, no external API/network dependency)
-uv run pytest tests/unit
+# Run unit tests (recommended - fast, no external API/network dependency)
+uv run python scripts/test_unit.py
 
 # Run all tests, including integration tests that need live OpenAI/Ollama access
-pytest
+uv run pytest
 
 # Run with coverage
-pytest --cov=src
+uv run pytest --cov=src
 
 # Run specific test file
-pytest tests/test_specific.py
+uv run pytest tests/unit/test_specific.py
 ```
 
-> **Windows**: `crewai` transitively imports `litellm`, which opens a bundled
-> JSON file without an explicit encoding. Without UTF-8 mode, Python falls
-> back to the system codepage (cp1252), and importing `crewai` — and
-> therefore collecting `tests/unit/test_main.py` and `tests/unit/test_tasks.py`
-> — crashes with a `UnicodeDecodeError` before any test runs. Set
-> `PYTHONUTF8=1` in your environment to avoid this:
+> **Why not just `uv run pytest`?** Two independent issues, both real bugs
+> this project's dependencies have on Windows, not something you're doing
+> wrong:
+>
+> 1. `crewai` transitively imports `litellm`, which opens a bundled JSON file
+>    without an explicit encoding. Without UTF-8 mode, Python falls back to
+>    the system codepage (cp1252), and the import crashes with a
+>    `UnicodeDecodeError` before any test runs. Fix: set `PYTHONUTF8=1`
+>    *before* the interpreter starts (it can't be set from inside a
+>    conftest.py or fixture - by the time Python code runs, it's too late).
+> 2. There is also a **third-party package literally named `scripts`**
+>    somewhere in this project's (large, langflow-based) dependency tree,
+>    installed into the same `site-packages` as this repo's own `scripts/`
+>    package. That's why a `[project.scripts]` console-script entry point
+>    for running tests doesn't work reliably here - `scripts.test_unit`
+>    can resolve to the wrong `scripts` package depending on install order.
+>    Running `scripts/test_unit.py` by file path (as above) sidesteps this
+>    entirely, since it never imports `scripts` as a package.
+>
+> `scripts/test_unit.py` is a thin wrapper that launches `pytest tests/unit`
+> in a subprocess with `PYTHONUTF8=1` set, working around both. It's what
+> the `pytest-unit` pre-commit hook calls too. For anything beyond
+> `tests/unit` (`uv run pytest`, coverage, a single file), set
+> `PYTHONUTF8=1` in your shell first:
 > ```powershell
-> $env:PYTHONUTF8 = "1"
-> uv run pytest tests/unit
+> $env:PYTHONUTF8 = "1"   # current session only; use `setx PYTHONUTF8 1` to persist
+> uv run pytest
 > ```
-> `python scripts/test_unit.py` (and the `pytest-unit` pre-commit hook,
-> which calls it) sets this automatically.
 
 ### Linting and Formatting
 

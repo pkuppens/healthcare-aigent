@@ -106,7 +106,9 @@ skip-magic-trailing-comma = false
 required-version = ">=0.1.0"
 resolution = "highest"  # Always use latest compatible versions
 compile-bytecode = true
-dev-dependencies = [
+
+[dependency-groups]
+dev = [
     "pytest>=8.0.0",
     "pytest-cov>=4.0.0",
     "pytest-mock>=3.10.0",
