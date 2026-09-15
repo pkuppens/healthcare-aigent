@@ -254,11 +254,11 @@ This project uses **absolute imports** throughout. All imports follow the patter
 
 ```python
 # Correct - absolute imports
-from src.agents import create_medical_crew
+from src.tasks import PreprocessMedicalTextTask
 from src.tools.medical_tools import MedicalTerminologyTool
 
 # Incorrect - relative imports (not used)
-from .agents import create_medical_crew
+from .tasks import PreprocessMedicalTextTask
 from .tools.medical_tools import MedicalTerminologyTool
 ```
 

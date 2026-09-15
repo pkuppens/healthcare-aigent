@@ -1,5 +1,6 @@
 """LLM package for healthcare multi-agent system."""
 
+from src.llm.adapter_backed_llm import AdapterBackedLLM
 from src.llm.base import BaseLLM
 from src.llm.config import LLMConfig, OllamaConfig, OpenAIConfig, config_manager
 from src.llm.fallback import FallbackLLM, FallbackStrategy, RetryStrategy
@@ -9,6 +10,7 @@ from src.llm.openai_llm import OpenAILLM
 
 
 __all__ = [
+    "AdapterBackedLLM",
     "BaseLLM",
     "FallbackLLM",
     "FallbackStrategy",

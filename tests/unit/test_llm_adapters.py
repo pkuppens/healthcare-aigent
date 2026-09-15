@@ -16,7 +16,7 @@ import uuid
 from unittest.mock import MagicMock, patch
 
 import pytest
-from langchain.callbacks.manager import CallbackManagerForLLMRun
+from langchain_core.callbacks import CallbackManagerForLLMRun
 from pydantic import SecretStr
 
 from src.llm.ollama_llm import OllamaLLM

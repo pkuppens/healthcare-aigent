@@ -5,4 +5,12 @@ repos:
     -   id: ruff
         args: [--line-length=132]
     -   id: ruff-format
-        args: [--line-length=132] 
+        args: [--line-length=132]
+-   repo: local
+    hooks:
+    -   id: pytest-unit
+        name: pytest (unit tests)
+        entry: python scripts/test_unit.py
+        language: system
+        pass_filenames: false
+        always_run: true

@@ -3,8 +3,9 @@
 from abc import ABC, abstractmethod
 from typing import Any
 
-from langchain.callbacks.manager import CallbackManagerForLLMRun
-from langchain.schema import BaseMessage, LLMResult
+from langchain_core.callbacks import CallbackManagerForLLMRun
+from langchain_core.messages import BaseMessage
+from langchain_core.outputs import LLMResult
 
 
 class BaseLLM(ABC):

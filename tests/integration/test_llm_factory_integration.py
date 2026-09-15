@@ -8,7 +8,7 @@ import os
 from unittest.mock import patch
 
 import pytest
-from langchain_community.chat_models import ChatOllama
+from langchain_ollama import ChatOllama
 from langchain_openai import ChatOpenAI
 
 from src.llm.llm_factory import LLMFactory, LLMType

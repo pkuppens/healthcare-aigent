@@ -5,14 +5,14 @@ for analyzing the patient's language to determine proficiency, sentiment, and
 potential communication needs.
 """
 
-import json
-import logging
 from typing import Any
 
 from crewai import Task
 
+from src.tasks._llm_task import require_text, run_llm_json
 
-logger = logging.getLogger(__name__)
+
+REQUIRED_KEYS = {"proficiency", "needs_interpreter", "language_proficiency_scale"}
 
 
 class AssessPatientLanguageTask(Task):
@@ -37,10 +37,6 @@ class AssessPatientLanguageTask(Task):
     async def execute(self, text: str, llm: any) -> dict[str, Any]:
         """Executes the language assessment task.
 
-        This method prompts the language model to perform a language assessment
-        and return the results in a structured JSON format. It includes error
-        handling for the LLM interaction and JSON parsing.
-
         Args:
             text: The text to be assessed for language proficiency.
             llm: The language model instance to be used for the assessment.
@@ -52,34 +48,17 @@ class AssessPatientLanguageTask(Task):
             ValueError: If the input text is empty or not a string.
             RuntimeError: If the LLM response is invalid, cannot be parsed, or is missing required keys.
         """
-        if not text or not isinstance(text, str):
-            raise ValueError("Input text must be a non-empty string.")
+        require_text(text)
 
-        try:
-            prompt = f'''Assess the language proficiency in this text.
-            Consider grammar, vocabulary, and medical terminology usage.
-            Return a JSON object with these fields:
-            - "proficiency": string (e.g., "basic", "intermediate", "advanced")
-            - "needs_interpreter": boolean
-            - "language_proficiency_scale": string (e.g., CEFR level like "A1", "B2", "C1")
+        prompt = f'''Assess the language proficiency in this text.
+        Consider grammar, vocabulary, and medical terminology usage.
+        Return a JSON object with these fields:
+        - "proficiency": string (e.g., "basic", "intermediate", "advanced")
+        - "needs_interpreter": boolean
+        - "language_proficiency_scale": string (e.g., CEFR level like "A1", "B2", "C1")
 
-            Text: """{text}"""
+        Text: """{text}"""
 
-            Return only the JSON object without any additional text or explanations.'''
+        Return only the JSON object without any additional text or explanations.'''
 
-            result = await llm.ainvoke(prompt)
-            if not result or not isinstance(result, str):
-                raise RuntimeError("LLM returned an invalid or empty response.")
-
-            try:
-                assessment = json.loads(result)
-                required_keys = {"proficiency", "needs_interpreter", "language_proficiency_scale"}
-                if not all(key in assessment for key in required_keys):
-                    raise ValueError(f"LLM response is missing required keys: {required_keys - set(assessment.keys())}")
-                return assessment
-            except json.JSONDecodeError as e:
-                raise RuntimeError(f"Failed to parse LLM response as JSON: {result}") from e
-
-        except Exception as e:
-            logger.error(f"Failed to assess patient language: {e}")
-            raise RuntimeError(f"An error occurred during language assessment: {e}") from e
+        return await run_llm_json(llm, prompt, REQUIRED_KEYS, action="language assessment")
