@@ -240,6 +240,14 @@ uv run pytest tests/unit/test_specific.py
 > $env:PYTHONUTF8 = "1"   # current session only; use `setx PYTHONUTF8 1` to persist
 > uv run pytest
 > ```
+> `setx PYTHONUTF8 1` (no `/M`) sets it at the **user** level (`HKCU\Environment`).
+> That's enough for a new terminal opened "Run as administrator" under the same
+> Windows account - elevation is a different token on the same user profile, so
+> user env vars still apply. It's only missed by a terminal running as a
+> genuinely different account (e.g. `runas /user:...`). To set it machine-wide
+> for all users instead, use `setx PYTHONUTF8 1 /M` (requires an elevated shell).
+> Either way, a terminal already open when you run `setx` won't see the change -
+> open a new one.
 
 ### Linting and Formatting
 
