@@ -19,7 +19,6 @@ dependencies = [
     "langchain-community>=0.0.10",
     "langchain-openai>=0.0.5",
     "langchain-ollama>=0.0.1",
-    "langflow>=1.3.4",
     "fastapi>=0.100.0",
     "uvicorn>=0.20.0",
     "python-multipart>=0.0.6",
@@ -52,6 +51,17 @@ dev = [
 docs = [
     "mkdocs>=1.5.0",
     "mkdocs-material>=9.0.0",
+]
+langflow = [
+    # Only needed for the src/langflow_poc/ custom components. Kept out of the core
+    # install because langflow pins langfuse==2.53.9, which blocks the
+    # observability extra's langfuse>=3 (issue #12).
+    "langflow>=1.3.4",
+]
+observability = [
+    # Only needed when LANGFUSE_ENABLED=true; see docs/langfuse.md. Imported lazily,
+    # so the app and test suite run without it.
+    "langfuse>=3.0.0",
 ]
 audio = [
     # Only needed to run scripts/fetch_sample_audio.py — pulls reference
@@ -106,6 +116,11 @@ skip-magic-trailing-comma = false
 required-version = ">=0.1.0"
 resolution = "highest"  # Always use latest compatible versions
 compile-bytecode = true
+# langflow pins langfuse==2.53.9; the observability extra needs langfuse>=3.
+# Declaring them as conflicting lets uv lock both, but not install both at once.
+conflicts = [
+    [{ extra = "langflow" }, { extra = "observability" }],
+]
 
 [dependency-groups]
 dev = [

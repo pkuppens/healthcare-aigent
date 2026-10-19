@@ -204,3 +204,7 @@ ansible/*.vault.yaml
 
 # Downloaded reference audio samples (see scripts/fetch_sample_audio.py)
 data/samples/
+
+# Local Langfuse stack overrides (docker-compose.langfuse.yml). Its data lives in named
+# Docker volumes, not in the repo, so there is no data directory to ignore.
+.env.langfuse

@@ -36,12 +36,25 @@ class OllamaConfig:
 
 
 @dataclass
+class LangfuseConfig:
+    """Langfuse observability settings. Optional and off unless explicitly enabled."""
+
+    enabled: bool = False
+    host: str = "http://localhost:3000"
+    public_key: str | None = None
+    secret_key: str | None = None
+    sample_rate: float = 1.0
+    debug: bool = False
+
+
+@dataclass
 class LLMConfig:
     """LLM configuration settings."""
 
     provider: str = "openai"
     openai: OpenAIConfig = field(default_factory=OpenAIConfig)
     ollama: OllamaConfig = field(default_factory=OllamaConfig)
+    langfuse: LangfuseConfig = field(default_factory=LangfuseConfig)
     fallback_provider: str = "ollama"
     sensitive_data_handling: bool = True
     cache_responses: bool = True
@@ -99,6 +112,14 @@ class ConfigManager:
         config.ollama.top_k = int(os.getenv("OLLAMA_TOP_K", "40"))
         config.ollama.num_ctx = int(os.getenv("OLLAMA_NUM_CTX", "4096"))
 
+        # Langfuse settings
+        config.langfuse.enabled = os.getenv("LANGFUSE_ENABLED", "false").lower() == "true"
+        config.langfuse.host = os.getenv("LANGFUSE_HOST", "http://localhost:3000")
+        config.langfuse.public_key = os.getenv("LANGFUSE_PUBLIC_KEY")
+        config.langfuse.secret_key = os.getenv("LANGFUSE_SECRET_KEY")
+        config.langfuse.sample_rate = float(os.getenv("LANGFUSE_SAMPLE_RATE", "1.0"))
+        config.langfuse.debug = os.getenv("LANGFUSE_DEBUG", "false").lower() == "true"
+
         # Load from config file if it exists
         config_file = os.getenv("LLM_CONFIG_FILE", "config/llm_config.json")
         if os.path.exists(config_file):
@@ -147,6 +168,14 @@ class ConfigManager:
             for attr in ollama_attrs:
                 if attr in ollama_config:
                     setattr(config.ollama, attr, ollama_config[attr])
+
+        # Update Langfuse config
+        if "langfuse" in config_dict:
+            langfuse_config = config_dict["langfuse"]
+            langfuse_attrs = ["enabled", "host", "public_key", "secret_key", "sample_rate", "debug"]
+            for attr in langfuse_attrs:
+                if attr in langfuse_config:
+                    setattr(config.langfuse, attr, langfuse_config[attr])
 
     def get_config(self) -> LLMConfig:
         """Get the current configuration.
@@ -201,6 +230,14 @@ class ConfigManager:
                 "top_p": self._config.ollama.top_p,
                 "top_k": self._config.ollama.top_k,
                 "num_ctx": self._config.ollama.num_ctx,
+            },
+            "langfuse": {
+                "enabled": self._config.langfuse.enabled,
+                "host": self._config.langfuse.host,
+                "public_key": self._config.langfuse.public_key,
+                "secret_key": self._config.langfuse.secret_key,
+                "sample_rate": self._config.langfuse.sample_rate,
+                "debug": self._config.langfuse.debug,
             },
         }
 

@@ -9,7 +9,7 @@ from langchain_core.messages import BaseMessage
 from langchain_openai import ChatOpenAI
 from pydantic import SecretStr
 
-from src.llm.base import BaseLLM
+from src.llm.base import BaseLLM, usage_from_response
 from src.llm.circuit_breaker import HTTP_OK
 
 
@@ -89,6 +89,7 @@ class OpenAILLM(BaseLLM):
         response = self._llm.invoke(prompt)
         if isinstance(response, str):
             return response
+        self.last_usage = usage_from_response(response)
         return str(response.content)
 
     def __call__(self, prompt: str | list[BaseMessage], **kwargs: Any) -> str:
@@ -105,11 +106,11 @@ class OpenAILLM(BaseLLM):
             ValueError: If the prompt is not a string or list of BaseMessage objects
         """
         if isinstance(prompt, str):
-            return self._call(prompt, **kwargs)
+            return self._traced_call(prompt, **kwargs)
         elif isinstance(prompt, list) and all(isinstance(msg, BaseMessage) for msg in prompt):
             # Convert messages to a single string, ensuring each message's content is a string
             text = "\n".join(str(msg.content) for msg in prompt)
-            return self._call(text, **kwargs)
+            return self._traced_call(text, **kwargs)
         else:
             raise ValueError("Prompt must be a string or a list of BaseMessage objects")
 
