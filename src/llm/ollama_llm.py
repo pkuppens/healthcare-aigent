@@ -7,7 +7,7 @@ import requests
 from langchain_core.callbacks import CallbackManagerForLLMRun
 from langchain_ollama import ChatOllama
 
-from src.llm.base import BaseLLM
+from src.llm.base import BaseLLM, usage_from_response
 from src.llm.circuit_breaker import HTTP_OK
 
 
@@ -79,6 +79,7 @@ class OllamaLLM(BaseLLM):
         response = self._llm.invoke(prompt)
         if isinstance(response, str):
             return response
+        self.last_usage = usage_from_response(response)
         return str(response.content)
 
     def _llm_type(self) -> str:

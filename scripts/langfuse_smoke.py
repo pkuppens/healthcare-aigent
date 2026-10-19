@@ -1,0 +1,47 @@
+"""Send one prompt through LLMFactory and, if Langfuse is enabled, print the resulting trace (issue #13).
+
+Usage (with the local stack from docker-compose.langfuse.yml running; see docs/langfuse.md):
+
+    LANGFUSE_ENABLED=true LANGFUSE_PUBLIC_KEY=pk-lf-local-dev LANGFUSE_SECRET_KEY=sk-lf-local-dev \\
+        uv run python scripts/langfuse_smoke.py --provider ollama --model llama3
+
+With LANGFUSE_ENABLED unset the LLM call still runs, but no trace is sent and `langfuse` is
+not imported. The prompt is synthetic: never point this at real patient text.
+"""
+
+import argparse
+import sys
+
+from src.llm.llm_factory import LLMFactory
+from src.llm.observability import get_langfuse_client, get_last_trace_id
+
+
+SMOKE_PROMPT = "In one sentence: what is a beta blocker such as metoprolol commonly prescribed for?"
+
+
+def main() -> int:
+    parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
+    parser.add_argument("--provider", default="ollama", choices=["ollama", "openai"])
+    parser.add_argument("--model", default="llama3")
+    args = parser.parse_args()
+
+    llm = LLMFactory.create_llm_by_provider(args.provider, args.model, temperature=0.0)
+    output = llm.invoke(SMOKE_PROMPT)
+    print(f"provider={llm.provider} model={llm.model_name}")
+    print(f"usage={llm.last_usage}")
+    print(f"output={output!r}")
+
+    client = get_langfuse_client()
+    if client is None:
+        print("langfuse=disabled (no trace sent)")
+        return 0
+
+    client.flush()
+    trace_id = get_last_trace_id()
+    print(f"trace_id={trace_id}")
+    print(f"trace_url={client.get_trace_url(trace_id=trace_id)}")
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())

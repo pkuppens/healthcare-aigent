@@ -8,6 +8,14 @@ from langchain_core.messages import BaseMessage
 from langchain_core.outputs import LLMResult
 
 
+def usage_from_response(response: Any) -> dict[str, int] | None:
+    """Extract token counts from a LangChain chat response's `usage_metadata`, if it has any."""
+    usage = getattr(response, "usage_metadata", None)
+    if not isinstance(usage, dict) or "input_tokens" not in usage or "output_tokens" not in usage:
+        return None
+    return {"input_tokens": int(usage["input_tokens"]), "output_tokens": int(usage["output_tokens"])}
+
+
 class BaseLLM(ABC):
     """Abstract base class for LLM implementations.
 
@@ -31,6 +39,17 @@ class BaseLLM(ABC):
         """
         self._model_name = model_name
         self._temperature = temperature
+
+    # Token usage of the most recent `_call`, as {"input_tokens": int, "output_tokens": int},
+    # for providers whose API reports it. Read by the optional Langfuse tracing.
+    last_usage: dict[str, int] | None = None
+
+    def _traced_call(self, prompt: str, **kwargs: Any) -> str:
+        """Call `_call`, recording it in Langfuse when tracing is enabled (see docs/langfuse.md)."""
+        from src.llm.observability import observe_llm_call
+
+        self.last_usage = None
+        return observe_llm_call(self, prompt, lambda: self._call(prompt, **kwargs))
 
     @abstractmethod
     def _call(
@@ -114,7 +133,7 @@ class BaseLLM(ABC):
         Returns:
             The generated text from the LLM
         """
-        return self._call(prompt, **kwargs)
+        return self._traced_call(prompt, **kwargs)
 
     def invoke(self, prompt: str, **kwargs: Any) -> str:
         """Invoke the LLM with the given prompt.
@@ -128,7 +147,7 @@ class BaseLLM(ABC):
         Returns:
             The generated text from the LLM
         """
-        return self._call(prompt, **kwargs)
+        return self._traced_call(prompt, **kwargs)
 
     def generate(self, prompts: list[str], **kwargs: Any) -> LLMResult:
         """Generate text for multiple prompts.
@@ -142,7 +161,7 @@ class BaseLLM(ABC):
         """
         generations = []
         for prompt in prompts:
-            text = self._call(prompt, **kwargs)
+            text = self._traced_call(prompt, **kwargs)
             generations.append([{"text": text}])
 
         return LLMResult(generations=generations)
@@ -163,10 +182,10 @@ class BaseLLM(ABC):
             ValueError: If the prompt is not a string or list of BaseMessage objects
         """
         if isinstance(prompt, str):
-            return self._call(prompt, **kwargs)
+            return self._traced_call(prompt, **kwargs)
         elif isinstance(prompt, list) and all(isinstance(msg, BaseMessage) for msg in prompt):
             # Convert messages to a single string, ensuring each message's content is a string
             text = "\n".join(str(msg.content) for msg in prompt)
-            return self._call(text, **kwargs)
+            return self._traced_call(text, **kwargs)
         else:
             raise ValueError("Prompt must be a string or a list of BaseMessage objects")

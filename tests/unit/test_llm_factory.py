@@ -74,8 +74,11 @@ class TestLLMFactory:
                 assert isinstance(llm, MagicMock)
                 assert llm is mock_openai
 
+    # Pin provider availability: without this the result depends on whether the machine
+    # running the test has OpenAI credentials/network (it falls back to local models if not).
+    @patch("src.llm.llm_factory.is_openai_available", return_value=True)
     @patch("src.llm.llm_factory.LLMFactory.create_llm")
-    def test_get_llm_for_task(self, mock_create_llm):
+    def test_get_llm_for_task(self, mock_create_llm, _mock_openai_available):
         """Test getting LLM for different task types.
 
         Verifies that:
