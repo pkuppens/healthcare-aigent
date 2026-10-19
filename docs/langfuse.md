@@ -83,18 +83,37 @@ sections. In code, `src.llm.observability.get_langfuse_client()` returns the sha
 
 ## 3. Your first trace (#13)
 
-With Ollama running and `llama3` pulled (`ollama pull llama3`):
+Start Ollama first (the Ollama app, or `ollama serve`); check it with
+`curl http://localhost:11434/api/version`. Then pull the default model:
+
+```bash
+ollama pull llama3.1:8b
+```
+
+`llama3.1:8b` is the default because it is the base model of Juvoly J1 (`Juvoly/J1-Llama-8B-exp`,
+#2): the same architecture, prompt template and tokenizer, so swapping in J1 later only changes
+`--model`. J1 itself is not the default, because it is published only as fp16 safetensors
+(~16 GB, gated) and has to be imported into Ollama first.
 
 ```bash
 LANGFUSE_ENABLED=true LANGFUSE_PUBLIC_KEY=pk-lf-local-dev LANGFUSE_SECRET_KEY=sk-lf-local-dev \
-  uv run python scripts/langfuse_smoke.py --provider ollama --model llama3
+  uv run python scripts/langfuse_smoke.py --provider ollama --model llama3.1:8b
 ```
 
 PowerShell:
 
 ```powershell
 $env:LANGFUSE_ENABLED="true"; $env:LANGFUSE_PUBLIC_KEY="pk-lf-local-dev"; $env:LANGFUSE_SECRET_KEY="sk-lf-local-dev"
-uv run python scripts/langfuse_smoke.py --provider ollama --model llama3
+uv run python scripts/langfuse_smoke.py --provider ollama --model llama3.1:8b
+```
+
+Windows cmd:
+
+```bat
+set LANGFUSE_ENABLED=true
+set LANGFUSE_PUBLIC_KEY=pk-lf-local-dev
+set LANGFUSE_SECRET_KEY=sk-lf-local-dev
+uv run python scripts/langfuse_smoke.py --provider ollama --model llama3.1:8b
 ```
 
 It prints the token usage, the answer, and a `trace_url=` you can open. Without
@@ -117,7 +136,7 @@ How it hooks in: `BaseLLM.invoke`, `ainvoke`, `generate` and `__call__` all go t
 `BaseLLM._traced_call`, which hands off to `src.llm.observability.observe_llm_call`. Every
 provider, including the adapter-backed ones, is covered without provider-specific tracing code.
 
-**Cost:** local models show *no cost*, because Langfuse has no price for `llama3`. OpenAI models
+**Cost:** local models show *no cost*, because Langfuse has no price for `llama3.1:8b`. OpenAI models
 should get a cost from Langfuse's built-in price list, but this has not been verified here (no
 OpenAI key was available). Adding custom prices for local models is #15.
 
