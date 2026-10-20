@@ -18,6 +18,13 @@ logger = logging.getLogger(__name__)
 REQUIRED_KEYS = {"accuracy_score", "requires_human_review", "quality_rating"}
 
 
+def _model_said_yes(value: Any) -> bool:
+    """Interpret an LLM's boolean answer; models also return "false"/"true" strings, and bool("false") is True."""
+    if isinstance(value, str):
+        return value.strip().lower() in {"true", "yes", "1"}
+    return value is True
+
+
 class QualityControlTask(Task):
     """A task for performing quality control on processed medical information.
 
@@ -79,7 +86,7 @@ class QualityControlTask(Task):
         # Human review is mandatory, not the model's call: no model in this pipeline is validated for
         # clinical use (MedGemma's HAI-DEF terms exclude it; see docs/models.md and docs/compliance.md).
         # The model's own opinion is kept as a signal for prioritising the review queue.
-        qc_results["model_requested_review"] = bool(qc_results["requires_human_review"])
+        qc_results["model_requested_review"] = _model_said_yes(qc_results["requires_human_review"])
         qc_results["requires_human_review"] = True
 
         try:

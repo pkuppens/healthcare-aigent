@@ -15,14 +15,15 @@ require_gpu: true
 preload: []
 
 profiles:
-  # MedGemma 1.5 4B, Q4_K_M (~3.3 GB). Fits laptops with ~6 GB free RAM or VRAM.
+  # MedGemma 1.5 4B, Q4_K_M: 3.3 GB download, about 4 GB VRAM in use at 4K context (nvidia-smi).
+  # Needs a GPU with >= 6 GB VRAM; machines without one use the cpu profile.
   edge:
     provider: ollama
     model: "medgemma1.5:4b"
     keep_alive: "30m"
     options:
       num_ctx: 4096
-  # MedGemma 27B, Q4_K_M (~17 GB). Needs a GPU with >= 24 GB VRAM.
+  # MedGemma 27B, Q4_K_M: 17 GB download, about 18.5 GB VRAM in use at 8K context. Needs a 24 GB GPU.
   gpu:
     provider: ollama
     model: "medgemma:27b"

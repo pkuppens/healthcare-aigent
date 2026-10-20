@@ -5,15 +5,30 @@ processing medical conversations. It serves as the API gateway for the system.
 """
 
 import tempfile
+from collections.abc import AsyncIterator
+from contextlib import asynccontextmanager
 from pathlib import Path
 
 from fastapi import FastAPI, UploadFile
 from pydantic import BaseModel
 
+from src.llm.ollama_residency import preload_profiles
 from src.main import process_audio_conversation_async, process_medical_conversation_async
 
 
+@asynccontextmanager
+async def lifespan(_app: FastAPI) -> AsyncIterator[None]:
+    """Load the `preload` profiles from config/llm_profiles.yml before serving requests (issue #26).
+
+    A model that doesn't fit (or isn't on the GPU when its profile requires it) fails startup
+    with a clear error, instead of the first request paying the load time or failing.
+    """
+    preload_profiles()
+    yield
+
+
 app = FastAPI(
+    lifespan=lifespan,
     title="Healthcare AI Agent API",
     description="An API for processing medical conversations with a multi-agent system.",
     version="0.1.0",

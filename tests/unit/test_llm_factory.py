@@ -40,16 +40,21 @@ class TestLLMFactory:
         mock_ollama = MagicMock(spec=OllamaLLM)
         mock_ollama.provider = "ollama"
 
-        with patch.dict(LLMFactory._provider_map, {"ollama": lambda **kwargs: mock_ollama}):
+        ollama_class = MagicMock()
+        ollama_class.from_profile.return_value = mock_ollama
+
+        with patch.dict(LLMFactory._provider_map, {"ollama": ollama_class}):
             llm = LLMFactory.create_llm(llm_type=LLMType.LOCAL_FAST)
 
             # First check the instance type and provider
             assert isinstance(llm, BaseLLM)
             assert llm.provider == "ollama"
 
-            # Then check that the mock was created with the expected parameters
-            assert isinstance(llm, MagicMock)
+            # Then check that it was built from the edge profile
             assert llm is mock_ollama
+            profile = ollama_class.from_profile.call_args.args[0]
+            assert profile.name == "edge"
+            assert profile.model == "medgemma1.5:4b"
 
     def test_create_cloud_fast_llm(self):
         """Test creating a cloud fast LLM.

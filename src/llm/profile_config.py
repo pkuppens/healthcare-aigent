@@ -1,4 +1,4 @@
-"""Config-file-driven model profiles (issue #2).
+"""Config-file-driven model profiles (issues #2, #26).
 
 Deliberately no environment-variable path: which profile is the default, and
 which provider/model/options each profile uses, live in
@@ -6,6 +6,7 @@ config/llm_profiles.yml. Callers that need a specific profile pass its name to
 LLMFactory.create_from_profile(); this module only reads and validates the file.
 """
 
+from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
 
@@ -13,6 +14,27 @@ import yaml
 
 
 DEFAULT_CONFIG_PATH = Path(__file__).resolve().parents[2] / "config" / "llm_profiles.yml"
+
+
+@dataclass(frozen=True)
+class ModelProfile:
+    """One entry under `profiles:` in config/llm_profiles.yml.
+
+    Attributes:
+        name: The profile's key, e.g. "edge".
+        provider: "ollama" or "mock".
+        model: The provider's model name, e.g. the Ollama tag "medgemma1.5:4b".
+        options: Passed to the provider's client (for Ollama: ChatOllama, e.g. num_ctx).
+        require_gpu: Raise instead of warn when the model is not fully on the GPU.
+        keep_alive: How long Ollama keeps the model loaded ("30m", -1); None leaves Ollama's 5-minute default.
+    """
+
+    name: str
+    provider: str
+    model: str
+    options: dict[str, Any] = field(default_factory=dict)
+    require_gpu: bool = True
+    keep_alive: str | int | None = None
 
 
 def load_profile_config(config_path: Path | str = DEFAULT_CONFIG_PATH) -> dict[str, Any]:
@@ -38,13 +60,8 @@ def get_preload_profiles(config_path: Path | str = DEFAULT_CONFIG_PATH) -> list[
     return preload
 
 
-def get_profile(profile: str, config_path: Path | str = DEFAULT_CONFIG_PATH) -> dict[str, Any]:
-    """Return the profile as {"provider", "model", "options", "require_gpu", "keep_alive"}.
-
-    `require_gpu` comes from the profile, else the top-level `require_gpu`, else True.
-    `keep_alive` (how long Ollama keeps the model loaded, e.g. "30m" or -1) is None when unset,
-    which leaves Ollama's default (5 minutes).
-    """
+def get_profile(profile: str, config_path: Path | str = DEFAULT_CONFIG_PATH) -> ModelProfile:
+    """Return the named profile; `require_gpu` falls back to the top-level `require_gpu`, then True."""
     config = load_profile_config(config_path)
     profiles = config.get("profiles", {})
     if profile not in profiles:
@@ -59,10 +76,11 @@ def get_profile(profile: str, config_path: Path | str = DEFAULT_CONFIG_PATH) -> 
     require_gpu = entry.get("require_gpu", config.get("require_gpu", True))
     if not isinstance(require_gpu, bool):
         raise ValueError(f"Profile '{profile}' in {config_path}: 'require_gpu' must be true or false")
-    return {
-        "provider": entry["provider"],
-        "model": entry["model"],
-        "options": options,
-        "require_gpu": require_gpu,
-        "keep_alive": entry.get("keep_alive"),
-    }
+    return ModelProfile(
+        name=profile,
+        provider=entry["provider"],
+        model=entry["model"],
+        options=options,
+        require_gpu=require_gpu,
+        keep_alive=entry.get("keep_alive"),
+    )

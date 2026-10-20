@@ -2,11 +2,15 @@
 
 import re
 from abc import ABC, abstractmethod
-from typing import Any
+from typing import TYPE_CHECKING, Any, Self
 
 from langchain_core.callbacks import CallbackManagerForLLMRun
 from langchain_core.messages import BaseMessage
 from langchain_core.outputs import LLMResult
+
+
+if TYPE_CHECKING:
+    from src.llm.profile_config import ModelProfile
 
 
 def usage_from_response(response: Any) -> dict[str, int] | None:
@@ -61,6 +65,22 @@ class BaseLLM(ABC):
         """
         self._model_name = model_name
         self._temperature = temperature
+
+    @classmethod
+    def from_profile(cls, profile: "ModelProfile", temperature: float = 0.7, **overrides: Any) -> Self:
+        """Create an instance for a profile in config/llm_profiles.yml.
+
+        Providers with profile-specific setup (e.g. OllamaLLM's residency checks) override this.
+
+        Args:
+            profile: The profile to build
+            temperature: The temperature setting for the model
+            **overrides: Overrides for the profile's options
+
+        Returns:
+            Configured LLM instance
+        """
+        return cls(model_name=profile.model, temperature=temperature, **{**profile.options, **overrides})
 
     # Token usage of the most recent `_call`, as {"input_tokens": int, "output_tokens": int},
     # for providers whose API reports it. Read by the optional Langfuse tracing.
