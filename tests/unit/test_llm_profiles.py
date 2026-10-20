@@ -31,7 +31,13 @@ def profiles_file(tmp_path):
 
 def test_shipped_config_defaults_to_edge_medgemma():
     assert get_default_profile() == "edge"
-    assert get_profile("edge") == {"provider": "ollama", "model": "medgemma1.5:4b", "options": {"num_ctx": 4096}}
+    assert get_profile("edge") == {
+        "provider": "ollama",
+        "model": "medgemma1.5:4b",
+        "options": {"num_ctx": 4096},
+        "require_gpu": True,
+        "keep_alive": "30m",
+    }
 
 
 def test_shipped_config_gpu_and_cpu_profiles():
@@ -39,11 +45,19 @@ def test_shipped_config_gpu_and_cpu_profiles():
     cpu = get_profile("cpu")
     assert cpu["model"] == "medgemma1.5:4b"
     assert cpu["options"]["num_gpu"] == 0
+    assert cpu["require_gpu"] is False
+    assert get_profile("gpu")["require_gpu"] is True
 
 
 def test_get_profile_reads_custom_file(profiles_file):
     assert get_default_profile(profiles_file) == "small"
-    assert get_profile("small", profiles_file) == {"provider": "ollama", "model": "tiny:1b", "options": {"num_ctx": 2048}}
+    assert get_profile("small", profiles_file) == {
+        "provider": "ollama",
+        "model": "tiny:1b",
+        "options": {"num_ctx": 2048},
+        "require_gpu": True,
+        "keep_alive": None,
+    }
 
 
 def test_get_profile_unknown_raises_keyerror(profiles_file):
@@ -73,6 +87,19 @@ def test_create_from_profile_passes_model_and_options_to_ollama(mock_chat_ollama
     assert kwargs["temperature"] == 0.1
     assert kwargs["num_ctx"] == 4096
     assert kwargs["num_gpu"] == 0
+    assert kwargs["keep_alive"] == "30m"
+    assert "residency_monitor" not in kwargs and "require_gpu" not in kwargs  # consumed by OllamaLLM
+    assert llm._residency_monitor is not None
+    assert llm._require_gpu is False
+
+
+@patch("src.llm.llm_factory.is_model_available", return_value=True)
+@patch("src.llm.ollama_llm.ChatOllama")
+def test_create_from_profile_warns_when_overriding_load_options(mock_chat_ollama, _available, caplog):
+    LLMFactory.create_from_profile("edge", num_ctx=2048, num_predict=64)
+
+    assert "Ollama reloads 'medgemma1.5:4b'" in caplog.text
+    assert "num_predict" not in caplog.text  # not a load option: no reload
 
 
 @patch("src.llm.llm_factory.is_model_available", return_value=True)

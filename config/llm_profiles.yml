@@ -1,26 +1,40 @@
-# Local model profiles (issue #2). Select one with LLMFactory.create_from_profile(name);
+# Local model profiles (issues #2, #26). Select one with LLMFactory.create_from_profile(name);
 # default_profile is used when no name is given. Selection is config-file-only by design.
-# Each profile: provider (ollama | mock), model (an Ollama tag), options (passed to ChatOllama).
+# Each profile: provider (ollama | mock), model (an Ollama tag), options (passed to ChatOllama),
+# and optionally keep_alive and require_gpu (see below).
 # Hardware needs and evaluation results: docs/models.md, docs/model_eval.md.
 default_profile: edge
+
+# Fail (true) or only warn (false) when a model is not fully on the GPU after loading.
+# Profiles can override it; the cpu profile does, because it runs on the CPU by design.
+require_gpu: true
+
+# Profiles to load at startup with preload_profiles() (src/llm/ollama_residency.py), largest first,
+# instead of on their first call. Tested on a 24 GB GPU: [gpu, edge] fits, with < 1 GB headroom.
+# Profiles that share a model but differ in load options (edge and cpu) can't both be preloaded.
+preload: []
 
 profiles:
   # MedGemma 1.5 4B, Q4_K_M (~3.3 GB). Fits laptops with ~6 GB free RAM or VRAM.
   edge:
     provider: ollama
     model: "medgemma1.5:4b"
+    keep_alive: "30m"
     options:
       num_ctx: 4096
   # MedGemma 27B, Q4_K_M (~17 GB). Needs a GPU with >= 24 GB VRAM.
   gpu:
     provider: ollama
     model: "medgemma:27b"
+    keep_alive: "30m"
     options:
       num_ctx: 8192
   # Same model as edge, forced onto the CPU: what a laptop without a usable GPU gets.
   cpu:
     provider: ollama
     model: "medgemma1.5:4b"
+    keep_alive: "30m"
+    require_gpu: false
     options:
       num_ctx: 4096
       num_gpu: 0
