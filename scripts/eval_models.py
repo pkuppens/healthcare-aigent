@@ -117,8 +117,11 @@ def timed_invoke(llm: BaseLLM, prompt: str) -> tuple[str, float]:
     return answer, time.perf_counter() - start
 
 
-def run(llm: BaseLLM, label: str, items: list[dict[str, Any]], eval_set: dict[str, Any]) -> dict[str, Any]:
-    unload_all_models()
+def run(
+    llm: BaseLLM, label: str, items: list[dict[str, Any]], eval_set: dict[str, Any], keep_loaded: bool = False
+) -> dict[str, Any]:
+    if not keep_loaded:
+        unload_all_models()
     # Warm-up call: measures cold-load time and keeps it out of the per-item latencies.
     _, load_seconds = timed_invoke(llm, "Reply with OK.")
     memory = loaded_model_memory(llm.model_name)
@@ -199,6 +202,11 @@ def main() -> int:
     target.add_argument("--rescore", action="store_true", help="Re-apply the current scoring to all saved answers")
     parser.add_argument("--label", help="Name for the results file (default: profile name or model tag)")
     parser.add_argument("--only", help="Run only items whose id contains this text")
+    parser.add_argument(
+        "--keep-loaded",
+        action="store_true",
+        help="Don't unload other models first (e.g. to check that preloaded profiles stay on the GPU)",
+    )
     args = parser.parse_args()
 
     if args.summary:
@@ -217,7 +225,7 @@ def main() -> int:
     label = args.label or args.profile or args.model.replace(":", "-")
 
     print(f"Evaluating {label} ({llm.model_name}) on {len(items)} items")
-    result = run(llm, label, items, eval_set)
+    result = run(llm, label, items, eval_set, keep_loaded=args.keep_loaded)
     RESULTS_DIR.mkdir(parents=True, exist_ok=True)
     out = RESULTS_DIR / f"eval-{label}.json"
     out.write_text(json.dumps(result, indent=2, ensure_ascii=False), encoding="utf-8")
