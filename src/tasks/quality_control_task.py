@@ -76,6 +76,11 @@ class QualityControlTask(Task):
         Return only the JSON object without any additional text or explanations.'''
 
         qc_results = await run_llm_json(llm, prompt, REQUIRED_KEYS, action="quality control")
+        # Human review is mandatory, not the model's call: no model in this pipeline is validated for
+        # clinical use (MedGemma's HAI-DEF terms exclude it; see docs/models.md and docs/compliance.md).
+        # The model's own opinion is kept as a signal for prioritising the review queue.
+        qc_results["model_requested_review"] = bool(qc_results["requires_human_review"])
+        qc_results["requires_human_review"] = True
 
         try:
             await audit_logger.log_audit_event({"event_type": "quality_control", "text_id": hash(text), "results": qc_results})

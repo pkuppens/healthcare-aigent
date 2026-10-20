@@ -21,7 +21,7 @@ async def test_process_medical_conversation_async_runs_full_pipeline(mock_task_l
         "summary",
         "quality_check",
     }
-    assert result["quality_check"]["requires_human_review"] is False
+    assert result["quality_check"]["requires_human_review"] is True
 
 
 @pytest.mark.asyncio
