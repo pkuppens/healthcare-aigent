@@ -1,10 +1,9 @@
-"""Config-file-driven profile selection for swappable LLM adapters.
+"""Config-file-driven model profiles (issue #2).
 
-Deliberately no environment-variable path: which adapter profile is the
-default, and what kwargs each profile constructs its adapter with, live in
-config/llm_profiles.yml. Callers that need a specific profile can still pass
-it explicitly to create_adapter_instance(); this module only supplies the
-default and each profile's config-file kwargs.
+Deliberately no environment-variable path: which profile is the default, and
+which provider/model/options each profile uses, live in
+config/llm_profiles.yml. Callers that need a specific profile pass its name to
+LLMFactory.create_from_profile(); this module only reads and validates the file.
 """
 
 from pathlib import Path
@@ -31,10 +30,17 @@ def get_default_profile(config_path: Path | str = DEFAULT_CONFIG_PATH) -> str:
     return default_profile
 
 
-def get_profile_kwargs(profile: str, config_path: Path | str = DEFAULT_CONFIG_PATH) -> dict[str, Any]:
-    """Return the constructor kwargs configured for the given profile."""
+def get_profile(profile: str, config_path: Path | str = DEFAULT_CONFIG_PATH) -> dict[str, Any]:
+    """Return the profile as {"provider": str, "model": str, "options": dict}."""
     config = load_profile_config(config_path)
     profiles = config.get("profiles", {})
     if profile not in profiles:
         raise KeyError(f"Profile '{profile}' not found in {config_path}")
-    return profiles[profile]
+    entry = profiles[profile] or {}
+    for key in ("provider", "model"):
+        if not entry.get(key):
+            raise ValueError(f"Profile '{profile}' in {config_path} must set '{key}'")
+    options = entry.get("options") or {}
+    if not isinstance(options, dict):
+        raise ValueError(f"Profile '{profile}' in {config_path}: 'options' must be a mapping")
+    return {"provider": entry["provider"], "model": entry["model"], "options": options}

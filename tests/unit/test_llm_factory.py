@@ -34,7 +34,7 @@ class TestLLMFactory:
 
         Verifies that:
         1. The factory correctly creates a local fast LLM instance using Ollama
-        2. The correct model name (llama3) and temperature (0.7) are used
+        2. The model comes from the edge profile in config/llm_profiles.yml
         3. The provider is set to 'ollama'
         """
         mock_ollama = MagicMock(spec=OllamaLLM)

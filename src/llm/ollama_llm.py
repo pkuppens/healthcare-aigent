@@ -7,7 +7,7 @@ import requests
 from langchain_core.callbacks import CallbackManagerForLLMRun
 from langchain_ollama import ChatOllama
 
-from src.llm.base import BaseLLM, usage_from_response
+from src.llm.base import BaseLLM, strip_reasoning, usage_from_response
 from src.llm.circuit_breaker import HTTP_OK
 
 
@@ -23,6 +23,24 @@ def check_ollama_availability() -> bool:
         return response.status_code == HTTP_OK
     except (requests.RequestException, TimeoutError):
         return False
+
+
+def is_model_available(model: str, base_url: str | None = None) -> bool:
+    """Check whether `model` has been pulled into the Ollama server at `base_url`.
+
+    A tag without an explicit version (e.g. "llama3") matches its ":latest" tag, as in Ollama itself.
+    Returns False when Ollama is unreachable.
+    """
+    base_url = base_url or os.getenv("OLLAMA_BASE_URL", "http://localhost:11434")
+    try:
+        response = requests.get(f"{base_url}/api/tags", timeout=2)
+        if response.status_code != HTTP_OK:
+            return False
+        names = {m.get("name") for m in response.json().get("models", [])}
+    except (requests.RequestException, TimeoutError, ValueError):
+        return False
+    wanted = model if ":" in model else f"{model}:latest"
+    return wanted in names
 
 
 class OllamaLLM(BaseLLM):
@@ -78,9 +96,9 @@ class OllamaLLM(BaseLLM):
         """
         response = self._llm.invoke(prompt)
         if isinstance(response, str):
-            return response
+            return strip_reasoning(response)
         self.last_usage = usage_from_response(response)
-        return str(response.content)
+        return strip_reasoning(str(response.content))
 
     def _llm_type(self) -> str:
         """Return type of LLM.

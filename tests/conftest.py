@@ -146,6 +146,10 @@ def pytest_configure(config):
     )
     config.addinivalue_line(
         "markers",
+        "ollama: mark test as requiring a local Ollama server (skips itself when absent)",
+    )
+    config.addinivalue_line(
+        "markers",
         "slow: mark test as slow running",
     )
 

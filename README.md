@@ -90,10 +90,12 @@ pytest --cov=src
 ```
 
 Tests are split into unit tests (always run, no external services) and
-integration tests marked `@pytest.mark.integration` / `@pytest.mark.llm`,
-which auto-skip when no Ollama server or OpenAI API key is available (see
-`tests/conftest.py`). To exercise the live-LLM tests, either run
-`ollama serve && ollama pull llama3`, or set `OPENAI_API_KEY`.
+integration tests marked `@pytest.mark.integration` / `@pytest.mark.llm` /
+`@pytest.mark.ollama`, which auto-skip when no Ollama server, model or OpenAI
+API key is available (see `tests/conftest.py`). To exercise the live-LLM tests,
+either run `ollama serve && ollama pull medgemma1.5:4b`, or set
+`OPENAI_API_KEY`. The local model profiles (MedGemma 4B on laptops, 27B on a
+24 GB GPU) are described in [docs/models.md](docs/models.md).
 
 **Windows note**: a dependency (`litellm`, pulled in via `crewai`) reads a
 data file without specifying UTF-8 encoding, which fails under Windows'

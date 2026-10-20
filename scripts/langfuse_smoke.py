@@ -3,7 +3,9 @@
 Usage (with the local stack from docker-compose.langfuse.yml running; see docs/langfuse.md):
 
     LANGFUSE_ENABLED=true LANGFUSE_PUBLIC_KEY=pk-lf-local-dev LANGFUSE_SECRET_KEY=sk-lf-local-dev \\
-        uv run python scripts/langfuse_smoke.py --provider ollama --model llama3.1:8b
+        uv run python scripts/langfuse_smoke.py                    # default profile (edge: medgemma1.5:4b)
+        uv run python scripts/langfuse_smoke.py --profile gpu      # any profile in config/llm_profiles.yml
+        uv run python scripts/langfuse_smoke.py --provider ollama --model llama3.1:8b   # explicit model
 
 With LANGFUSE_ENABLED unset the LLM call still runs, but no trace is sent and `langfuse` is
 not imported. The prompt is synthetic: never point this at real patient text.
@@ -23,15 +25,21 @@ SMOKE_PROMPT = "In one sentence: what is a beta blocker such as metoprolol commo
 
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
-    parser.add_argument("--provider", default="ollama", choices=["ollama", "openai"])
-    parser.add_argument("--model", default="llama3.1:8b")
+    parser.add_argument("--profile", help="Profile from config/llm_profiles.yml (default: its default_profile)")
+    parser.add_argument("--provider", choices=["ollama", "openai"], help="With --model: bypass the profiles")
+    parser.add_argument("--model", help="With --provider: explicit model name")
     args = parser.parse_args()
+    if bool(args.provider) != bool(args.model):
+        parser.error("--provider and --model go together")
 
-    llm = LLMFactory.create_llm_by_provider(args.provider, args.model, temperature=0.0)
+    if args.model:
+        llm = LLMFactory.create_llm_by_provider(args.provider, args.model, temperature=0.0)
+    else:
+        llm = LLMFactory.create_from_profile(args.profile, temperature=0.0)
     try:
         output = llm.invoke(SMOKE_PROMPT)
     except httpx.ConnectError as exc:
-        if args.provider != "ollama":
+        if llm.provider != "ollama":
             raise
         print(
             f"error: cannot reach Ollama ({exc}).\n"

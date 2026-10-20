@@ -3,15 +3,14 @@
 import logging
 import os
 from enum import Enum
-from typing import ClassVar, TypedDict
+from typing import ClassVar, NotRequired, TypedDict
 
-from src.llm.adapter_backed_llm import AdapterBackedLLM
 from src.llm.base import BaseLLM
 from src.llm.circuit_breaker import is_ollama_available, is_openai_available
-from src.llm.llm_adapter_factory import create_adapter_instance
-from src.llm.ollama_llm import OllamaLLM
+from src.llm.mock_llm import MockLLM
+from src.llm.ollama_llm import OllamaLLM, is_model_available
 from src.llm.openai_llm import OpenAILLM
-from src.llm.profile_config import get_default_profile
+from src.llm.profile_config import get_default_profile, get_profile
 
 
 # Configure logging
@@ -38,7 +37,8 @@ class LLMConfig(TypedDict):
     """Configuration for an LLM type."""
 
     provider: str
-    model: str
+    model: NotRequired[str]
+    profile: NotRequired[str]  # Local types resolve provider/model/options from config/llm_profiles.yml
     temperature: float
 
 
@@ -47,8 +47,8 @@ class LLMFactory:
 
     # Map of LLM types to their implementations
     _llm_type_map: ClassVar[dict[LLMType, LLMConfig]] = {
-        LLMType.LOCAL_FAST: {"provider": "ollama", "model": "llama3", "temperature": 0.7},
-        LLMType.LOCAL_ACCURATE: {"provider": "ollama", "model": "llama3:70b", "temperature": 0.5},
+        LLMType.LOCAL_FAST: {"provider": "ollama", "profile": "edge", "temperature": 0.7},
+        LLMType.LOCAL_ACCURATE: {"provider": "ollama", "profile": "gpu", "temperature": 0.5},
         LLMType.CLOUD_FAST: {"provider": "openai", "model": "gpt-3.5-turbo", "temperature": 0.7},
         LLMType.CLOUD_ACCURATE: {"provider": "openai", "model": "gpt-4", "temperature": 0.5},
     }
@@ -57,6 +57,7 @@ class LLMFactory:
     _provider_map: ClassVar[dict[str, type[BaseLLM]]] = {
         "openai": OpenAILLM,
         "ollama": OllamaLLM,
+        "mock": MockLLM,
     }
 
     @classmethod
@@ -78,13 +79,16 @@ class LLMFactory:
             raise ValueError(f"Unsupported LLM type: {llm_type}")
 
         config = cls._llm_type_map[llm_type]
-        provider = config["provider"]
-        model = config["model"]
         default_temp = config["temperature"]
 
         # Use provided temperature or default from config
         temp = temperature if temperature is not None else default_temp
 
+        if "profile" in config:
+            return cls.create_from_profile(config["profile"], temp, **kwargs)
+
+        provider = config["provider"]
+        model = config["model"]
         logger.info(f"Creating {llm_type.value} LLM with provider {provider}, model {model}")
 
         return cls.create_llm_by_provider(provider, model, temp, **kwargs)
@@ -181,29 +185,30 @@ class LLMFactory:
                 raise
 
     @classmethod
-    def create_from_adapter_profile(cls, profile: str | None = None, temperature: float = 0.7, **adapter_kwargs) -> BaseLLM:
-        """Create a BaseLLM backed by the ModelAdapter stack (GPU/Edge/Mock).
-
-        This is the wiring point between LLMFactory and the swappable adapter
-        stack in src/llm/model_adapter.py (see issue #8): profile defaults to
-        config/llm_profiles.yml's `default_profile`, and adapter construction
-        kwargs come from that same config unless overridden here.
+    def create_from_profile(cls, profile: str | None = None, temperature: float = 0.7, **kwargs) -> BaseLLM:
+        """Create an LLM from a model profile in config/llm_profiles.yml (issue #2).
 
         Args:
-            profile: Adapter profile name ("gpu", "edge", "mock"). Defaults to
+            profile: Profile name ("edge", "gpu", "cpu", "mock", ...). Defaults to
                 config/llm_profiles.yml's default_profile.
-            temperature: Temperature to record on the returned BaseLLM. Adapters
-                are prompt-in/text-out and don't take temperature themselves.
-            **adapter_kwargs: Overrides for the adapter's constructor kwargs.
+            temperature: The temperature setting for the model
+            **kwargs: Overrides for the profile's options (e.g. num_ctx)
 
         Returns:
-            An AdapterBackedLLM wrapping the constructed ModelAdapter.
+            Configured LLM instance
         """
-        adapter = create_adapter_instance(profile, **adapter_kwargs)
-        resolved_profile = profile or get_default_profile()
-        metadata = adapter.metadata()
-        model_name = metadata.get("model_id") or metadata.get("artifact_path") or resolved_profile
-        return AdapterBackedLLM(adapter, model_name=model_name, temperature=temperature)
+        profile = profile or get_default_profile()
+        config = get_profile(profile)
+        provider, model = config["provider"], config["model"]
+        options = {**config["options"], **kwargs}
+
+        if provider == "ollama" and not is_model_available(model, options.get("base_url")):
+            logger.warning(
+                f"Ollama model '{model}' (profile '{profile}') is not available: start Ollama, or run `ollama pull {model}`"
+            )
+
+        logger.info(f"Creating LLM from profile '{profile}': provider {provider}, model {model}")
+        return cls.create_llm_by_provider(provider, model, temperature, **options)
 
 
 def get_llm(provider: str | None = None, temperature: float = 0.7) -> BaseLLM:

@@ -1,9 +1,30 @@
+# Local model profiles (issue #2). Select one with LLMFactory.create_from_profile(name);
+# default_profile is used when no name is given. Selection is config-file-only by design.
+# Each profile: provider (ollama | mock), model (an Ollama tag), options (passed to ChatOllama).
+# Hardware needs and evaluation results: docs/models.md, docs/model_eval.md.
 default_profile: edge
 
 profiles:
-  gpu:
-    model_id: "Juvoly/J1-Llama-8B-exp"
-    torch_dtype: "float16"
+  # MedGemma 1.5 4B, Q4_K_M (~3.3 GB). Fits laptops with ~6 GB free RAM or VRAM.
   edge:
-    artifact_path: "/opt/models/j1-gguf.jl"
-  mock: {}
+    provider: ollama
+    model: "medgemma1.5:4b"
+    options:
+      num_ctx: 4096
+  # MedGemma 27B, Q4_K_M (~17 GB). Needs a GPU with >= 24 GB VRAM.
+  gpu:
+    provider: ollama
+    model: "medgemma:27b"
+    options:
+      num_ctx: 8192
+  # Same model as edge, forced onto the CPU: what a laptop without a usable GPU gets.
+  cpu:
+    provider: ollama
+    model: "medgemma1.5:4b"
+    options:
+      num_ctx: 4096
+      num_gpu: 0
+  # Test double: no runtime, echoes the prompt.
+  mock:
+    provider: mock
+    model: "mock-model"
