@@ -129,7 +129,8 @@ async def test_quality_control_task(mock_llm, mock_db, mock_logger):
     assert "requires_human_review" in result
     assert "quality_rating" in result
     assert result["accuracy_score"] == ACCURACY_SCORE
-    assert result["requires_human_review"] is False
+    assert result["requires_human_review"] is True  # mandatory, whatever the model says
+    assert result["model_requested_review"] is False
     assert result["quality_rating"] == QUALITY_SCORE
 
     # Verify database and logger interactions

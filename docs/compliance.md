@@ -31,9 +31,11 @@ relevant frameworks, not a claim that those frameworks are satisfied today.
 ## Where the architecture already anticipates this
 
 - **Mandatory human review is structural, not optional.** `QualityControlTask`
-  (`src/tasks/quality_control_task.py`) always returns a
-  `requires_human_review` flag; nothing in the pipeline marks a report as
-  final without it. This is the direct analogue of "verplichte menselijke
+  (`src/tasks/quality_control_task.py`) always returns
+  `requires_human_review: true`, whatever the model answers; the model's own
+  opinion is kept as `model_requested_review`, for prioritising the review
+  queue only. No model in the pipeline is validated for clinical use, so it
+  cannot clear its own output. This is the direct analogue of "verplichte menselijke
   beoordeling" in the job description.
 - **Provider abstraction isolates the compliance-sensitive boundary.**
   `BaseLLM` (`src/llm/base.py`) and `TranscriptionService`

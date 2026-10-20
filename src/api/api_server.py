@@ -66,8 +66,9 @@ async def process_conversation_endpoint(request: ConversationRequest) -> dict:
             "summary": "The patient reports a primary symptom of a bad headache.",
             "quality_check": {
                 "accuracy_score": 0.95,
-                "requires_human_review": false,
-                "quality_rating": 95
+                "requires_human_review": true,
+                "quality_rating": 95,
+                "model_requested_review": false
             }
         }
         ```
