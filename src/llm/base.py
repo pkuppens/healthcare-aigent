@@ -1,5 +1,6 @@
 """Base classes for LLM implementations."""
 
+import re
 from abc import ABC, abstractmethod
 from typing import Any
 
@@ -14,6 +15,27 @@ def usage_from_response(response: Any) -> dict[str, int] | None:
     if not isinstance(usage, dict) or "input_tokens" not in usage or "output_tokens" not in usage:
         return None
     return {"input_tokens": int(usage["input_tokens"]), "output_tokens": int(usage["output_tokens"])}
+
+
+# Reasoning ("thinking") blocks some local models emit inline in their answer:
+# MedGemma 1.5 writes `<unused94>thought ... <unused95>answer`, Qwen3/DeepSeek-R1 write `<think>...</think>answer`.
+_REASONING_BLOCKS = (("<unused94>", "<unused95>"), ("<think>", "</think>"))
+
+
+def strip_reasoning(text: str) -> str:
+    """Return `text` without a leading reasoning block, so callers get only the answer.
+
+    If the model opened a reasoning block but never closed it (it ran out of tokens or stopped
+    mid-thought), the opening marker is removed and the reasoning text is kept: it is the only
+    output there is.
+    """
+    for start, end in _REASONING_BLOCKS:
+        if start not in text:
+            continue
+        if end in text:
+            return text.split(end, 1)[1].strip()
+        return re.sub(r"^\s*thought\s*", "", text.split(start, 1)[1]).strip()
+    return text
 
 
 class BaseLLM(ABC):

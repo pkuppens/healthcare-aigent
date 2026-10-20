@@ -84,27 +84,26 @@ sections. In code, `src.llm.observability.get_langfuse_client()` returns the sha
 ## 3. Your first trace (#13)
 
 Start Ollama first (the Ollama app, or `ollama serve`); check it with
-`curl http://localhost:11434/api/version`. Then pull the default model:
+`curl http://localhost:11434/api/version`. Then pull the default profile's model:
 
 ```bash
-ollama pull llama3.1:8b
+ollama pull medgemma1.5:4b
 ```
 
-`llama3.1:8b` is the default because it is the base model of Juvoly J1 (`Juvoly/J1-Llama-8B-exp`,
-#2): the same architecture, prompt template and tokenizer, so swapping in J1 later only changes
-`--model`. J1 itself is not the default, because it is published only as fp16 safetensors
-(~16 GB, gated) and has to be imported into Ollama first.
+Without arguments the script uses the default profile from `config/llm_profiles.yml` (`edge`,
+MedGemma 1.5 4B; see [models.md](models.md)). Use `--profile gpu` for MedGemma 27B, or
+`--provider ollama --model <tag>` for any other model.
 
 ```bash
 LANGFUSE_ENABLED=true LANGFUSE_PUBLIC_KEY=pk-lf-local-dev LANGFUSE_SECRET_KEY=sk-lf-local-dev \
-  uv run python scripts/langfuse_smoke.py --provider ollama --model llama3.1:8b
+  uv run python scripts/langfuse_smoke.py
 ```
 
 PowerShell:
 
 ```powershell
 $env:LANGFUSE_ENABLED="true"; $env:LANGFUSE_PUBLIC_KEY="pk-lf-local-dev"; $env:LANGFUSE_SECRET_KEY="sk-lf-local-dev"
-uv run python scripts/langfuse_smoke.py --provider ollama --model llama3.1:8b
+uv run python scripts/langfuse_smoke.py
 ```
 
 Windows cmd:
@@ -113,7 +112,7 @@ Windows cmd:
 set LANGFUSE_ENABLED=true
 set LANGFUSE_PUBLIC_KEY=pk-lf-local-dev
 set LANGFUSE_SECRET_KEY=sk-lf-local-dev
-uv run python scripts/langfuse_smoke.py --provider ollama --model llama3.1:8b
+uv run python scripts/langfuse_smoke.py
 ```
 
 It prints the token usage, the answer, and a `trace_url=` you can open. Without
