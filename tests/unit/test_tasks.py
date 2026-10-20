@@ -136,3 +136,29 @@ async def test_quality_control_task(mock_llm, mock_db, mock_logger):
     # Verify database and logger interactions
     mock_db.read_patient_data.assert_called_once()
     mock_logger.log_audit_event.assert_called_once()
+
+
+class _FixedAnswerLLM:
+    """LLM stub whose ainvoke returns one fixed answer."""
+
+    def __init__(self, answer: str):
+        self.answer = answer
+
+    async def ainvoke(self, prompt: str) -> str:
+        return self.answer
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize(
+    ("model_value", "expected"),
+    [(False, False), (True, True), ('"false"', False), ('"true"', True), ('"Yes"', True), ("null", False)],
+)
+async def test_quality_control_keeps_the_models_review_opinion_without_string_coercion(mock_db, mock_logger, model_value, expected):
+    """The model's requires_human_review becomes model_requested_review; a "false" string must not read as true."""
+    raw = model_value if isinstance(model_value, str) else str(model_value).lower()
+    llm = _FixedAnswerLLM(f'{{"accuracy_score": 0.9, "requires_human_review": {raw}, "quality_rating": 90}}')
+
+    result = await QualityControlTask().execute("Patient summary", llm, mock_db, mock_logger)
+
+    assert result["requires_human_review"] is True
+    assert result["model_requested_review"] is expected

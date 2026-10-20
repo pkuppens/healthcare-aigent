@@ -8,8 +8,7 @@ from typing import ClassVar, NotRequired, TypedDict
 from src.llm.base import BaseLLM
 from src.llm.circuit_breaker import is_ollama_available, is_openai_available
 from src.llm.mock_llm import MockLLM
-from src.llm.ollama_llm import OllamaLLM, is_model_available
-from src.llm.ollama_residency import load_options_of, residency_monitor
+from src.llm.ollama_llm import OllamaLLM
 from src.llm.openai_llm import OpenAILLM
 from src.llm.profile_config import get_default_profile, get_profile
 
@@ -198,29 +197,12 @@ class LLMFactory:
         Returns:
             Configured LLM instance
         """
-        profile = profile or get_default_profile()
-        config = get_profile(profile)
-        provider, model = config["provider"], config["model"]
-        options = {**config["options"], **kwargs}
-
-        if provider == "ollama":
-            if not is_model_available(model, options.get("base_url")):
-                logger.warning(
-                    f"Ollama model '{model}' (profile '{profile}') is not available: start Ollama, or run `ollama pull {model}`"
-                )
-            changed = {k: v for k, v in load_options_of(kwargs).items() if config["options"].get(k) != v}
-            if changed:
-                logger.warning(
-                    f"Overriding load options {changed} of profile '{profile}': Ollama reloads '{model}' "
-                    "when these differ from the resident instance (issue #26)"
-                )
-            if config["keep_alive"] is not None:
-                options.setdefault("keep_alive", config["keep_alive"])
-            options.setdefault("residency_monitor", residency_monitor)
-            options.setdefault("require_gpu", config["require_gpu"])
-
-        logger.info(f"Creating LLM from profile '{profile}': provider {provider}, model {model}")
-        return cls.create_llm_by_provider(provider, model, temperature, **options)
+        config = get_profile(profile or get_default_profile())
+        llm_class = cls._provider_map.get(config.provider.lower())
+        if llm_class is None:
+            raise ValueError(f"Unsupported LLM provider: {config.provider}")
+        logger.info(f"Creating LLM from profile '{config.name}': provider {config.provider}, model {config.model}")
+        return llm_class.from_profile(config, temperature, **kwargs)
 
 
 def get_llm(provider: str | None = None, temperature: float = 0.7) -> BaseLLM:

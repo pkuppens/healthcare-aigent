@@ -9,6 +9,7 @@ the final, structured results.
 import asyncio
 
 from src.llm.llm_factory import LLMFactory
+from src.llm.ollama_residency import preload_profiles
 from src.tasks import (
     AssessPatientLanguageTask,
     ExtractClinicalInfoTask,
@@ -143,6 +144,7 @@ def main():
     Patient: Yes, I take metoprolol for my blood pressure.
     """
 
+    preload_profiles()  # the `preload` list in config/llm_profiles.yml; empty by default
     result = process_medical_conversation(conversation)
     print("Processing complete:", result)
 

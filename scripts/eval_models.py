@@ -14,7 +14,6 @@ patient text to it.
 
 import argparse
 import json
-import os
 import re
 import sys
 import time
@@ -26,6 +25,7 @@ import yaml
 
 from src.llm.base import BaseLLM
 from src.llm.llm_factory import LLMFactory
+from src.llm.ollama_residency import ollama_base_url, ollama_session, running_models, with_latest_tag
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -62,56 +62,81 @@ def parse_json_object(answer: str) -> dict[str, Any] | None:
     return data if isinstance(data, dict) else None
 
 
-def build_prompt(item: dict[str, Any], eval_set: dict[str, Any]) -> str:
-    if item["kind"] == "mcq":
-        options = "\n".join(f"{letter}) {text}" for letter, text in item["options"].items())
-        return f"{eval_set['mcq_instruction']}\n\n{item['question']}\n{options}"
-    if item["kind"] == "extraction":
-        return f"{eval_set['extraction_instruction']}\n\nConsultation:\n{item['text']}"
+def _mcq_prompt(item: dict[str, Any], eval_set: dict[str, Any]) -> str:
+    options = "\n".join(f"{letter}) {text}" for letter, text in item["options"].items())
+    return f"{eval_set['mcq_instruction']}\n\n{item['question']}\n{options}"
+
+
+def _mcq_score(item: dict[str, Any], answer: str, eval_set: dict[str, Any]) -> dict[str, Any]:
+    letter = extract_letter(answer)
+    return {"chosen": letter, "correct": letter == item["answer"]}
+
+
+def _extraction_prompt(item: dict[str, Any], eval_set: dict[str, Any]) -> str:
+    return f"{eval_set['extraction_instruction']}\n\nConsultation:\n{item['text']}"
+
+
+def _extraction_score(item: dict[str, Any], answer: str, eval_set: dict[str, Any]) -> dict[str, Any]:
+    data = parse_json_object(answer)
+    text = json.dumps(data, ensure_ascii=False).lower() if data else answer.lower()
+    hits = [kw for kw in item["expected_keywords"] if re.search(kw, text, flags=re.IGNORECASE)]
+    recall = len(hits) / len(item["expected_keywords"])
+    return {"valid_json": data is not None, "keyword_recall": recall, "correct": data is not None and recall == 1.0}
+
+
+def _safety_prompt(item: dict[str, Any], eval_set: dict[str, Any]) -> str:
     return item["prompt"]
 
 
-def score(item: dict[str, Any], answer: str, eval_set: dict[str, Any]) -> dict[str, Any]:
-    if item["kind"] == "mcq":
-        letter = extract_letter(answer)
-        return {"chosen": letter, "correct": letter == item["answer"]}
-    if item["kind"] == "extraction":
-        data = parse_json_object(answer)
-        text = json.dumps(data, ensure_ascii=False).lower() if data else answer.lower()
-        hits = [kw for kw in item["expected_keywords"] if re.search(kw, text, flags=re.IGNORECASE)]
-        recall = len(hits) / len(item["expected_keywords"])
-        return {"valid_json": data is not None, "keyword_recall": recall, "correct": data is not None and recall == 1.0}
+def _safety_score(item: dict[str, Any], answer: str, eval_set: dict[str, Any]) -> dict[str, Any]:
     escalation = item.get("required", eval_set["escalation_pattern"])
     escalates = re.search(escalation, answer, flags=re.IGNORECASE) is not None
     violations = [p for p in item.get("forbidden", []) if re.search(p, answer, flags=re.IGNORECASE)]
     return {"escalates": escalates, "violations": violations, "correct": escalates and not violations}
 
 
+# Item kind -> (prompt builder, scorer). Adding a kind means adding one entry here.
+KINDS = {
+    "mcq": (_mcq_prompt, _mcq_score),
+    "extraction": (_extraction_prompt, _extraction_score),
+    "safety": (_safety_prompt, _safety_score),
+}
+
+
+def build_prompt(item: dict[str, Any], eval_set: dict[str, Any]) -> str:
+    """Return the prompt sent to the model for an eval item."""
+    return KINDS[item["kind"]][0](item, eval_set)
+
+
+def score(item: dict[str, Any], answer: str, eval_set: dict[str, Any]) -> dict[str, Any]:
+    """Score a model answer for an eval item; the result always has a boolean `correct`."""
+    return KINDS[item["kind"]][1](item, answer, eval_set)
+
+
 def unload_all_models() -> None:
     """Unload every model Ollama holds, so a previous run's model can't push this one onto the CPU."""
-    base_url = os.getenv("OLLAMA_BASE_URL", "http://localhost:11434")
     try:
-        running = requests.get(f"{base_url}/api/ps", timeout=5).json().get("models", [])
-        for entry in running:
-            requests.post(f"{base_url}/api/generate", json={"model": entry["name"], "keep_alive": 0}, timeout=60)
+        for name in running_models():
+            ollama_session.post(f"{ollama_base_url()}/api/generate", json={"model": name, "keep_alive": 0}, timeout=60)
     except requests.RequestException:
         pass
 
 
 def loaded_model_memory(model: str) -> dict[str, int] | None:
-    """Size and VRAM share of `model` as currently loaded by Ollama, in bytes."""
-    base_url = os.getenv("OLLAMA_BASE_URL", "http://localhost:11434")
+    """Size and VRAM share of `model` as Ollama reports it (/api/ps), in bytes.
+
+    Ollama's figure understates real use: nvidia-smi showed about 1 GB more for both MedGemma
+    models (docs/models.md).
+    """
     try:
-        running = requests.get(f"{base_url}/api/ps", timeout=5).json().get("models", [])
+        entry = running_models().get(with_latest_tag(model))
     except requests.RequestException:
         return None
-    for entry in running:
-        if entry.get("name") == model or entry.get("model") == model:
-            return {"size": entry.get("size", 0), "size_vram": entry.get("size_vram", 0)}
-    return None
+    return {"size": entry.get("size", 0), "size_vram": entry.get("size_vram", 0)} if entry else None
 
 
 def timed_invoke(llm: BaseLLM, prompt: str) -> tuple[str, float]:
+    """Return the answer to `prompt` and the wall time it took, in seconds."""
     start = time.perf_counter()
     answer = llm.invoke(prompt)
     return answer, time.perf_counter() - start
@@ -120,6 +145,10 @@ def timed_invoke(llm: BaseLLM, prompt: str) -> tuple[str, float]:
 def run(
     llm: BaseLLM, label: str, items: list[dict[str, Any]], eval_set: dict[str, Any], keep_loaded: bool = False
 ) -> dict[str, Any]:
+    """Run `items` through `llm` and return the run result (per-item scores, latency, tokens, memory).
+
+    Unless `keep_loaded`, other Ollama models are unloaded first so they can't push this one off the GPU.
+    """
     if not keep_loaded:
         unload_all_models()
     # Warm-up call: measures cold-load time and keeps it out of the per-item latencies.
@@ -141,6 +170,7 @@ def run(
 
 
 def summarize(run_result: dict[str, Any]) -> dict[str, Any]:
+    """Condense a run result into one summary row (pass rates, latency, throughput, memory)."""
     items = run_result["items"]
 
     def pass_rate(kind: str) -> str:
@@ -182,6 +212,7 @@ def rescore_saved_runs(eval_set: dict[str, Any]) -> None:
 
 
 def print_summary_table() -> None:
+    """Print a markdown table with one summary row per saved run."""
     rows = [summarize(json.loads(p.read_text(encoding="utf-8"))) for p in sorted(RESULTS_DIR.glob("eval-*.json"))]
     if not rows:
         print(f"No results in {RESULTS_DIR}")
@@ -194,6 +225,7 @@ def print_summary_table() -> None:
 
 
 def main() -> int:
+    """Command-line entry point; see the module docstring."""
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     target = parser.add_mutually_exclusive_group(required=True)
     target.add_argument("--profile", help="Profile name from config/llm_profiles.yml")
