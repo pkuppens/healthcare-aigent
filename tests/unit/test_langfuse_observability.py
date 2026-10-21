@@ -23,6 +23,7 @@ LANGFUSE_ENV = [
     "LANGFUSE_SECRET_KEY",
     "LANGFUSE_SAMPLE_RATE",
     "LANGFUSE_DEBUG",
+    "LANGFUSE_MASK_PII",
 ]
 
 
@@ -103,6 +104,7 @@ def test_langfuse_config_is_read_from_env(clean_env, monkeypatch):
     monkeypatch.setenv("LANGFUSE_SECRET_KEY", "sk-test")
     monkeypatch.setenv("LANGFUSE_SAMPLE_RATE", "0.25")
     monkeypatch.setenv("LANGFUSE_DEBUG", "true")
+    monkeypatch.setenv("LANGFUSE_MASK_PII", "false")
 
     config = ConfigManager()._load_config().langfuse
 
@@ -113,6 +115,7 @@ def test_langfuse_config_is_read_from_env(clean_env, monkeypatch):
         secret_key="sk-test",
         sample_rate=0.25,
         debug=True,
+        mask_pii=False,
     )
 
 
@@ -166,8 +169,29 @@ def test_client_is_built_from_config_when_enabled(langfuse_config, monkeypatch):
     assert observability.get_langfuse_client() == "client"
     assert observability.get_langfuse_client() == "client"  # cached, not rebuilt
     assert constructed == [
-        {"public_key": "pk-test", "secret_key": "sk-test", "host": "http://localhost:3000", "sample_rate": 0.5, "debug": False}
+        {
+            "public_key": "pk-test",
+            "secret_key": "sk-test",
+            "host": "http://localhost:3000",
+            "sample_rate": 0.5,
+            "debug": False,
+            "mask": observability.langfuse_mask,
+        }
     ]
+
+
+def test_client_is_built_without_mask_when_masking_is_off(langfuse_config, monkeypatch):
+    """LANGFUSE_MASK_PII=false is an explicit opt-out: the client gets no mask callback."""
+    langfuse_config.enabled = True
+    langfuse_config.public_key = "pk-test"
+    langfuse_config.secret_key = "sk-test"
+    langfuse_config.mask_pii = False
+    constructed = []
+    monkeypatch.setitem(sys.modules, "langfuse", SimpleNamespace(Langfuse=lambda **kw: constructed.append(kw) or "client"))
+
+    observability.get_langfuse_client()
+
+    assert constructed[0]["mask"] is None
 
 
 # --- tracing a single call (#13) ----------------------------------------------------------

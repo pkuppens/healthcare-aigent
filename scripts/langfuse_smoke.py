@@ -28,6 +28,7 @@ def main() -> int:
     parser.add_argument("--profile", help="Profile from config/llm_profiles.yml (default: its default_profile)")
     parser.add_argument("--provider", choices=["ollama", "openai"], help="With --model: bypass the profiles")
     parser.add_argument("--model", help="With --provider: explicit model name")
+    parser.add_argument("--prompt", default=SMOKE_PROMPT, help="Prompt to send, e.g. one with planted PII to check masking (#16)")
     args = parser.parse_args()
     if bool(args.provider) != bool(args.model):
         parser.error("--provider and --model go together")
@@ -37,7 +38,7 @@ def main() -> int:
     else:
         llm = LLMFactory.create_from_profile(args.profile, temperature=0.0)
     try:
-        output = llm.invoke(SMOKE_PROMPT)
+        output = llm.invoke(args.prompt)
     except httpx.ConnectError as exc:
         if llm.provider != "ollama":
             raise
