@@ -1,4 +1,4 @@
-"""Optional Langfuse tracing for LLM calls (issues #12, #13).
+"""Optional Langfuse tracing for LLM calls (issues #12, #13), PII-masked before export (#16).
 
 Everything here is default-off: with `LANGFUSE_ENABLED` unset, `get_langfuse_client()`
 returns None, `observe_llm_call()` just runs the call, and the `langfuse` package is never
@@ -10,6 +10,7 @@ from collections.abc import Callable
 from typing import TYPE_CHECKING, Any
 
 from src.llm.config import ConfigManager
+from src.privacy.pii import mask_pii_data
 
 
 if TYPE_CHECKING:
@@ -55,11 +56,17 @@ def get_langfuse_client() -> Any | None:
             host=config.host,
             sample_rate=config.sample_rate,
             debug=config.debug,
+            mask=langfuse_mask if config.mask_pii else None,
         )
     except Exception as e:
         logger.warning(f"Failed to initialise Langfuse client, tracing disabled: {e}")
         _client = None
     return _client
+
+
+def langfuse_mask(*, data: Any, **kwargs: Any) -> Any:
+    """Langfuse `mask` callback: scrub PII from every observation's input, output and metadata (#16)."""
+    return mask_pii_data(data)
 
 
 def reset_langfuse_client() -> None:

@@ -45,6 +45,7 @@ class LangfuseConfig:
     secret_key: str | None = None
     sample_rate: float = 1.0
     debug: bool = False
+    mask_pii: bool = True
 
 
 @dataclass
@@ -119,6 +120,7 @@ class ConfigManager:
         config.langfuse.secret_key = os.getenv("LANGFUSE_SECRET_KEY")
         config.langfuse.sample_rate = float(os.getenv("LANGFUSE_SAMPLE_RATE", "1.0"))
         config.langfuse.debug = os.getenv("LANGFUSE_DEBUG", "false").lower() == "true"
+        config.langfuse.mask_pii = os.getenv("LANGFUSE_MASK_PII", "true").lower() == "true"
 
         # Load from config file if it exists
         config_file = os.getenv("LLM_CONFIG_FILE", "config/llm_config.json")
@@ -172,7 +174,7 @@ class ConfigManager:
         # Update Langfuse config
         if "langfuse" in config_dict:
             langfuse_config = config_dict["langfuse"]
-            langfuse_attrs = ["enabled", "host", "public_key", "secret_key", "sample_rate", "debug"]
+            langfuse_attrs = ["enabled", "host", "public_key", "secret_key", "sample_rate", "debug", "mask_pii"]
             for attr in langfuse_attrs:
                 if attr in langfuse_config:
                     setattr(config.langfuse, attr, langfuse_config[attr])
@@ -238,6 +240,7 @@ class ConfigManager:
                 "secret_key": self._config.langfuse.secret_key,
                 "sample_rate": self._config.langfuse.sample_rate,
                 "debug": self._config.langfuse.debug,
+                "mask_pii": self._config.langfuse.mask_pii,
             },
         }
 

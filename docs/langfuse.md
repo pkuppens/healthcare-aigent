@@ -5,11 +5,12 @@ Exploration tracked in epic #10. This page covers what has landed so far:
 - **#11** — a local Langfuse stack via Docker Compose
 - **#12** — optional, default-off Langfuse settings in the LLM config layer
 - **#13** — every `BaseLLM` call recorded as one Langfuse *generation* (model, prompt, completion, tokens, latency)
+- **#16** — client-side PII masking of everything sent to Langfuse (section 4)
 
-Tracing the full pipeline as one trace (#14), cost dashboards (#15) and PII masking (#16) are not built yet.
+Tracing the full pipeline as one trace (#14) and cost dashboards (#15) are not built yet.
 
-> **Privacy.** Until #16 adds client-side masking, enabled tracing sends prompts and model output
-> to Langfuse **unmasked**. Keep the stack local (the compose file binds every port to
+> **Privacy.** Prompts and model output are masked before they leave the process (section 4), but
+> the masking is best-effort. Keep the stack local (the compose file binds every port to
 > `127.0.0.1`) and use synthetic conversations only. Tracing is off unless you turn it on.
 
 ## 1. Run Langfuse locally (#11)
@@ -72,6 +73,7 @@ uv sync --extra observability
 | `LANGFUSE_PUBLIC_KEY` / `LANGFUSE_SECRET_KEY` | unset | Project API keys. If either is missing, tracing stays off with one warning. |
 | `LANGFUSE_SAMPLE_RATE` | `1.0` | Fraction of traces to keep |
 | `LANGFUSE_DEBUG` | `false` | SDK debug logging |
+| `LANGFUSE_MASK_PII` | `true` | Mask PII in every observation before export (section 4). Set `false` only for debugging with synthetic text. |
 
 The same keys can be set in `config/llm_config.json` under `"langfuse"`, like the `openai`/`ollama`
 sections. In code, `src.llm.observability.get_langfuse_client()` returns the shared client, or
@@ -148,3 +150,40 @@ Langfuse v4 runs in *events_only* mode, and the classic `GET /api/public/traces/
 curl -u pk-lf-local-dev:sk-lf-local-dev \
   "http://localhost:3000/api/public/v2/observations?traceId=<trace_id>&fields=core,basic,usage,io,model&limit=10"
 ```
+
+## 4. PII masking (#16)
+
+The Langfuse client gets a `mask` callback (`src.llm.observability.langfuse_mask`), so the SDK
+masks the input, output and metadata of every observation **before** export. The application
+itself still sees the unmasked text; only what is sent to Langfuse is masked. The rules live in
+`src/privacy/pii.py` (`mask_pii`, `mask_pii_data`) so a future cloud-LLM path can reuse them.
+
+| Placeholder | What it matches |
+|---|---|
+| `[EMAIL]` | email addresses |
+| `[PHONE]` | Dutch and international phone numbers (`06-12345678`, `+31 20 123 4567`) |
+| `[BSN]` | nine digits that pass the BSN eleven-test (other nine-digit numbers are kept) |
+| `[SSN]` | US SSN `123-45-6789` |
+| `[IBAN]` | IBAN account numbers |
+| `[DATE]` | full dates: `12-03-1958`, `1958-03-12`, `3 maart 1975`; this includes clinical dates, not only dates of birth |
+| `[POSTCODE]` | Dutch postcodes `1234 AB` |
+| `[ADDRESS]` | `Kerkstraat 12a`, `221 Baker Street` |
+| `[NAME]` | a capitalised name after a cue: `Naam:`, `Name:`, `patiënt`, `patient`, `Dhr.`, `Mevr.`, `Mw.`, `Mr.`, `Mrs.`, `Ms.`, `Dr.` |
+
+Check it against the local stack with a prompt that contains planted PII (the `mock` profile needs no Ollama):
+
+```bash
+uv run python scripts/langfuse_smoke.py --profile mock --prompt "Naam: Jan de Vries, BSN 111222333, tel 06-12345678"
+```
+
+Langfuse then stores `Naam: [NAME], BSN [BSN], tel [PHONE]` for both input and output, while
+the script prints the unmasked answer.
+
+**Limitations.** This is best-effort masking with regular expressions, not de-identification:
+
+- names without a cue ("Jan had pain") are missed;
+- city names and free-text identifiers are not masked;
+- four digits followed by two capitals (`1500 MG`) can be masked as a postcode.
+
+Server-side masking and data-retention policies are Langfuse Enterprise features. A real PHI
+deployment would need them, or an NER-based de-identifier in front of `mask_pii`.
